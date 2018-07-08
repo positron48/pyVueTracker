@@ -1,6 +1,6 @@
-// About.vue
+// Statistics.vue
 <template>
   <div>
-    <p>About</p>
+    <p>Statistics</p>
   </div>
 </template>
