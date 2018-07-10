@@ -1,22 +1,22 @@
 // Tasks.vue
 <template>
-  <div class="row">
-    <div v-if="useDatePicker">
-      datePicker
-      <p>Start Date : {{ selectedDate.start }}</p>
-      <p>End Date : {{ selectedDate.end }}</p>
-      <vue-rangedate-picker @selected="onDateSelected" i18n="EN"></vue-rangedate-picker>
+  <div class="md-layout md-gutter md-alignment-top-center">
+    <div class="md-layout-item md-size-50" v-if="useDatePicker">
+      <vue-rangedate-picker
+        @selected="onDateSelected"
+        ref="rangeDatePicker"
+        i18n="EN"
+        format="DD.MM.YYYY"
+      >
+      </vue-rangedate-picker>
     </div>
-    <ul v-if="tasks.length">
+    <ul class="md-layout-item md-size-100"  v-if="tasks.length">
       <TaskItem
         v-for="task in tasks"
         :key="task.id"
         :task="task"
       />
     </ul>
-    <p v-else>
-      Nothing
-    </p>
   </div>
 </template>
 
@@ -68,6 +68,17 @@ export default {
   },
   created () {
     this.getTasks()
+  },
+  mounted () {
+    if (this.useDatePicker) {
+      this.$refs.rangeDatePicker.dateRange = this.selectedDate
+    }
   }
 }
 </script>
+
+<style>
+  .calendar-root .input-date{
+    margin: 0 auto;
+  }
+</style>
