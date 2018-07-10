@@ -17,7 +17,7 @@ import Tasks from './Tasks.vue'
 export default {
   data () {
     return {
-      randomNumber: 0
+
     }
   },
   components: {

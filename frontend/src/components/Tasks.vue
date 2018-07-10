@@ -1,6 +1,12 @@
 // Tasks.vue
 <template>
   <div class="row">
+    <div v-if="useDatePicker">
+      datePicker
+      <p>Start Date : {{ selectedDate.start }}</p>
+      <p>End Date : {{ selectedDate.end }}</p>
+      <vue-rangedate-picker @selected="onDateSelected" i18n="EN"></vue-rangedate-picker>
+    </div>
     <ul v-if="tasks.length">
       <TaskItem
         v-for="task in tasks"
@@ -16,19 +22,52 @@
 
 <script>
 import TaskItem from './TaskItem.vue'
+import VueRangedatePicker from 'vue-rangedate-picker'
+import axios from 'axios'
 
 export default {
   data () {
     return {
-      tasks: [
-        {id: 1, start: '10:00', end: '10:30', duration: '30 minutes', category: 'multisite', tags: [{id: 0, name: 'support'}], name: '12345 test1'},
-        {id: 2, start: '10:30', end: '11:30', duration: '1 hour', category: 'invoz', tags: [{id: 0, name: 'support'}, {id: 1, name: 'learning'}], name: 'support'},
-        {id: 3, start: '11:30', end: '12:15', duration: '45 minutes', category: 'multisite', tags: [{id: 0, name: 'support'}], name: '123456'}
-      ]
+      tasks: [],
+      selectedDate: {
+        start: new Date(),
+        end: new Date()
+      }
+    }
+  },
+  props: {
+    useDatePicker: {
+      type: Boolean
+    }
+  },
+  methods: {
+    getTasks () {
+      var formattedStart = ('0' + this.selectedDate.start.getDate()).slice(-2) +
+        '.' + ('0' + (this.selectedDate.start.getMonth() + 1)).slice(-2) +
+        '.' + this.selectedDate.start.getFullYear()
+      var formattedEnd = ('0' + this.selectedDate.end.getDate()).slice(-2) +
+        '.' + ('0' + (this.selectedDate.end.getMonth() + 1)).slice(-2) +
+        '.' + this.selectedDate.end.getFullYear()
+
+      const path = `http://localhost:5000/api/tasks?interval=` + formattedStart + '-' + formattedEnd
+      axios.get(path)
+        .then(response => {
+          this.tasks = response.data.tasks
+        })
+        .catch(error => {
+          console.log(error)
+        })
+    },
+    onDateSelected: function (daterange) {
+      this.selectedDate = daterange
+      this.getTasks()
     }
   },
   components: {
-    TaskItem
+    TaskItem, VueRangedatePicker
+  },
+  created () {
+    this.getTasks()
   }
 }
 </script>
