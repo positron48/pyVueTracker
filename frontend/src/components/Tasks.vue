@@ -1,28 +1,32 @@
 // Tasks.vue
 <template>
-  <div class="md-layout md-gutter md-alignment-top-center">
-    <div class="md-layout-item md-size-50" v-if="useDatePicker">
-      <vue-rangedate-picker
-        @selected="onDateSelected"
-        ref="rangeDatePicker"
-        i18n="EN"
-        format="DD.MM.YYYY"
-      >
-      </vue-rangedate-picker>
+  <div>
+    <div class="md-layout md-gutter md-alignment-top-center">
+      <div class="md-layout-item md-size-50 taskItems"  v-if="tasks.length">
+        <template
+          v-for="taskGroup in groupedTasks"
+        >
+          <md-list :key="taskGroup.date" class="task-group">
+            <md-list-item class="task-group-date">
+              {{taskGroup.date}}
+            </md-list-item>
+            <TaskItem
+              v-for="task in taskGroup.tasks"
+              :key="task.id"
+              :task="task"
+            />
+            <md-list-item class="task-duration-list-item">
+              {{taskGroup.duration}}
+            </md-list-item>
+          </md-list>
+        </template>
+      </div>
     </div>
-    <ul class="md-layout-item md-size-100"  v-if="tasks.length">
-      <TaskItem
-        v-for="task in tasks"
-        :key="task.id"
-        :task="task"
-      />
-    </ul>
   </div>
 </template>
 
 <script>
 import TaskItem from './TaskItem.vue'
-import VueRangedatePicker from 'vue-rangedate-picker'
 import axios from 'axios'
 
 export default {
@@ -36,8 +40,24 @@ export default {
     }
   },
   props: {
-    useDatePicker: {
-      type: Boolean
+    initialDate: {
+      type: Object
+    }
+  },
+  computed: {
+    groupedTasks: function () {
+      var groupedTasks = {}
+      this.tasks.forEach(function (task, i) {
+        if (groupedTasks[task['date']] === undefined) {
+          groupedTasks[task['date']] = {duration: 0, tasks: [], date: task['date']}
+        }
+        groupedTasks[task['date']]['tasks'].push(task)
+        groupedTasks[task['date']]['duration'] += task['delta']
+
+        // со сложением вместе округление работать не хочет
+        groupedTasks[task['date']]['duration'] = Math.round(groupedTasks[task['date']]['duration'] * 100) / 100
+      })
+      return groupedTasks
     }
   },
   methods: {
@@ -57,22 +77,17 @@ export default {
         .catch(error => {
           console.log(error)
         })
-    },
-    onDateSelected: function (daterange) {
-      this.selectedDate = daterange
-      this.getTasks()
     }
   },
   components: {
-    TaskItem, VueRangedatePicker
+    TaskItem
   },
   created () {
-    this.getTasks()
-  },
-  mounted () {
-    if (this.useDatePicker) {
-      this.$refs.rangeDatePicker.dateRange = this.selectedDate
+    if (this.initialDate !== undefined) {
+      this.selectedDate = this.initialDate
     }
+    this.getTasks()
+    console.log(this.selectedDate)
   }
 }
 </script>
@@ -80,5 +95,18 @@ export default {
 <style>
   .calendar-root .input-date{
     margin: 0 auto;
+  }
+  .task-group{
+    margin-top: 20px;
+  }
+  .task-group-date .md-list-item-content{
+    font-weight: bold;
+  }
+  .task-duration-list-item .md-list-item-content{
+    width: 90px;
+    text-align: right;
+    float: right;
+    margin-right: 5px;
+    font-weight: bold;
   }
 </style>
