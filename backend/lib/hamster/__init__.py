@@ -48,7 +48,7 @@ class Fact(object):
         self.date = date
         self.activity_id = activity_id
 
-        for key, val in parse_fact(activity).iteritems():
+        for key, val in parse_fact(activity).items():
             setattr(self, key, val)
 
 

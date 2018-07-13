@@ -563,7 +563,7 @@ class Storage(storage.Storage):
             day_start = conf.get("day_start_minutes")
         except:
             day_start = 5 * 60 # default day start to 5am
-        day_start = datetime.time(day_start / 60, day_start % 60)
+        day_start = datetime.time(int(day_start / 60), day_start % 60)
         today = (datetime.datetime.now() - datetime.timedelta(hours = day_start.hour,
                                                   minutes = day_start.minute)).date()
         return self.__get_facts(today)
@@ -660,7 +660,9 @@ class Storage(storage.Storage):
                 fact_date = fact_start_date
 
             fact_datetime = datetime.datetime.combine(fact_date, datetime.datetime.min.time())
-            if fact_datetime < date or fact_datetime > end_date:
+            date_time = datetime.datetime.combine(date, datetime.datetime.min.time())
+            end_date_time = datetime.datetime.combine(end_date, datetime.datetime.min.time())
+            if fact_datetime < date_time or fact_datetime > end_date_time:
                 # due to spanning we've jumped outside of given period
                 continue
 

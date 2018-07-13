@@ -19,6 +19,8 @@
 # along with Project Hamster.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime as dt
+import re
+from collections import defaultdict
 from backend.lib.hamster import Fact
 
 class Storage(object):
@@ -34,7 +36,7 @@ class Storage(object):
         self.activities_changed()
 
     # facts
-    def add_fact(self, fact, start_time, end_time, temporary=False):
+    def add_fact(self, fact, start_time=None, end_time=None, temporary=False):
         fact = Fact(fact, start_time=start_time, end_time=end_time)
         start_time = fact.start_time or dt.datetime.now().replace(second=0, microsecond=0)
 
@@ -79,7 +81,7 @@ class Storage(object):
         self.end_transaction()
 
 
-    def get_facts(self, start_date, end_date, search_terms):
+    def get_facts(self, start_date, end_date, search_terms=""):
         return self.__get_facts(start_date, end_date, search_terms)
 
 
@@ -159,3 +161,44 @@ class Storage(object):
         changes = self.__update_autocomplete_tags(tags)
         if changes:
             self.tags_changed()
+
+    def get_suggestions(self):
+        # list of facts of last month
+        now = dt.datetime.now()
+        last_month = self.get_facts(now - dt.timedelta(days=60), now)
+        #return last_month
+
+        # naive recency and frequency rank
+        # score is as simple as you get 30-days_ago points for each occurence
+        suggestions = defaultdict(int)
+        pattern = re.compile(r'\s+')
+
+        for fact in last_month:
+            days = 30 - (now - dt.datetime.combine(fact['date'], dt.time())).total_seconds() / 60 / 60 / 24
+
+            label = fact['name']
+            if fact['category']:
+                label += "@%s" % fact['category']
+
+            label = re.sub(pattern, ' ', label).strip()
+
+            suggestions[label] += days
+
+            if fact['tags']:
+                label += " #%s" % (" #".join(fact['tags']))
+                suggestions[label] += days
+
+        for rec in self.get_activities():
+            label = rec["name"]
+            if rec["category"]:
+                label += "@%s" % rec["category"]
+            label = re.sub(pattern, ' ', label).strip()
+            suggestions[label] += 0
+
+        sortedSuggestions = sorted(suggestions.items(), key=lambda x: x[1], reverse=True)
+
+        suggestions = list()
+        for rec in sortedSuggestions:
+            suggestions.append(rec[0])
+
+        return suggestions

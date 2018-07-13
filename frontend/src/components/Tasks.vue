@@ -3,6 +3,7 @@
   <div>
     <div class="md-layout md-gutter md-alignment-top-center">
       <div class="md-layout-item md-size-50 taskItems"  v-if="tasks.length">
+        <bar-chart :chart-data="chartData.values" :labels="chartData.labels" ref="chart"/>
         <template
           v-for="taskGroup in groupedTasks"
         >
@@ -27,6 +28,7 @@
 
 <script>
 import TaskItem from './TaskItem.vue'
+import BarChart from './BarChart.vue'
 import axios from 'axios'
 
 export default {
@@ -58,16 +60,30 @@ export default {
         groupedTasks[task['date']]['duration'] = Math.round(groupedTasks[task['date']]['duration'] * 100) / 100
       })
       return groupedTasks
+    },
+    chartData: function () {
+      var labels = []
+      var values = []
+
+      var current = new Date(this.selectedDate.start)
+      while (current <= this.selectedDate.end) {
+        var formattedCurrent = this.formatDate(current)
+        labels.push(this.formatDate(current, true))
+
+        if (this.groupedTasks[formattedCurrent] !== undefined) {
+          values.push(this.groupedTasks[formattedCurrent]['duration'])
+        } else {
+          values.push(0)
+        }
+        current.setDate(current.getDate() + 1)
+      }
+      return {labels: labels, values: values}
     }
   },
   methods: {
     getTasks () {
-      var formattedStart = ('0' + this.selectedDate.start.getDate()).slice(-2) +
-        '.' + ('0' + (this.selectedDate.start.getMonth() + 1)).slice(-2) +
-        '.' + this.selectedDate.start.getFullYear()
-      var formattedEnd = ('0' + this.selectedDate.end.getDate()).slice(-2) +
-        '.' + ('0' + (this.selectedDate.end.getMonth() + 1)).slice(-2) +
-        '.' + this.selectedDate.end.getFullYear()
+      var formattedStart = this.formatDate(this.selectedDate.start)
+      var formattedEnd = this.formatDate(this.selectedDate.end)
 
       const path = `http://localhost:5000/api/tasks?interval=` + formattedStart + '-' + formattedEnd
       axios.get(path)
@@ -75,19 +91,23 @@ export default {
           this.tasks = response.data.tasks
         })
         .catch(error => {
-          console.log(error)
+          console.log(['getTasks error', error])
         })
+    },
+    formatDate: function (date, short) {
+      return ('0' + date.getDate()).slice(-2) +
+        '.' + ('0' + (date.getMonth() + 1)).slice(-2) +
+        (short === undefined ? ('.' + date.getFullYear()) : '')
     }
   },
   components: {
-    TaskItem
+    TaskItem, BarChart
   },
   created () {
     if (this.initialDate !== undefined) {
       this.selectedDate = this.initialDate
     }
     this.getTasks()
-    console.log(this.selectedDate)
   }
 }
 </script>
