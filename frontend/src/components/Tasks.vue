@@ -2,8 +2,8 @@
 <template>
   <div>
     <div class="md-layout md-gutter md-alignment-top-center">
-      <div class="md-layout-item md-size-50 taskItems"  v-if="tasks.length">
-        <bar-chart :chart-data="chartData.values" :labels="chartData.labels" ref="chart"/>
+      <div class="md-layout-item md-large-size-50 md-xlarge-size-50 md-medium-size-70 md-small-size-100 taskItems" v-if="tasks.length">
+        <bar-chart :chart-data="chartData.values" :labels="chartData.labels"/>
         <template
           v-for="taskGroup in groupedTasks"
         >

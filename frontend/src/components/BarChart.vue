@@ -1,5 +1,5 @@
 <template>
-  <div class="">
+  <div class="chart">
     <bar-chart :chart-data="datacollection" :options="options" :height="100"></bar-chart>
   </div>
 </template>
@@ -57,8 +57,7 @@ export default {
 </script>
 
 <style>
-  .small {
-    max-width: 600px;
-    margin:  150px auto;
+  .chart {
+    margin-top: 40px;
   }
 </style>

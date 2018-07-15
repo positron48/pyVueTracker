@@ -51,7 +51,6 @@ def complete_task():
 
 @app.route('/api/task', methods=['POST'])
 def add_entry():
-    # fact = parse_fact(request.values['name'])
     storage = Storage()
     result = storage.add_fact(request.values['name'])
     return jsonify(result)

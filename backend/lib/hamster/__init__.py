@@ -123,6 +123,7 @@ def parse_fact(text, phase=None):
     phases = phases[phases.index(phase):]
     res = {}
 
+
     text = text.strip()
     if not text:
         return {}

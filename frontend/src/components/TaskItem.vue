@@ -4,13 +4,13 @@
     <div class="task-col task-start-time">{{task.start_time}}</div>
     <div class="task-col task-end-time">{{task.end_time}}</div>
     <div class="task-col task-name">{{task.name}}</div>
-    <div class="task-col task-description">{{task.description}}</div>
     <md-badge class="task-col task-category md-primary md-square" :md-content="task.category"/>
     <div class="task-col task-tags">
       <template v-for="tag in task.tags">
         <md-badge class="md-square" :md-content="tag" :key="tag"/>
       </template>
     </div>
+    <div class="task-col task-description">{{task.description}}</div>
     <div class="task-col task-duration">{{task.delta}}</div>
   </md-list-item>
 </template>
@@ -40,6 +40,12 @@ export default {
     width: 90px;
     text-align: right;
     float: right;
+  }
+  .task-description{
+    color: #b2b2b2;
+    font-size: 14px;
+    width: initial;
+    white-space: normal;
   }
   .taskItems{
     justify-content: none
