@@ -122,11 +122,4 @@ export default {
   .task-group-date .md-list-item-content{
     font-weight: bold;
   }
-  .task-duration-list-item .md-list-item-content{
-    width: 90px;
-    text-align: right;
-    float: right;
-    margin-right: 5px;
-    font-weight: bold;
-  }
 </style>

@@ -30,18 +30,21 @@ def get_tasks():
 
     storage = Storage()
 
-    last_entries = storage.get_facts(dateFrom, dateTo)
-
-    for k, item in enumerate(last_entries):
-        last_entries[k]['delta'] = round(item['delta'].seconds/3600, 2)
-        last_entries[k]['date'] = item['date'].strftime('%d.%m.%Y')
-        last_entries[k]['start_time'] = item['start_time'].strftime('%H:%M')
-        if item['end_time'] is not None:
-            last_entries[k]['end_time'] = item['end_time'].strftime('%H:%M')
-        else:
-            last_entries[k]['end_time'] = ''
+    last_entries = storage.get_formated_facts(dateFrom, dateTo)
 
     return jsonify({"tasks": last_entries})
+
+@app.route('/api/current')
+def get_current():
+    dateFrom = dt.datetime.now() - dt.timedelta(days=1)
+    storage = Storage()
+    last_entries = storage.get_formated_facts(dateFrom)
+
+    for k, item in enumerate(last_entries):
+        if item['end_time'] is '':
+            return jsonify(item)
+
+    return jsonify(None)
 
 
 @app.route('/api/completitions')

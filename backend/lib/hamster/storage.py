@@ -52,7 +52,6 @@ class Storage(object):
         """Get fact by id. For output format see GetFacts"""
         return self.__get_fact(fact_id)
 
-
     def update_fact(self, fact_id, fact, start_time, end_time, temporary = False):
         self.start_transaction()
         self.__remove_fact(fact_id)
@@ -62,14 +61,12 @@ class Storage(object):
             self.facts_changed()
         return result
 
-
     def stop_tracking(self, end_time):
         """Stops tracking the current activity"""
         facts = self.__get_todays_facts()
         if facts and not facts[-1]['end_time']:
             self.__touch_fact(facts[-1], end_time)
             self.facts_changed()
-
 
     def remove_fact(self, fact_id):
         """Remove fact from storage by it's ID"""
@@ -80,16 +77,28 @@ class Storage(object):
             self.facts_changed()
         self.end_transaction()
 
-
     def get_facts(self, start_date, end_date, search_terms=""):
         return self.__get_facts(start_date, end_date, search_terms)
 
+    def get_formated_facts(self, start_date, end_date=None, search_terms=""):
+
+        last_entries = self.get_facts(start_date, end_date, search_terms)
+
+        for k, item in enumerate(last_entries):
+            last_entries[k]['delta'] = round(item['delta'].seconds / 3600, 2)
+            last_entries[k]['date'] = item['date'].strftime('%d.%m.%Y')
+            last_entries[k]['start_time'] = item['start_time'].strftime('%H:%M')
+            if item['end_time'] is not None:
+                last_entries[k]['end_time'] = item['end_time'].strftime('%H:%M')
+            else:
+                last_entries[k]['end_time'] = ''
+
+        return last_entries
 
     def get_todays_facts(self):
         """Gets facts of today, respecting hamster midnight. See GetFacts for
         return info"""
         return self.__get_todays_facts()
-
 
     # categories
     def add_category(self, name):
@@ -108,10 +117,8 @@ class Storage(object):
         self.__remove_category(id)
         self.activities_changed()
 
-
     def get_categories(self):
         return self.__get_categories()
-
 
     # activities
     def add_activity(self, name, category_id = -1):
