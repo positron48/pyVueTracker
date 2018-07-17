@@ -866,7 +866,6 @@ class Storage(storage.Storage):
         if not self.__con:
             con.commit()
             cur.close()
-            self.register_modification()
 
     def executemany(self, statement, params = []):
         con = self.__con or self.connection
@@ -878,7 +877,6 @@ class Storage(storage.Storage):
         if not self.__con:
             con.commit()
             cur.close()
-            self.register_modification()
 
 
 

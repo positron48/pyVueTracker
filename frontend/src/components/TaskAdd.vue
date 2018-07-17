@@ -78,14 +78,12 @@ export default {
         })
         .then(response => {
           this.taskName = ''
+          this.$emit('add-task')
           this.$refs.tasks.getTasks()
         })
         .catch(error => {
           console.log(['getCompletitions error', error])
         })
-    },
-    urlEncode (obj) {
-      return Object.keys(obj).reduce(function (a, k) { a.push(k + '=' + encodeURIComponent(obj[k])); return a }, []).join('&')
     },
     getTimeDelta (task, currentTimeDelta, step) {
       var timeDelta = ''
@@ -121,12 +119,10 @@ export default {
         return currentTimeDelta
       }
 
-      console.log(timeDelta)
       return timeDelta
     },
     setTaskBody (name) {
       var timeDelta = this.getTimeDelta(this.taskName, '', 0)
-      console.log(timeDelta)
       if (timeDelta !== '') {
         this.taskName = timeDelta + ' ' + name
       } else {
@@ -135,6 +131,9 @@ export default {
     },
     onFocus () {
       this.showSuggestion = true
+    },
+    urlEncode (obj) {
+      return Object.keys(obj).reduce(function (a, k) { a.push(k + '=' + encodeURIComponent(obj[k])); return a }, []).join('&')
     }
   },
   mounted () {

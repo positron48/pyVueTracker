@@ -36,7 +36,7 @@ def get_tasks():
 
 @app.route('/api/current')
 def get_current():
-    dateFrom = dt.datetime.now() - dt.timedelta(days=1)
+    dateFrom = dt.datetime.now()
     storage = Storage()
     last_entries = storage.get_formated_facts(dateFrom)
 
@@ -56,6 +56,12 @@ def complete_task():
 def add_entry():
     storage = Storage()
     result = storage.add_fact(request.values['name'])
+    return jsonify(result)
+
+@app.route('/api/stop', methods=['POST'])
+def stop_tracking():
+    storage = Storage()
+    result = storage.stop_tracking(dt.datetime.now())
     return jsonify(result)
 
 @app.route('/', defaults={'path': ''})

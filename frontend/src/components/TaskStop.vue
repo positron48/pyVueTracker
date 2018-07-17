@@ -1,5 +1,5 @@
 <template>
-  <div v-if="current !== undefined">
+  <div v-if="current !== null">
       <form action="" method="post" class="md-layout md-gutter md-alignment-top-center" v-on:submit.prevent="stopTask()">
         <md-card class="md-layout-item md-large-size-50 md-xlarge-size-50 md-medium-size-70 md-small-size-100">
           <md-card-content>
@@ -51,26 +51,24 @@ export default {
       axios.get(path)
         .then(response => {
           this.current = response.data
-          console.log(response.data)
         })
         .catch(error => {
           console.log(['getCurrentTask error', error])
         })
     },
     stopTask () {
-      const path = `http://localhost:5000/api/stop?id=` + this.current.id
-      axios.post(path, this.urlEncode({name: this.taskName}),
-        {
-          headers: {
-            'Content-type': 'application/x-www-form-urlencoded'
-          }
-        })
+      this.current = null
+      const path = `http://localhost:5000/api/stop`
+      axios.post(path)
         .then(response => {
-
+          this.$emit('stop-task')
         })
         .catch(error => {
           console.log(['getCompletitions error', error])
         })
+    },
+    urlEncode (obj) {
+      return Object.keys(obj).reduce(function (a, k) { a.push(k + '=' + encodeURIComponent(obj[k])); return a }, []).join('&')
     }
   },
   components: {
