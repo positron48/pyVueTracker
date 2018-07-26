@@ -4,10 +4,13 @@
         <md-card class="md-layout-item md-large-size-50 md-xlarge-size-50 md-medium-size-70 md-small-size-100">
           <md-card-content>
             <div class="md-layout">
-              <md-field class="md-layout-item md-size-80" md-clearable>
-                <label>Task</label>
-                <md-input v-model="taskName" @focus.native="onFocus"></md-input>
-              </md-field>
+              <div class="md-layout-item md-size-80">
+                <Autocomplete
+                  v-model="taskName"
+                  :suggestions="filteredSuggestion"
+                  ref="autocomplete"
+                />
+              </div>
 
               <div class="md-layout-item md-size-20">
                 <md-button type="submit" class="md-primary" style="margin-top: 18px;">Add</md-button>
@@ -16,22 +19,12 @@
           </md-card-content>
         </md-card>
       </form>
-
-      <div class="md-layout md-gutter md-alignment-top-center" v-if="filteredSuggestion.length && showSuggestion">
-        <md-list class="md-layout-item md-large-size-50 md-xlarge-size-50 md-medium-size-70 md-small-size-100">
-          <md-list-item
-              @click="setTaskBody(suggestion)"
-              v-for="suggestion in filteredSuggestion"
-              :key="suggestion.id">
-            <span class="md-list-item-text">{{suggestion}}</span>
-          </md-list-item>
-        </md-list>
-      </div>
     </div>
 </template>
 
 <script>
 import axios from 'axios'
+import Autocomplete from './Autocomplete.vue'
 
 export default {
   data () {
@@ -41,14 +34,20 @@ export default {
       showSuggestion: false
     }
   },
+  components: {
+    Autocomplete
+  },
   computed: {
     filteredSuggestion: function () {
+      console.log(['name', this.taskName])
       var filtered = []
-      var nameForFilter = this.taskName.replace(this.getTimeDelta(this.taskName, '', 0), '').trim()
+      var name = this.taskName.toLowerCase()
+      var timeDelta = this.getTimeDelta(name, '', 0)
+      var nameForFilter = name.replace(timeDelta, '').trim()
       var re = new RegExp(nameForFilter, 'i')
-      for (let item of this.taskCompletitions) {
+      for (var item of this.taskCompletitions) {
         if (item.match(re) && item !== nameForFilter) {
-          filtered.push(item)
+          filtered.push(timeDelta + ' ' + item)
         }
         if (filtered.length >= 10) {
           break
@@ -79,7 +78,7 @@ export default {
         .then(response => {
           this.taskName = ''
           this.$emit('add-task')
-          this.$refs.tasks.getTasks()
+          this.$refs.autocomplete.clear()
         })
         .catch(error => {
           console.log(['getCompletitions error', error])
@@ -120,14 +119,6 @@ export default {
       }
 
       return timeDelta
-    },
-    setTaskBody (name) {
-      var timeDelta = this.getTimeDelta(this.taskName, '', 0)
-      if (timeDelta !== '') {
-        this.taskName = timeDelta + ' ' + name
-      } else {
-        this.taskName = name
-      }
     },
     onFocus () {
       this.showSuggestion = true

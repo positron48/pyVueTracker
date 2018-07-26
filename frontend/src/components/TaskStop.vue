@@ -29,22 +29,6 @@ export default {
       current: null
     }
   },
-  computed: {
-    filteredSuggestion: function () {
-      var filtered = []
-      var nameForFilter = this.taskName.replace(this.getTimeDelta(this.taskName, '', 0), '').trim()
-      var re = new RegExp(nameForFilter, 'i')
-      for (let item of this.taskCompletitions) {
-        if (item.match(re) && item !== nameForFilter) {
-          filtered.push(item)
-        }
-        if (filtered.length >= 10) {
-          break
-        }
-      }
-      return filtered
-    }
-  },
   methods: {
     getCurrentTask () {
       const path = `http://localhost:5000/api/current`
@@ -66,9 +50,6 @@ export default {
         .catch(error => {
           console.log(['getCompletitions error', error])
         })
-    },
-    urlEncode (obj) {
-      return Object.keys(obj).reduce(function (a, k) { a.push(k + '=' + encodeURIComponent(obj[k])); return a }, []).join('&')
     }
   },
   components: {

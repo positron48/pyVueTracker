@@ -122,4 +122,7 @@ export default {
   .task-group-date .md-list-item-content{
     font-weight: bold;
   }
+  .md-list-item{
+    z-index: 0;
+  }
 </style>
