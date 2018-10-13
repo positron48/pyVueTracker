@@ -4,6 +4,7 @@
     <div class="md-layout md-gutter md-alignment-top-center">
       <div class="md-layout-item md-large-size-50 md-xlarge-size-50 md-medium-size-70 md-small-size-100 taskItems" v-if="tasks.length">
         <bar-chart :chart-data="chartData.values" :labels="chartData.labels"/>
+        <button @click="showNewPostModal = true">New Post</button>
         <template
           v-for="taskGroup in groupedTasks"
         >
@@ -23,12 +24,34 @@
         </template>
       </div>
     </div>
+    <modal :show="show" @close="close">
+      <div class="modal-header">
+        <h3>New Post</h3>
+      </div>
+      <div class="modal-body">
+        <label class="form-label">
+          Title
+          <input v-model="title" class="form-control">
+        </label>
+        <label class="form-label">
+          Body
+          <textarea v-model="body" rows="5" class="form-control">
+                </textarea>
+        </label>
+      </div>
+      <div class="modal-footer text-right">
+        <button class="modal-default-button" @click="savePost()">
+          Save
+        </button>
+      </div>
+    </modal>
   </div>
 </template>
 
 <script>
 import TaskItem from './TaskItem.vue'
 import BarChart from './BarChart.vue'
+import Modal from './Modal.vue'
 import axios from 'axios'
 
 export default {
@@ -38,7 +61,8 @@ export default {
       selectedDate: {
         start: new Date(),
         end: new Date()
-      }
+      },
+      showNewPostModal: false
     }
   },
   props: {
@@ -101,7 +125,7 @@ export default {
     }
   },
   components: {
-    TaskItem, BarChart
+    TaskItem, BarChart, Modal
   },
   created () {
     if (this.initialDate !== undefined) {

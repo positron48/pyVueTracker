@@ -1,6 +1,9 @@
 // TaskItem.vue
 <template>
   <md-list-item>
+    <div class="task-col task-edit">
+      <font-awesome-icon icon="edit"/>
+    </div>
     <div class="task-col task-start-time">{{task.start_time}}</div>
     <div class="task-col task-end-time">{{task.end_time}}</div>
     <div class="task-col task-name">{{task.name}}</div>
@@ -47,10 +50,7 @@ export default {
     width: initial;
     white-space: normal;
   }
-  .taskItems{
-    justify-content: none
-  }
-  .taskItems .md-list-item-content{
+  .md-list-item-content{
     display: block;
     padding-top: 15px;
   }
