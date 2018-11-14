@@ -1,7 +1,7 @@
 // TaskItem.vue
 <template>
   <md-list-item>
-    <div class="task-col task-edit">
+    <div class="task-col task-edit" v-on:click="$emit('edit', task.id)">
       <font-awesome-icon icon="edit"/>
     </div>
     <div class="task-col task-start-time">{{task.start_time}}</div>
@@ -30,6 +30,9 @@ export default {
 </script>
 
 <style>
+  .task-edit{
+    cursor: pointer;
+  }
   .task-col, .task-tag {
     float: left;
     margin-right: 5px;

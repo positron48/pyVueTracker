@@ -28,6 +28,9 @@ def get_tasks():
             dateFrom = dt.datetime.strptime(interval[0], "%d.%m.%Y")
             dateTo = dateFrom
 
+        dateFrom = getTrueDate(dt.datetime.now())
+        dateTo = getTrueDate(dt.datetime.now())
+
     storage = Storage()
 
     last_entries = storage.get_formated_facts(dateFrom, dateTo)
@@ -36,7 +39,9 @@ def get_tasks():
 
 @app.route('/api/current')
 def get_current():
-    dateFrom = dt.datetime.now()
+
+    dateFrom = getTrueDate(dt.datetime.now())
+
     storage = Storage()
     last_entries = storage.get_formated_facts(dateFrom)
 
@@ -68,3 +73,10 @@ def stop_tracking():
 @app.route('/<path:path>')
 def catch_all(path):
     return render_template("index.html")
+
+
+def getTrueDate(date):
+    if date.hour > 5:
+        return date + dt.timedelta(hours=5)
+    else:
+        return date - dt.timedelta(hours=19)

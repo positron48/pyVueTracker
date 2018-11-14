@@ -4,7 +4,6 @@
     <div class="md-layout md-gutter md-alignment-top-center">
       <div class="md-layout-item md-large-size-50 md-xlarge-size-50 md-medium-size-70 md-small-size-100 taskItems" v-if="tasks.length">
         <bar-chart :chart-data="chartData.values" :labels="chartData.labels"/>
-        <button @click="showNewPostModal = true">New Post</button>
         <template
           v-for="taskGroup in groupedTasks"
         >
@@ -16,6 +15,7 @@
               v-for="task in taskGroup.tasks"
               :key="task.id"
               :task="task"
+              @edit="onEdit(arguments[0])"
             />
             <md-list-item class="task-duration-list-item">
               {{taskGroup.duration}}
@@ -31,11 +31,11 @@
       <div class="modal-body">
         <label class="form-label">
           Title
-          <input v-model="title" class="form-control">
+          <input v-model="title" class="form-control" name="id">
         </label>
         <label class="form-label">
           Body
-          <textarea v-model="body" rows="5" class="form-control">
+          <textarea rows="5" class="form-control">
                 </textarea>
         </label>
       </div>
@@ -62,7 +62,9 @@ export default {
         start: new Date(),
         end: new Date()
       },
-      showNewPostModal: false
+      showNewPostModal: false,
+      title: 'title',
+      show: false
     }
   },
   props: {
@@ -122,6 +124,17 @@ export default {
       return ('0' + date.getDate()).slice(-2) +
         '.' + ('0' + (date.getMonth() + 1)).slice(-2) +
         (short === undefined ? ('.' + date.getFullYear()) : '')
+    },
+    close: function () {
+      this.show = false
+    },
+    onEdit: function (id) {
+      this.title = id
+      console.log(id)
+      this.show = true
+    },
+    savePost: function () {
+      this.show = false
     }
   },
   components: {
