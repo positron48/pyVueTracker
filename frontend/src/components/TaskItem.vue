@@ -1,7 +1,7 @@
 // TaskItem.vue
 <template>
   <md-list-item>
-    <div class="task-col task-edit" v-on:click="$emit('edit', task.id)">
+    <div class="task-col task-edit" v-on:click="$emit('edit', task)">
       <font-awesome-icon icon="edit"/>
     </div>
     <div class="task-col task-start-time">{{task.start_time}}</div>

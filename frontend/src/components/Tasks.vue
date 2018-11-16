@@ -26,23 +26,46 @@
     </div>
     <modal :show="show" @close="close">
       <div class="modal-header">
-        <h3>New Post</h3>
+        <h3>Edit your task</h3>
       </div>
       <div class="modal-body">
-        <label class="form-label">
-          Title
-          <input v-model="title" class="form-control" name="id">
-        </label>
-        <label class="form-label">
-          Body
-          <textarea rows="5" class="form-control">
-                </textarea>
-        </label>
+        <div class="md-layout md-gutter">
+          <input type="hidden" v-model="editTask.id" name=id>
+          <div class="md-layout-item md-size-40">
+            <md-field>
+              <label>date</label>
+              <md-input v-model="editTask.date"></md-input>
+            </md-field>
+          </div>
+          <div class="md-layout-item md-size-30">
+            <md-field>
+              <label>start_time</label>
+              <md-input v-model="editTask.start_time"></md-input>
+            </md-field>
+          </div>
+          <div class="md-layout-item md-size-30">
+            <md-field>
+              <label>end_time</label>
+              <md-input v-model="editTask.end_time"></md-input>
+            </md-field>
+          </div>
+        </div>
+        <md-field>
+          <label>name</label>
+          <md-input v-model="editTaskActivity"></md-input>
+        </md-field>
+        <md-field>
+          <label>description</label>
+          <md-textarea v-model="editTask.description" md-autogrow></md-textarea>
+        </md-field>
+        <md-field>
+          <label>tag</label>
+          <md-input v-model="editTaskTags"></md-input>
+        </md-field>
       </div>
       <div class="modal-footer text-right">
-        <button class="modal-default-button" @click="savePost()">
-          Save
-        </button>
+        <md-button class="md-accent" @click="closeModal()">Cancel</md-button>
+        <md-button class="md-primary" @click="savePost()">Save</md-button>
       </div>
     </modal>
   </div>
@@ -53,6 +76,7 @@ import TaskItem from './TaskItem.vue'
 import BarChart from './BarChart.vue'
 import Modal from './Modal.vue'
 import axios from 'axios'
+import urlEncode from './helpers.js'
 
 export default {
   data () {
@@ -63,7 +87,7 @@ export default {
         end: new Date()
       },
       showNewPostModal: false,
-      title: 'title',
+      editTask: {},
       show: false
     }
   },
@@ -104,6 +128,40 @@ export default {
         current.setDate(current.getDate() + 1)
       }
       return {labels: labels, values: values}
+    },
+    editTaskActivity: {
+      get: function () {
+        if (this.editTask.name === undefined) {
+          return ''
+        }
+
+        var str = this.editTask.name
+        if (this.editTask.category) {
+          str += '@' + this.editTask.category
+        }
+        return str
+      },
+      set: function (value) {
+        var data = value.split('@', 2)
+        this.editTask.name = data[0]
+        if (data[1] !== undefined) {
+          this.editTask.category = data[1]
+        } else {
+          this.editTask.category = ''
+        }
+      }
+    },
+    editTaskTags: {
+      get: function () {
+        if (this.editTask.tags === undefined) {
+          return ''
+        }
+        return this.editTask.tags.join(',')
+      },
+      set: function (value) {
+        var data = value.split(',')
+        this.editTask.tags = data
+      }
     }
   },
   methods: {
@@ -128,12 +186,39 @@ export default {
     close: function () {
       this.show = false
     },
-    onEdit: function (id) {
-      this.title = id
-      console.log(id)
+    onEdit: function (editTask) {
+      this.editTask = Object.assign({}, editTask)
       this.show = true
     },
     savePost: function () {
+      // todo save task
+      const path = `http://localhost:5000/api/task/edit`
+      axios.post(path, urlEncode({
+        id: this.editTask.id,
+        name: this.editTask.name,
+        category: this.editTask.category,
+        date: this.editTask.date,
+        start_time: this.editTask.start_time,
+        end_time: this.editTask.end_time,
+        description: this.editTask.description,
+        tags: this.editTask.tags
+      }),
+      {
+        headers: {
+          'Content-type': 'application/x-www-form-urlencoded'
+        }
+      })
+        .then(response => {
+          console.log(['save response', response])
+
+          this.getTasks()
+          this.closeModal()
+        })
+        .catch(error => {
+          console.log(['getCompletitions error', error])
+        })
+    },
+    closeModal: function () {
       this.show = false
     }
   },

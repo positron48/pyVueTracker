@@ -1,7 +1,7 @@
 # все импорты
 import datetime as dt
 from backend.lib.hamster.db import Storage
-from backend.lib.hamster import parse_fact
+from backend.lib.hamster import parse_fact, Fact
 from flask_cors import CORS
 from flask import Flask, request, jsonify, render_template
 
@@ -28,9 +28,6 @@ def get_tasks():
             dateFrom = dt.datetime.strptime(interval[0], "%d.%m.%Y")
             dateTo = dateFrom
 
-        dateFrom = getTrueDate(dt.datetime.now())
-        dateTo = getTrueDate(dt.datetime.now())
-
     storage = Storage()
 
     last_entries = storage.get_formated_facts(dateFrom, dateTo)
@@ -40,7 +37,7 @@ def get_tasks():
 @app.route('/api/current')
 def get_current():
 
-    dateFrom = getTrueDate(dt.datetime.now())
+    dateFrom = dt.datetime.now()
 
     storage = Storage()
     last_entries = storage.get_formated_facts(dateFrom)
@@ -63,6 +60,35 @@ def add_entry():
     result = storage.add_fact(request.values['name'])
     return jsonify(result)
 
+@app.route('/api/task/edit', methods=['POST'])
+def edit_task():
+    storage = Storage()
+
+    fact = storage.get_fact(request.values['id'])
+    fact['name'] = request.values['name']
+    fact['category'] = request.values['category']
+    fact['date'] = request.values['date']
+    fact['start_time'] = request.values['start_time']
+    fact['end_time'] = request.values['end_time']
+    fact['description'] = request.values['description']
+    fact['tags'] = [tag.encode("utf-8").strip() for tag in request.values['tags'].split(',')]
+
+    factNew = Fact(
+        id=fact['id'],
+        activity=fact['name'],
+        category=fact['category'],
+        date=fact['date'],
+        start_time=fact['start_time'],
+        end_time=fact['end_time'],
+        description=fact['description'],
+        tags=fact['tags']
+    )
+
+    result = storage.update_fact(fact['id'], factNew.serialized_name(), fact['start_time'], fact['end_time'])
+
+
+    return jsonify(result)
+
 @app.route('/api/stop', methods=['POST'])
 def stop_tracking():
     storage = Storage()
@@ -73,10 +99,3 @@ def stop_tracking():
 @app.route('/<path:path>')
 def catch_all(path):
     return render_template("index.html")
-
-
-def getTrueDate(date):
-    if date.hour > 5:
-        return date + dt.timedelta(hours=5)
-    else:
-        return date - dt.timedelta(hours=19)

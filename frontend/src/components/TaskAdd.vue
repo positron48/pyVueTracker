@@ -25,6 +25,7 @@
 <script>
 import axios from 'axios'
 import Autocomplete from './Autocomplete.vue'
+import urlEncode from './helpers.js'
 
 export default {
   data () {
@@ -69,7 +70,7 @@ export default {
     },
     addTask () {
       const path = `http://localhost:5000/api/task`
-      axios.post(path, this.urlEncode({name: this.taskName}),
+      axios.post(path, urlEncode({name: this.taskName}),
         {
           headers: {
             'Content-type': 'application/x-www-form-urlencoded'
@@ -122,9 +123,6 @@ export default {
     },
     onFocus () {
       this.showSuggestion = true
-    },
-    urlEncode (obj) {
-      return Object.keys(obj).reduce(function (a, k) { a.push(k + '=' + encodeURIComponent(obj[k])); return a }, []).join('&')
     }
   },
   mounted () {
