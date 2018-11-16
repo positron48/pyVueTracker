@@ -71,7 +71,14 @@ def edit_task():
     fact['start_time'] = request.values['start_time']
     fact['end_time'] = request.values['end_time']
     fact['description'] = request.values['description']
-    fact['tags'] = [tag.encode("utf-8").strip() for tag in request.values['tags'].split(',')]
+    fact['tags'] = [tag.strip() for tag in request.values['tags'].split(',')]
+
+    start_dt = dt.datetime.strptime(fact['date'] + ' ' + fact['start_time'], "%d.%m.%Y %H:%M")
+
+    if fact['end_time']:
+        end_dt = dt.datetime.strptime(fact['date'] + ' ' + fact['end_time'], "%d.%m.%Y %H:%M")
+    else:
+        end_dt = None
 
     factNew = Fact(
         id=fact['id'],
@@ -84,7 +91,7 @@ def edit_task():
         tags=fact['tags']
     )
 
-    result = storage.update_fact(fact['id'], factNew.serialized_name(), fact['start_time'], fact['end_time'])
+    result = storage.update_fact(fact['id'], factNew.serialized_name(), start_dt, end_dt)
 
 
     return jsonify(result)
