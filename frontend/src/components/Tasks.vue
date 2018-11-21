@@ -13,9 +13,12 @@
             </md-list-item>
             <TaskItem
               v-for="task in taskGroup.tasks"
+              :edit="true"
               :key="task.id"
               :task="task"
-              @edit="onEdit(arguments[0])"
+              @edit="editForm(arguments[0])"
+              @stop="stopTask(arguments[0])"
+              @resume="resumeTask(arguments[0])"
             />
             <md-list-item class="task-duration-list-item">
               {{taskGroup.duration}}
@@ -64,8 +67,9 @@
         </md-field>
       </div>
       <div class="modal-footer text-right">
-        <md-button class="md-accent" @click="closeModal()">Cancel</md-button>
-        <md-button class="md-primary" @click="savePost()">Save</md-button>
+        <md-button class="md-primary" @click="deleteTask()">Delete</md-button>
+        <md-button class="md-primary" @click="closeModal()">Cancel</md-button>
+        <md-button class="md-accent" @click="saveTask()">Save</md-button>
       </div>
     </modal>
   </div>
@@ -186,12 +190,63 @@ export default {
     close: function () {
       this.show = false
     },
-    onEdit: function (editTask) {
-      this.editTask = Object.assign({}, editTask)
+    editForm: function (task) {
+      this.editTask = Object.assign({}, task)
       this.show = true
     },
-    savePost: function () {
-      // todo save task
+    stopTask: function (task) {
+      const path = `http://localhost:5000/api/task/stop`
+      axios.post(path, urlEncode({
+        id: task.id
+      }),
+      {
+        headers: {
+          'Content-type': 'application/x-www-form-urlencoded'
+        }
+      })
+        .then(response => {
+          this.$emit('update')
+        })
+        .catch(error => {
+          console.log(['stopTask error', error])
+        })
+    },
+    resumeTask: function (task) {
+      const path = `http://localhost:5000/api/task/resume`
+      axios.post(path, urlEncode({
+        id: task.id
+      }),
+      {
+        headers: {
+          'Content-type': 'application/x-www-form-urlencoded'
+        }
+      })
+        .then(response => {
+          this.$emit('update')
+        })
+        .catch(error => {
+          console.log(['resumeTask error', error])
+        })
+    },
+    deleteTask: function () {
+      const path = `http://localhost:5000/api/task/delete`
+      axios.post(path, urlEncode({
+        id: this.editTask.id
+      }),
+      {
+        headers: {
+          'Content-type': 'application/x-www-form-urlencoded'
+        }
+      })
+        .then(response => {
+          this.$emit('update')
+          this.closeModal()
+        })
+        .catch(error => {
+          console.log(['deleteTask error', error])
+        })
+    },
+    saveTask: function () {
       const path = `http://localhost:5000/api/task/edit`
       axios.post(path, urlEncode({
         id: this.editTask.id,
@@ -211,11 +266,11 @@ export default {
         .then(response => {
           console.log(['save response', response])
 
-          this.getTasks()
+          this.$emit('update')
           this.closeModal()
         })
         .catch(error => {
-          console.log(['getCompletitions error', error])
+          console.log(['savePost error', error])
         })
     },
     closeModal: function () {

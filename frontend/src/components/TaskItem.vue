@@ -1,8 +1,14 @@
 // TaskItem.vue
 <template>
   <md-list-item>
-    <div class="task-col task-edit" v-on:click="$emit('edit', task)">
+    <div v-if="edit" class="task-col task-edit" v-on:click="$emit('edit', task)">
       <font-awesome-icon icon="edit"/>
+    </div>
+    <div v-if="edit && task.end_time" class="task-col task-resume" v-on:click="$emit('resume', task)">
+      <font-awesome-icon icon="play-circle"/>
+    </div>
+    <div v-if="edit && !task.end_time" class="task-col task-stop" v-on:click="$emit('stop', task)">
+      <font-awesome-icon icon="stop-circle"/>
     </div>
     <div class="task-col task-start-time">{{task.start_time}}</div>
     <div class="task-col task-end-time">{{task.end_time}}</div>
@@ -24,13 +30,14 @@ export default {
     task: {
       type: Object,
       required: true
-    }
+    },
+    edit: false
   }
 }
 </script>
 
 <style>
-  .task-edit{
+  .task-edit, .task-resume, .task-stop{
     cursor: pointer;
   }
   .task-col, .task-tag {

@@ -80,11 +80,11 @@ def edit_task():
     else:
         end_dt = None
 
+    # todo: сделать инициализацию факта по id
     factNew = Fact(
         id=fact['id'],
         activity=fact['name'],
         category=fact['category'],
-        date=fact['date'],
         start_time=fact['start_time'],
         end_time=fact['end_time'],
         description=fact['description'],
@@ -101,6 +101,32 @@ def stop_tracking():
     storage = Storage()
     result = storage.stop_tracking(dt.datetime.now())
     return jsonify(result)
+
+@app.route('/api/task/stop', methods=['POST'])
+def stop_task():
+    id = int(request.values['id'])
+    storage = Storage()
+    result = storage.touch_fact(id)
+
+    return jsonify(result)
+
+
+@app.route('/api/task/resume', methods=['POST'])
+def resume_task():
+    id = int(request.values['id'])
+    storage = Storage()
+    result = storage.resume_fact(id)
+
+    return jsonify(result)
+
+@app.route('/api/task/delete', methods=['POST'])
+def delete_task():
+    id = int(request.values['id'])
+    storage = Storage()
+    result = storage.remove_fact(id)
+
+    return jsonify(result)
+
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')

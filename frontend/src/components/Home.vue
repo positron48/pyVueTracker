@@ -8,7 +8,7 @@
 
     <TaskStop v-on:stop-task="refreshData" ref="taskStop"/>
     <TaskAdd v-on:add-task="refreshData" ref="taskAdd"/>
-    <Tasks ref="tasks"/>
+    <Tasks ref="tasks" @update="refreshData()"/>
   </div>
 </template>
 
