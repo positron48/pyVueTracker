@@ -5,7 +5,7 @@
       <div class="md-layout-item md-large-size-50 md-xlarge-size-50 md-medium-size-70 md-small-size-100 taskItems" v-if="tasks.length">
         <bar-chart :chart-data="chartData.values" :labels="chartData.labels"/>
         <template
-          v-for="taskGroup in groupedTasks"
+          v-for="taskGroup in groupedTasks.dates"
         >
           <md-list :key="taskGroup.date" class="task-group">
             <md-list-item class="task-group-date">
@@ -25,6 +25,7 @@
             </md-list-item>
           </md-list>
         </template>
+        <horizontal-bar-chart :chart-data="chartActivities.values" :labels="chartActivities.labels"/>
       </div>
     </div>
     <modal :show="show" @close="close">
@@ -81,6 +82,7 @@ import BarChart from './BarChart.vue'
 import Modal from './Modal.vue'
 import axios from 'axios'
 import urlEncode from './helpers.js'
+import HorizontalBarChart from './HorizontalBarChart.vue'
 
 export default {
   data () {
@@ -102,16 +104,22 @@ export default {
   },
   computed: {
     groupedTasks: function () {
-      var groupedTasks = {}
+      var groupedTasks = {'dates': {}, 'activities': {}}
       this.tasks.forEach(function (task, i) {
-        if (groupedTasks[task['date']] === undefined) {
-          groupedTasks[task['date']] = {duration: 0, tasks: [], date: task['date']}
+        if (groupedTasks['dates'][task['date']] === undefined) {
+          groupedTasks['dates'][task['date']] = {duration: 0, tasks: [], date: task['date']}
         }
-        groupedTasks[task['date']]['tasks'].push(task)
-        groupedTasks[task['date']]['duration'] += task['delta']
+        groupedTasks['dates'][task['date']]['tasks'].push(task)
+        groupedTasks['dates'][task['date']]['duration'] += task['delta']
+
+        if (groupedTasks['activities'][task['activity_id']] === undefined) {
+          groupedTasks['activities'][task['activity_id']] = {duration: 0, name: task['name']}
+        }
+        groupedTasks['activities'][task['activity_id']]['duration'] += task['delta']
 
         // со сложением вместе округление работать не хочет
-        groupedTasks[task['date']]['duration'] = Math.round(groupedTasks[task['date']]['duration'] * 100) / 100
+        groupedTasks['dates'][task['date']]['duration'] = Math.round(groupedTasks['dates'][task['date']]['duration'] * 100) / 100
+        groupedTasks['activities'][task['activity_id']]['duration'] = Math.round(groupedTasks['activities'][task['activity_id']]['duration'] * 100) / 100
       })
       return groupedTasks
     },
@@ -124,13 +132,35 @@ export default {
         var formattedCurrent = this.formatDate(current)
         labels.push(this.formatDate(current, true))
 
-        if (this.groupedTasks[formattedCurrent] !== undefined) {
-          values.push(this.groupedTasks[formattedCurrent]['duration'])
+        if (this.groupedTasks['dates'][formattedCurrent] !== undefined) {
+          values.push(this.groupedTasks['dates'][formattedCurrent]['duration'])
         } else {
           values.push(0)
         }
         current.setDate(current.getDate() + 1)
       }
+      return {labels: labels, values: values}
+    },
+    chartActivities: function () {
+      var labels = []
+      var values = []
+      var tmpArr = []
+      var cnt = 0
+
+      for (var i in this.groupedTasks.activities) {
+        tmpArr[cnt] = this.groupedTasks.activities[i]
+        cnt++
+      }
+
+      tmpArr = tmpArr.sort(function (a, b) {
+        return a.duration === b.duration ? 0 : +(a.duration < b.duration) || -1
+      })
+      console.log(tmpArr)
+
+      tmpArr.forEach(function (item, i) {
+        labels.push(item['name'])
+        values.push(item['duration'])
+      })
       return {labels: labels, values: values}
     },
     editTaskActivity: {
@@ -278,7 +308,7 @@ export default {
     }
   },
   components: {
-    TaskItem, BarChart, Modal
+    HorizontalBarChart, TaskItem, BarChart, Modal
   },
   created () {
     if (this.initialDate !== undefined) {
