@@ -25,7 +25,8 @@
             </md-list-item>
           </md-list>
         </template>
-        <horizontal-bar-chart :chart-data="chartActivities.values" :labels="chartActivities.labels"/>
+        <horizontal-bar-chart :chart-data="chartActivities.values" :labels="chartActivities.labels" :labelsWidth="labelWidth"/>
+        <horizontal-bar-chart :chart-data="chartCategories.values" :labels="chartCategories.labels" :labelsWidth="labelWidth"/>
       </div>
     </div>
     <modal :show="show" @close="close">
@@ -81,7 +82,7 @@ import TaskItem from './TaskItem.vue'
 import BarChart from './BarChart.vue'
 import Modal from './Modal.vue'
 import axios from 'axios'
-import urlEncode from './helpers.js'
+import {urlEncode, formatLabel} from './helpers.js'
 import HorizontalBarChart from './HorizontalBarChart.vue'
 
 export default {
@@ -94,7 +95,8 @@ export default {
       },
       showNewPostModal: false,
       editTask: {},
-      show: false
+      show: false,
+      labelWidth: 200
     }
   },
   props: {
@@ -104,7 +106,7 @@ export default {
   },
   computed: {
     groupedTasks: function () {
-      var groupedTasks = {'dates': {}, 'activities': {}}
+      var groupedTasks = {'dates': {}, 'activities': {}, 'categories': {}}
       this.tasks.forEach(function (task, i) {
         if (groupedTasks['dates'][task['date']] === undefined) {
           groupedTasks['dates'][task['date']] = {duration: 0, tasks: [], date: task['date']}
@@ -117,9 +119,15 @@ export default {
         }
         groupedTasks['activities'][task['activity_id']]['duration'] += task['delta']
 
+        if (groupedTasks['categories'][task['category']] === undefined) {
+          groupedTasks['categories'][task['category']] = {duration: 0, name: task['category']}
+        }
+        groupedTasks['categories'][task['category']]['duration'] += task['delta']
+
         // со сложением вместе округление работать не хочет
         groupedTasks['dates'][task['date']]['duration'] = Math.round(groupedTasks['dates'][task['date']]['duration'] * 100) / 100
         groupedTasks['activities'][task['activity_id']]['duration'] = Math.round(groupedTasks['activities'][task['activity_id']]['duration'] * 100) / 100
+        groupedTasks['categories'][task['category']]['duration'] = Math.round(groupedTasks['categories'][task['category']]['duration'] * 100) / 100
       })
       return groupedTasks
     },
@@ -146,6 +154,7 @@ export default {
       var values = []
       var tmpArr = []
       var cnt = 0
+      var maxLength = this.labelWidth / 7
 
       for (var i in this.groupedTasks.activities) {
         tmpArr[cnt] = this.groupedTasks.activities[i]
@@ -155,12 +164,34 @@ export default {
       tmpArr = tmpArr.sort(function (a, b) {
         return a.duration === b.duration ? 0 : +(a.duration < b.duration) || -1
       })
-      console.log(tmpArr)
 
       tmpArr.forEach(function (item, i) {
-        labels.push(item['name'])
+        labels.push(formatLabel(item['name'], maxLength))
         values.push(item['duration'])
       })
+      return {labels: labels, values: values}
+    },
+    chartCategories: function () {
+      var labels = []
+      var values = []
+      var tmpArr = []
+      var cnt = 0
+      var maxLength = this.labelWidth / 5
+
+      for (var i in this.groupedTasks.categories) {
+        tmpArr[cnt] = this.groupedTasks.categories[i]
+        cnt++
+      }
+
+      tmpArr = tmpArr.sort(function (a, b) {
+        return a.duration === b.duration ? 0 : +(a.duration < b.duration) || -1
+      })
+
+      tmpArr.forEach(function (item, i) {
+        labels.push(formatLabel(item['name'], maxLength))
+        values.push(item['duration'])
+      })
+
       return {labels: labels, values: values}
     },
     editTaskActivity: {

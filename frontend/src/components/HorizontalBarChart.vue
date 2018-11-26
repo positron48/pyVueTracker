@@ -1,6 +1,6 @@
 <template>
   <div class="chart">
-    <horizontal-bar-chart :chart-data="datacollection" :options="options" :height="100"></horizontal-bar-chart>
+    <horizontal-bar-chart :chart-data="datacollection" :options="options" :height="height" :styles="myStyles"></horizontal-bar-chart>
   </div>
 </template>
 
@@ -12,18 +12,26 @@ export default {
     HorizontalBarChart
   },
   data () {
+    var labelsWidth = this.labelsWidth
     return {
       options: {
         legend: {
           display: false
         },
         scales: {
-          yAxes: [{
+          xAxes: [{
             ticks: {
               beginAtZero: true
             }
+          }],
+          yAxes: [{
+            afterFit: function (scaleInstance) {
+              scaleInstance.width = labelsWidth // sets the width to 100px
+            }
           }]
-        }
+        },
+        maintainAspectRatio: false,
+        barPercentage: 0.5
       }
     }
   },
@@ -38,6 +46,15 @@ export default {
           }
         ]
       }
+    },
+    height: function () {
+      return 30 * this.labels.length + 30
+    },
+    myStyles () {
+      return {
+        height: `${this.height}px`,
+        position: 'relative'
+      }
     }
   },
   props: {
@@ -46,11 +63,9 @@ export default {
     },
     labels: {
       type: Array
-    }
-  },
-  methods: {
-    getRandomInt () {
-      return Math.floor(Math.random() * (50 - 5 + 1)) + 5
+    },
+    labelsWidth: {
+      type: Number
     }
   }
 }
