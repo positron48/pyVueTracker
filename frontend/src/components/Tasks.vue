@@ -3,7 +3,7 @@
   <div>
     <div class="md-layout md-gutter md-alignment-top-center">
       <div class="md-layout-item md-large-size-50 md-xlarge-size-50 md-medium-size-70 md-small-size-100 taskItems" v-if="tasks.length">
-        <bar-chart :chart-data="chartData.values" :labels="chartData.labels"/>
+        <bar-chart v-if="chartData.values.length" :chart-data="chartData.values" :labels="chartData.labels"/>
         <template
           v-for="taskGroup in groupedTasks.dates"
         >
@@ -135,17 +135,55 @@ export default {
       var labels = []
       var values = []
 
-      var current = new Date(this.selectedDate.start)
-      while (current <= this.selectedDate.end) {
-        var formattedCurrent = this.formatDate(current)
-        labels.push(this.formatDate(current, true))
+      if (this.selectedDate.start.getTime() !== this.selectedDate.end.getTime()) {
+        var current = new Date(this.selectedDate.start)
+        while (current <= this.selectedDate.end) {
+          var formattedCurrent = this.formatDate(current)
+          labels.push(this.formatDate(current, true))
 
-        if (this.groupedTasks['dates'][formattedCurrent] !== undefined) {
-          values.push(this.groupedTasks['dates'][formattedCurrent]['duration'])
-        } else {
-          values.push(0)
+          if (this.groupedTasks['dates'][formattedCurrent] !== undefined) {
+            values.push(this.groupedTasks['dates'][formattedCurrent]['duration'])
+          } else {
+            values.push(0)
+          }
+          current.setDate(current.getDate() + 1)
         }
-        current.setDate(current.getDate() + 1)
+      } else {
+        // группировка по часам, если отображаются задачи за 1 день
+        var tasksCount = this.tasks.length
+        var currentTask = 0
+        var taskStart, taskEnd
+        var hour = 5
+
+        for (var i = 0; i < 24; i++) {
+          hour = i + 5
+          if (hour > 23) {
+            hour -= 24
+          }
+          labels.push(hour)
+          values.push(0)
+
+          while (currentTask < tasksCount) {
+            taskStart = this.convertToHours(this.tasks[currentTask].start_time)
+            taskEnd = this.convertToHours(this.tasks[currentTask].end_time)
+
+            if (taskStart >= (hour + 1)) {
+              break
+            } else if (taskStart >= hour && taskEnd <= (hour + 1)) {
+              values[i] += taskEnd - taskStart
+              currentTask++
+            } else if (taskStart <= hour && taskEnd >= (hour + 1)) {
+              values[i] += 1
+              break
+            } else if (taskStart >= hour && taskEnd >= (hour + 1)) {
+              values[i] += hour + 1 - taskStart
+              break
+            } else if (taskStart <= hour && taskEnd <= (hour + 1)) {
+              values[i] += taskEnd - hour
+              currentTask++
+            }
+          }
+        }
       }
       return {labels: labels, values: values}
     },
@@ -336,6 +374,15 @@ export default {
     },
     closeModal: function () {
       this.show = false
+    },
+    convertToHours: function (timeString) {
+      if (!timeString) {
+        var currentDate = new Date()
+        return currentDate.getHours() + currentDate.getMinutes() / 60
+      } else {
+        var times = timeString.split(':')
+        return parseInt(times[0]) + parseInt(times[1]) / 60
+      }
     }
   },
   components: {

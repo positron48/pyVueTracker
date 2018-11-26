@@ -25,7 +25,7 @@
 <script>
 import axios from 'axios'
 import Autocomplete from './Autocomplete.vue'
-import urlEncode from './helpers.js'
+import {urlEncode} from './helpers.js'
 
 export default {
   data () {
