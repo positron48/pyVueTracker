@@ -62,22 +62,17 @@ export default {
           e.preventDefault()
         }
       }
-      console.log(this.currentFocus)
     },
     onFocus () {
-      console.log('show')
       this.showSuggestion = true
     },
     onClickOut (e) {
-      console.log(e.target.id)
       if (e.target.id !== 'autocompletedIntput') {
-        console.log('hide')
         this.showSuggestion = false
       }
     },
     select (index) {
       this.inputValue = this.suggestions[index]
-      console.log(['select', index, this.inputValue])
 
       this.$emit('input', this.inputValue)
       this.currentFocus = -1

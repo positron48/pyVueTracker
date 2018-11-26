@@ -40,7 +40,6 @@ export default {
   },
   computed: {
     filteredSuggestion: function () {
-      console.log(['name', this.taskName])
       var filtered = []
       var name = this.taskName.toLowerCase()
       var timeDelta = this.getTimeDelta(name, '', 0)
@@ -82,7 +81,7 @@ export default {
           this.$refs.autocomplete.clear()
         })
         .catch(error => {
-          console.log(['getCompletitions error', error])
+          console.log(['addTask error', error])
         })
     },
     getTimeDelta (task, currentTimeDelta, step) {

@@ -27,6 +27,7 @@
         </template>
         <horizontal-bar-chart :chart-data="chartActivities.values" :labels="chartActivities.labels" :labelsWidth="labelWidth"/>
         <horizontal-bar-chart :chart-data="chartCategories.values" :labels="chartCategories.labels" :labelsWidth="labelWidth"/>
+        <horizontal-bar-chart :chart-data="chartTags.values" :labels="chartTags.labels" :labelsWidth="labelWidth"/>
       </div>
     </div>
     <modal :show="show" @close="close">
@@ -106,29 +107,42 @@ export default {
   },
   computed: {
     groupedTasks: function () {
-      var groupedTasks = {'dates': {}, 'activities': {}, 'categories': {}}
+      var groupedTasks = {'dates': {}, 'activities': {}, 'categories': {}, 'tags': {}}
       this.tasks.forEach(function (task, i) {
+        // дни
         if (groupedTasks['dates'][task['date']] === undefined) {
           groupedTasks['dates'][task['date']] = {duration: 0, tasks: [], date: task['date']}
         }
         groupedTasks['dates'][task['date']]['tasks'].push(task)
         groupedTasks['dates'][task['date']]['duration'] += task['delta']
 
+        // задачи
         if (groupedTasks['activities'][task['activity_id']] === undefined) {
           groupedTasks['activities'][task['activity_id']] = {duration: 0, name: task['name']}
         }
         groupedTasks['activities'][task['activity_id']]['duration'] += task['delta']
 
+        // проекты
         if (groupedTasks['categories'][task['category']] === undefined) {
           groupedTasks['categories'][task['category']] = {duration: 0, name: task['category']}
         }
         groupedTasks['categories'][task['category']]['duration'] += task['delta']
+
+        // теги
+        task.tags.forEach(function (tag, j) {
+          if (groupedTasks['tags'][tag] === undefined) {
+            groupedTasks['tags'][tag] = {duration: 0, name: tag}
+          }
+          groupedTasks['tags'][tag]['duration'] += task['delta']
+          groupedTasks['tags'][tag]['duration'] = Math.round(groupedTasks['tags'][tag]['duration'] * 100) / 100
+        })
 
         // со сложением вместе округление работать не хочет
         groupedTasks['dates'][task['date']]['duration'] = Math.round(groupedTasks['dates'][task['date']]['duration'] * 100) / 100
         groupedTasks['activities'][task['activity_id']]['duration'] = Math.round(groupedTasks['activities'][task['activity_id']]['duration'] * 100) / 100
         groupedTasks['categories'][task['category']]['duration'] = Math.round(groupedTasks['categories'][task['category']]['duration'] * 100) / 100
       })
+
       return groupedTasks
     },
     chartData: function () {
@@ -218,6 +232,29 @@ export default {
 
       for (var i in this.groupedTasks.categories) {
         tmpArr[cnt] = this.groupedTasks.categories[i]
+        cnt++
+      }
+
+      tmpArr = tmpArr.sort(function (a, b) {
+        return a.duration === b.duration ? 0 : +(a.duration < b.duration) || -1
+      })
+
+      tmpArr.forEach(function (item, i) {
+        labels.push(formatLabel(item['name'], maxLength))
+        values.push(item['duration'])
+      })
+
+      return {labels: labels, values: values}
+    },
+    chartTags: function () {
+      var labels = []
+      var values = []
+      var tmpArr = []
+      var cnt = 0
+      var maxLength = this.labelWidth / 5
+
+      for (var i in this.groupedTasks.tags) {
+        tmpArr[cnt] = this.groupedTasks.tags[i]
         cnt++
       }
 
@@ -363,8 +400,6 @@ export default {
         }
       })
         .then(response => {
-          console.log(['save response', response])
-
           this.$emit('update')
           this.closeModal()
         })
