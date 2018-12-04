@@ -9,5 +9,7 @@ Jinja2==^2.10
 MarkupSafe==^1.0
 requests==^2.19.1
 six==^1.11.0
+SQLAlchemy==^1.2.14
+Flask-SQLAlchemy==^2.3.2
 urllib3==^1.23
 Werkzeug==^0.14.1
