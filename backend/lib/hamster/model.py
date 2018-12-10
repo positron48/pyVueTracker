@@ -11,24 +11,14 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     login = db.Column(db.String(255), unique=True, nullable=False)
     hash = db.Column(db.String(255), nullable=False)
+    token = db.Column(db.String(255), unique=True, nullable=False)
     last_login = db.Column(db.DateTime)
 
-    projects = db.relationship('Project', back_populates='users', secondary='user_projects')
-
-    def __init__(self, login=None, hash=None):
-        self.login = login
-        self.hash = hash
+    projects = db.relationship(lambda: Project, secondary='user_projects')
+    trackers = db.relationship(lambda: Tracker, secondary='tracker_users')
 
     def __repr__(self):
         return 'User: %r' % self.login
-
-
-class AuthToken(db.Model):
-    __tablename__ = 'auth_tokens'
-    user_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
-    value = db.Column(db.String(255), primary_key=True, unique=True, nullable=False)
-    last_used = db.Column(db.DateTime)
-    expires = db.Column(db.DateTime)
 
 
 class Project(db.Model):
@@ -37,12 +27,9 @@ class Project(db.Model):
     title = db.Column(db.String(255))
     code = db.Column(db.String(255))
 
-    users = db.relationship('User', back_populates='projects', secondary='user_projects')
-    properties = db.relationship('Property', secondary='project_properties')
-
-    def __init__(self, title=None, code=None):
-        self.title = title
-        self.code = code
+    users = db.relationship(User, secondary='user_projects')
+    tracker_properties = db.relationship(lambda: TrackerProjectLink)
+    sqlite_aliases = db.relationship(lambda: UserProjectLink)
 
     def __repr__(self):
         return 'Project: %r' % self.title
@@ -53,11 +40,8 @@ class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     project_id = db.Column(db.Integer, db.ForeignKey(Project.id))
     title = db.Column(db.String(255))
-
-    properties = db.relationship('Property', secondary='task_properties')
-
-    def __init__(self, title=None):
-        self.title = title
+    #автозаполняемые справочники
+    external_task_id = db.Column(db.Integer)#redmine_task_id. evo не имеет сущностей task, а redmine пока один - храним id в сущности
 
 
 class Tracker(db.Model):
@@ -65,55 +49,12 @@ class Tracker(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255))
     code = db.Column(db.String(255))
-    ui_url = db.Column(db.String(255))
+    ui_url = db.Column(db.String(255))#для генерации ссылок вида https://redmine.skillum.ru/issues/55597
     api_url = db.Column(db.String(255), nullable=False)
 
-    properties = db.relationship('Property', secondary='tracker_properties')
+    users = db.relationship(User, secondary='tracker_users')
+    properties = db.relationship(lambda: TrackerUserLink)
 
-    def __init__(self, title=None, code=None, url=None, base_url=None):
-        self.title = title
-        self.code = code
-        self.ui_url = url
-        self.api_url = base_url
-
-
-class Category(db.Model):
-    __tablename__ = 'categories'
-    id = db.Column(db.Integer, primary_key=True)
-    tracker_id = db.Column(db.Integer, db.ForeignKey(Tracker.id))
-    title = db.Column(db.String(255))
-    code = db.Column(db.String(255))
-    external_category_id = db.Column(db.Integer, nullable=False)
-
-    def __init__(self, title=None, code=None, id=None):
-        self.title = title
-        self.code = code
-        self.external_category_id = id
-
-class PropType(db.Model):
-    __tablename__ = 'property_types'
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(255))
-    code = db.Column(db.String(255), nullable=False)
-
-    def __init__(self, code, title=None):
-        self.code = code
-        self.title = title
-
-
-class Property(db.Model):
-    __tablename__ = 'properties'
-    id = db.Column(db.Integer, primary_key=True)
-    type_id = db.Column(db.Integer, db.ForeignKey(PropType.id), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
-    title = db.Column(db.String(255))
-    code = db.Column(db.String(255))
-    value = db.Column(db.String(255))
-
-    def __init__(self, title=None, code=None, value=None):
-        self.title = title
-        self.code = code
-        self.value = value
 
 class Activity(db.Model):
     __tablename__ = 'activities'
@@ -126,114 +67,69 @@ class Activity(db.Model):
     time_end = db.Column(db.DateTime)
     deleted = db.Column(db.Boolean, default=False)
     last_updated = db.Column(db.DateTime)
-    version = db.Column(db.Integer, default=0)
 
-    properties = db.relationship('Property', secondary='activity_properties')
+    hashtags = db.relationship(lambda: HashTag, secondary='activity_hashtags')
 
-    def __init__(self, name=None, comment=None, time_start=None):
-        self.name = name
-        self.comment = comment
-        self.time_start = time_start
 
 class HashTag(db.Model):
     __tablename__ = 'hashtags'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True)
 
-    def __init__(self, name=None):
-        self.name = name
+    activities = db.relationship(Activity, secondary='activity_hashtags')
 
 
 ########################################### MTM: #######################################################################
+'''sqlalchemy требует объявлять все таблицы явно, даже связи'''
 
-user_projects_table = db.Table('user_projects', db.metadata,
-                               db.Column('user_id', db.Integer, db.ForeignKey(User.id), primary_key=True),
-                               db.Column('project_id', db.Integer, db.ForeignKey(Project.id), primary_key=True)
-                               )
-
-project_properties_table = db.Table('project_properties', db.metadata,
-                                    db.Column('project_id', db.Integer, db.ForeignKey(Project.id), primary_key=True),
-                                    db.Column('property_id', db.Integer, db.ForeignKey(Property.id), primary_key=True)
-                                    )
-
-activity_properties_table = db.Table('activity_properties', db.metadata,
-                                     db.Column('activity_id', db.Integer, db.ForeignKey(Activity.id), primary_key=True),
-                                     db.Column('property_id', db.Integer, db.ForeignKey(Property.id), primary_key=True)
-                                     )
-
-task_properties_table = db.Table('task_properties', db.metadata,
-                                 db.Column('task_id', db.Integer, db.ForeignKey(Task.id), primary_key=True),
-                                 db.Column('property_id', db.Integer, db.ForeignKey(Property.id), primary_key=True)
-                                 )
-
-tracker_properties_table = db.Table('tracker_properties', db.metadata,
-                                    db.Column('tracker_id', db.Integer, db.ForeignKey(Tracker.id), primary_key=True),
-                                    db.Column('property_id', db.Integer, db.ForeignKey(Property.id), primary_key=True)
-                                    )
+activity_hashtags_table = db.Table('activity_hashtags', db.metadata,
+                                   db.Column('activity_id', db.Integer, db.ForeignKey(Activity.id), primary_key=True),
+                                   db.Column('hashtag_id', db.Integer, db.ForeignKey(HashTag.id), primary_key=True)
+                                   )
 
 ########################################### MTM extra fields: ##########################################################
-
-'''
-class SqliteMapping(db.Model):
-    __tablename__ = 'sqlite_project_mapping'
-    project_id = db.Column(db.Integer, db.ForeignKey(Project.id))
-    user_id = db.Column(db.Integer, db.ForeignKey(User.id), primary_key=True)
-    alias = db.Column(db.String(255), primary_key=True)
+'''как пользоваться extra fields: https://www.pythoncentral.io/sqlalchemy-association-tables/'''
 
 
-class ActivityHashtag(db.Model):
-    __tablename__ = 'activity_hashtags'
-    activity_id = db.Column(db.Integer, db.ForeignKey(Activity.id), primary_key=True)
-    hashtag_id = db.Column(db.Integer, db.ForeignKey(HashTag.id), primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey(User.id))
-
-
-class TrackerAuth(db.Model):
-    __tablename__ = 'tracker_auth'
-    tracker_id = db.Column(db.Integer, db.ForeignKey(Tracker.id), primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey(User.id), primary_key=True)
-    external_login = db.Column(db.String(255))
-    external_password = db.Column(db.String(255))
-
-
-class TrackerUser(db.Model):
+class TrackerUserLink(db.Model):
     __tablename__ = 'tracker_users'
     tracker_id = db.Column(db.Integer, db.ForeignKey(Tracker.id), primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey(User.id), primary_key=True)
-    external_api_key = db.Column(db.String(255))
+    #у одного пользователя на каждом трекере user_id свой
     external_user_id = db.Column(db.String(255))
+    #авторизация
+    external_api_key = db.Column(db.String(255))
+    external_login = db.Column(db.String(255))
+    external_password = db.Column(db.String(255))
+
+    tracker = db.relationship(Tracker)
+    user = db.relationship(User)
 
 
-class TrackerTask(db.Model):
-    __tablename__ = 'tracker_tasks'
-    tracker_id = db.Column(db.Integer, db.ForeignKey(Tracker.id), primary_key=True)
-    task_id = db.Column(db.Integer, db.ForeignKey(Task.id), primary_key=True)
-    external_task_id = db.Column(db.Integer)
-    external_task_title = db.Column(db.String(255))
-
-
-class TrackerProject(db.Model):
+class TrackerProjectLink(db.Model):
     __tablename__ = 'tracker_projects'
     tracker_id = db.Column(db.Integer, db.ForeignKey(Tracker.id), primary_key=True)
     project_id = db.Column(db.Integer, db.ForeignKey(Project.id), primary_key=True)
+    #автозаполняемые справочники
     external_project_id = db.Column(db.Integer)
     external_project_title = db.Column(db.String(255))
 
+    tracker = db.relationship(Tracker)
+    project = db.relationship(Project)
 
-class TrackerActivity(db.Model):
-    __tablename__ = 'tracker_activities'
-    tracker_id = db.Column(db.Integer, db.ForeignKey(Tracker.id), primary_key=True)
-    activity_id = db.Column(db.Integer, db.ForeignKey(Activity.id), primary_key=True)
-    category_id = db.Column(db.Integer, db.ForeignKey(Category.id))
-    external_activity_id = db.Column(db.Integer)
-    external_activity_title = db.Column(db.String(255))
-    external_version = db.Column(db.Integer)
-'''
+class UserProjectLink(db.Model):
+    __tablename__ = 'user_projects'
+    user_id = db.Column(db.Integer, db.ForeignKey(User.id), primary_key=True)
+    project_id = db.Column(db.Integer, db.ForeignKey(Project.id), primary_key=True)
+    aliases = db.Column(db.Text)#список алиасов, для импорта из sqlite
+
+    user = db.relationship(User)
+    project = db.relationship(Project)
+
 
 ########################################### fulltext index: ############################################################
-'''
+
 db.Index('project_name', Project.title, mysql_prefix='FULLTEXT')
 db.Index('activity_comment', Activity.comment, mysql_prefix='FULLTEXT')
 db.Index('activity_name', Activity.name, mysql_prefix='FULLTEXT')
 db.Index('hashtag_name', HashTag.name, mysql_prefix='FULLTEXT')
-'''
