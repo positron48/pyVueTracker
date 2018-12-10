@@ -14,7 +14,11 @@ pip3 install -r requirements.txt
 
 cd ..
 
+edit config.py
+
 flask run
+
+developer_mode: sh start_dev.sh
 
 ## Frontend
 

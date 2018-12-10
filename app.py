@@ -4,11 +4,42 @@ from backend.lib.hamster.db import Storage
 from backend.lib.hamster import parse_fact, Fact
 from flask_cors import CORS
 from flask import Flask, request, jsonify, render_template
+from backend.lib.hamster.model import db
 
 app = Flask(__name__,
             static_folder = "./dist/static",
             template_folder = "./dist")
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+app.config.from_pyfile('config.py')
+db.init_app(app)
+
+@app.route('/regen')
+def regen():
+    db.drop_all()
+    db.create_all()
+    #todo тест каскадных удалений
+    from backend.lib.hamster.model import User, Property, PropType, Project
+    type = PropType('prop1t')
+    prop1 = Property('prop1')
+
+    user1 = User('first', 'hash')
+    user2 = User('two', 'hash')
+    user3 = User('three', 'hash')
+    proj1 = Project('first2', 'frst')
+    proj2 = Project('two', 'two')
+    user1.projects.append(proj1)
+    user2.projects.append(proj2)
+    user3.projects.append(proj1)
+    db.session.add(user1)
+    db.session.add(user2)
+    db.session.add(user3)
+    db.session.commit()
+    result = '<p>add</p>'
+    for user in User.query.all():
+        result += repr(user)
+    #db.session.delete(proj1)
+    #db.session.commit()
+    return result
 
 
 @app.route('/api/tasks')
