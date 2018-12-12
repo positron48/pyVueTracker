@@ -31,7 +31,7 @@ export default {
   },
   methods: {
     getCurrentTask () {
-      const path = `http://localhost:5000/api/current`
+      const path = this.$baseUrl + `/current`
       axios.get(path)
         .then(response => {
           this.current = response.data
@@ -42,7 +42,7 @@ export default {
     },
     stopTask () {
       this.current = null
-      const path = `http://localhost:5000/api/stop`
+      const path = this.$baseUrl + `/stop`
       axios.post(path)
         .then(response => {
           this.$emit('stop-task')

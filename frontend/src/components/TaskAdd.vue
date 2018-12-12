@@ -58,7 +58,7 @@ export default {
   },
   methods: {
     getCompletitions () {
-      const path = `http://localhost:5000/api/completitions`
+      const path = this.$baseUrl + `/completitions`
       axios.get(path)
         .then(response => {
           this.taskCompletitions = response.data.values
@@ -68,7 +68,7 @@ export default {
         })
     },
     addTask () {
-      const path = `http://localhost:5000/api/task`
+      const path = this.$baseUrl + `/task`
       axios.post(path, urlEncode({name: this.taskName}),
         {
           headers: {

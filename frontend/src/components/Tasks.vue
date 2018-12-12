@@ -309,7 +309,7 @@ export default {
       var formattedStart = this.formatDate(this.selectedDate.start)
       var formattedEnd = this.formatDate(this.selectedDate.end)
 
-      const path = `http://localhost:5000/api/tasks?interval=` + formattedStart + '-' + formattedEnd
+      const path = this.$baseUrl + `/tasks?interval=` + formattedStart + '-' + formattedEnd
       axios.get(path)
         .then(response => {
           this.tasks = response.data.tasks
@@ -331,7 +331,7 @@ export default {
       this.show = true
     },
     stopTask: function (task) {
-      const path = `http://localhost:5000/api/task/stop`
+      const path = this.$baseUrl + `/task/stop`
       axios.post(path, urlEncode({
         id: task.id
       }),
@@ -348,7 +348,7 @@ export default {
         })
     },
     resumeTask: function (task) {
-      const path = `http://localhost:5000/api/task/resume`
+      const path = this.$baseUrl + `/task/resume`
       axios.post(path, urlEncode({
         id: task.id
       }),
@@ -365,7 +365,7 @@ export default {
         })
     },
     deleteTask: function () {
-      const path = `http://localhost:5000/api/task/delete`
+      const path = this.$baseUrl + `/task/delete`
       axios.post(path, urlEncode({
         id: this.editTask.id
       }),
@@ -383,7 +383,7 @@ export default {
         })
     },
     saveTask: function () {
-      const path = `http://localhost:5000/api/task/edit`
+      const path = this.$baseUrl + `/task/edit`
       axios.post(path, urlEncode({
         id: this.editTask.id,
         name: this.editTask.name,

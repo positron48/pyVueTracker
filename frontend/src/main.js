@@ -19,6 +19,9 @@ Vue.use(VueMaterial)
 
 Vue.config.productionTip = false
 
+Vue.prototype.$host = 'http://localhost:5000'
+Vue.prototype.$baseUrl = Vue.prototype.$host + '/api'
+
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
