@@ -32,47 +32,47 @@
     </div>
     <modal :show="show" @close="close">
       <div class="modal-header">
-        <h3>Edit your task</h3>
+
       </div>
       <div class="modal-body">
         <div class="md-layout md-gutter">
           <input type="hidden" v-model="editTask.id" name=id>
           <div class="md-layout-item md-size-40">
             <md-field>
-              <label>date</label>
+              <label>дата</label>
               <md-input v-model="editTask.date"></md-input>
             </md-field>
           </div>
           <div class="md-layout-item md-size-30">
             <md-field>
-              <label>start_time</label>
+              <label>время начала</label>
               <md-input v-model="editTask.start_time"></md-input>
             </md-field>
           </div>
           <div class="md-layout-item md-size-30">
             <md-field>
-              <label>end_time</label>
+              <label>время окончания</label>
               <md-input v-model="editTask.end_time"></md-input>
             </md-field>
           </div>
         </div>
         <md-field>
-          <label>name</label>
+          <label>задача</label>
           <md-input v-model="editTaskActivity"></md-input>
         </md-field>
         <md-field>
-          <label>description</label>
+          <label>описание</label>
           <md-textarea v-model="editTask.description" md-autogrow></md-textarea>
         </md-field>
         <md-field>
-          <label>tag</label>
+          <label>тег</label>
           <md-input v-model="editTaskTags"></md-input>
         </md-field>
       </div>
       <div class="modal-footer text-right">
-        <md-button class="md-primary" @click="deleteTask()">Delete</md-button>
-        <md-button class="md-primary" @click="closeModal()">Cancel</md-button>
-        <md-button class="md-accent" @click="saveTask()">Save</md-button>
+        <md-button class="md-primary" @click="deleteTask()">удалить</md-button>
+        <md-button class="md-primary" @click="closeModal()">отмена</md-button>
+        <md-button class="md-accent" @click="saveTask()">сохранить</md-button>
       </div>
     </modal>
   </div>
@@ -365,22 +365,24 @@ export default {
         })
     },
     deleteTask: function () {
-      const path = `http://localhost:5000/api/task/delete`
-      axios.post(path, urlEncode({
-        id: this.editTask.id
-      }),
-      {
-        headers: {
-          'Content-type': 'application/x-www-form-urlencoded'
-        }
-      })
-        .then(response => {
-          this.$emit('update')
-          this.closeModal()
+      if (confirm('Вы действительно хотите удалить запись?')) {
+        const path = `http://localhost:5000/api/task/delete`
+        axios.post(path, urlEncode({
+          id: this.editTask.id
+        }),
+        {
+          headers: {
+            'Content-type': 'application/x-www-form-urlencoded'
+          }
         })
-        .catch(error => {
-          console.log(['deleteTask error', error])
-        })
+          .then(response => {
+            this.$emit('update')
+            this.closeModal()
+          })
+          .catch(error => {
+            console.log(['deleteTask error', error])
+          })
+      }
     },
     saveTask: function () {
       const path = `http://localhost:5000/api/task/edit`

@@ -4,7 +4,7 @@
       id="autocompletedIntput"
       type="text"
       autocomplete="off"
-      placeholder="Task"
+      placeholder="задача@проект #тег, описание"
       @keydown="this.onKeydown"
       v-model="inputValue"
       @input="$emit('input', $event.target.value)"
