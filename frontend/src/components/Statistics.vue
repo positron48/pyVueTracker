@@ -16,7 +16,7 @@
         </date-picker>
       </div>
     </div>
-    <Tasks :initialDate="selectedDate" ref="tasks"/>
+    <Tasks :initialDate="selectedDate" ref="tasks" @update="refreshData()"/>
   </div>
 </template>
 
@@ -44,6 +44,9 @@ export default {
       this.selectedDate.start = daterange[0]
       this.selectedDate.end = daterange[1]
       this.$refs.tasks.selectedDate = this.selectedDate
+      this.$refs.tasks.getTasks()
+    },
+    refreshData () {
       this.$refs.tasks.getTasks()
     }
   },
