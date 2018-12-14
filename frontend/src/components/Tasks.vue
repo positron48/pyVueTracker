@@ -82,7 +82,6 @@
 import TaskItem from './TaskItem.vue'
 import BarChart from './BarChart.vue'
 import Modal from './Modal.vue'
-import axios from 'axios'
 import {urlEncode, formatLabel} from './helpers.js'
 import HorizontalBarChart from './HorizontalBarChart.vue'
 
@@ -310,7 +309,7 @@ export default {
       var formattedEnd = this.formatDate(this.selectedDate.end)
 
       const path = this.$baseUrl + `/tasks?interval=` + formattedStart + '-' + formattedEnd
-      axios.get(path)
+      this.$axios.get(path)
         .then(response => {
           this.tasks = response.data.tasks
         })
@@ -332,7 +331,7 @@ export default {
     },
     stopTask: function (task) {
       const path = this.$baseUrl + `/task/stop`
-      axios.post(path, urlEncode({
+      this.$axios.post(path, urlEncode({
         id: task.id
       }),
       {
@@ -349,7 +348,7 @@ export default {
     },
     resumeTask: function (task) {
       const path = this.$baseUrl + `/task/resume`
-      axios.post(path, urlEncode({
+      this.$axios.post(path, urlEncode({
         id: task.id
       }),
       {
@@ -366,7 +365,7 @@ export default {
     },
     deleteTask: function () {
       const path = this.$baseUrl + `/task/delete`
-      axios.post(path, urlEncode({
+      this.$axios.post(path, urlEncode({
         id: this.editTask.id
       }),
       {
@@ -384,7 +383,7 @@ export default {
     },
     saveTask: function () {
       const path = this.$baseUrl + `/task/edit`
-      axios.post(path, urlEncode({
+      this.$axios.post(path, urlEncode({
         id: this.editTask.id,
         name: this.editTask.name,
         category: this.editTask.category,

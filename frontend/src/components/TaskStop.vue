@@ -21,7 +21,6 @@
 
 <script>
 import TaskItem from './TaskItem.vue'
-import axios from 'axios'
 
 export default {
   data () {
@@ -32,7 +31,7 @@ export default {
   methods: {
     getCurrentTask () {
       const path = this.$baseUrl + `/current`
-      axios.get(path)
+      this.$axios.get(path)
         .then(response => {
           this.current = response.data
         })
@@ -43,7 +42,7 @@ export default {
     stopTask () {
       this.current = null
       const path = this.$baseUrl + `/stop`
-      axios.post(path)
+      this.$axios.post(path)
         .then(response => {
           this.$emit('stop-task')
         })
