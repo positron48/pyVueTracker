@@ -13,7 +13,7 @@
               </div>
 
               <div class="md-layout-item md-size-20">
-                <md-button type="submit" class="md-primary" style="margin-top: 18px;">Add</md-button>
+                <md-button type="submit" class="md-primary" style="margin-top: 18px;">добавить</md-button>
               </div>
             </div>
           </md-card-content>

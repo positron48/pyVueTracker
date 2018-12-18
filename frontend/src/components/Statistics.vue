@@ -3,21 +3,25 @@
   <div>
     <div class="md-layout md-gutter md-alignment-top-center">
       <div class="md-layout-item md-size-50">
-        <vue-rangedate-picker
-          @selected="onDateSelected"
+        <date-picker
+          @change="onDateSelected"
+          :first-day-of-week="1"
+          v-model="time"
+          confirm
           ref="rangeDatePicker"
-          i18n="EN"
+          lang="ru"
+          range
           format="DD.MM.YYYY"
         >
-        </vue-rangedate-picker>
+        </date-picker>
       </div>
     </div>
-    <Tasks :initialDate="selectedDate" ref="tasks"/>
+    <Tasks :initialDate="selectedDate" ref="tasks" @update="refreshData()"/>
   </div>
 </template>
 
 <script>
-import VueRangedatePicker from 'vue-rangedate-picker'
+import DatePicker from 'vue2-datepicker'
 import Tasks from './Tasks.vue'
 
 export default {
@@ -26,18 +30,28 @@ export default {
       selectedDate: {
         start: new Date(),
         end: new Date()
-      }
+      },
+      time: [
+        new Date(),
+        new Date()
+      ]
     }
   },
   methods: {
     onDateSelected: function (daterange) {
-      this.selectedDate = daterange
-      this.$refs.tasks.selectedDate = daterange
+      console.log(daterange)
+
+      this.selectedDate.start = daterange[0]
+      this.selectedDate.end = daterange[1]
+      this.$refs.tasks.selectedDate = this.selectedDate
+      this.$refs.tasks.getTasks()
+    },
+    refreshData () {
       this.$refs.tasks.getTasks()
     }
   },
   components: {
-    VueRangedatePicker, Tasks
+    DatePicker, Tasks
   },
   mounted () {
     this.$refs.rangeDatePicker.dateRange = this.selectedDate
