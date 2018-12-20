@@ -22,44 +22,43 @@
 </template>
 
 <script>
-  import {urlEncode} from './helpers.js'
+import {urlEncode} from './helpers.js'
 
-  export default {
-    data() {
-      return {
-        login: 'login',
-        password: 'password',
-        radio: 'login',
-        isLogin: false
-      }
-    },
-    computed: {
-    },
-    methods: {
-      log_out() {
-        this.$cookie.delete('token')
-        this.isLogin = false
-      },
-      log_in() {
-        const path = this.$baseUrl + `/auth`
-        var data = {login: this.login, password: this.password, action: this.radio}
-        var options = {headers: {'Content-type': 'application/x-www-form-urlencoded'}}
-        this.$axios.post(path, urlEncode(data), options)
-          .then(response => {
-            //только сообщаем об ошибках, редиректы и авторизация в main.js
-            if (response.data.message !== undefined){
-              alert(response.data.message)
-            } else {
-              this.isLogin = true;
-            }
-          })
-          .catch(error => {
-            console.log(['auth error', error])
-          })
-      }
-    },
-    mounted: function () {
-      this.isLogin = !!this.$cookie.get('token')
+export default {
+  data () {
+    return {
+      login: 'login',
+      password: 'password',
+      radio: 'login',
+      isLogin: false
     }
+  },
+  computed: {},
+  methods: {
+    log_out () {
+      this.$cookie.delete('token')
+      this.isLogin = false
+    },
+    log_in () {
+      const path = this.$baseUrl + `/auth`
+      var data = {login: this.login, password: this.password, action: this.radio}
+      var options = {headers: {'Content-type': 'application/x-www-form-urlencoded'}}
+      this.$axios.post(path, urlEncode(data), options)
+        .then(response => {
+          //только сообщаем об ошибках, редиректы и авторизация в main.js
+          if (response.data.message !== undefined) {
+            alert(response.data.message)
+          } else {
+            this.isLogin = true;
+          }
+        })
+        .catch(error => {
+          console.log(['auth error', error])
+        })
+    }
+  },
+  mounted: function () {
+    this.isLogin = !!this.$cookie.get('token')
   }
+}
 </script>
