@@ -25,21 +25,32 @@ Vue.config.productionTip = false
 Vue.prototype.$host = 'http://localhost:5000'
 Vue.prototype.$baseUrl = Vue.prototype.$host + '/api'
 Vue.prototype.$axios = axios
-//велосипед, передает каждый запрос токен авторизации, проверяет каждый ответ на признак редиректа/обновленного токена
+Vue.prototype.$isLogin = function () {
+  var token = Vue.prototype.$cookie.get('token')
+  return token !== null && token !== ''
+}
+Vue.prototype.$logout = function () {
+  Vue.prototype.$cookie.delete('token')
+}
+
+// передаем каждый запрос токен авторизации
 Vue.prototype.$axios.interceptors.request.use(function (request) {
   request.headers['token'] = Vue.prototype.$cookie.get('token')
   return request
 })
+// проверяем каждый ответ на признак обновленного/невалидного токена
 Vue.prototype.$axios.interceptors.response.use(function (response) {
   if (response.data.token !== undefined) {
     Vue.prototype.$cookie.set('token', response.data.token, {expires: '1Y'})
     delete response.data.token
   }
-  if (response.data.redirect !== undefined) {
-    location.replace(response.data.redirect)
-    delete response.data.redirect
-  }
   return response
+}, function (error) {
+  if (error.response.status === 401 && Vue.prototype.$isLogin()) {
+    Vue.prototype.$logout()
+    location.reload()
+  }
+  return Promise.reject(error)
 })
 
 /* eslint-disable no-new */

@@ -36,8 +36,8 @@ export default {
   computed: {},
   methods: {
     log_out () {
-      this.$cookie.delete('token')
-      this.isLogin = false
+      this.$logout()
+      this.isLogin = this.$isLogin()
     },
     log_in () {
       const path = this.$baseUrl + `/auth`
@@ -45,11 +45,11 @@ export default {
       var options = {headers: {'Content-type': 'application/x-www-form-urlencoded'}}
       this.$axios.post(path, urlEncode(data), options)
         .then(response => {
-          //только сообщаем об ошибках, редиректы и авторизация в main.js
           if (response.data.message !== undefined) {
             alert(response.data.message)
           } else {
-            this.isLogin = true;
+            this.isLogin = this.$isLogin()
+            this.$emit('login')
           }
         })
         .catch(error => {

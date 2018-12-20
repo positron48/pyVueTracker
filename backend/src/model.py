@@ -78,6 +78,9 @@ class HashTag(db.Model):
 
     activities = db.relationship(Activity, secondary='activity_hashtags')
 
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
 
 ########################################### MTM: #######################################################################
 '''sqlalchemy требует объявлять все таблицы явно, даже связи'''

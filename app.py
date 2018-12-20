@@ -1,11 +1,14 @@
 # все импорты
 import datetime as dt
 from backend.lib.hamster.db import Storage
-from backend.lib.hamster import parse_fact, Fact
+from backend.lib.hamster import Fact
 from flask_cors import CORS
-from flask import Flask, request, jsonify, render_template, redirect, url_for
-from backend.lib.hamster.model import db
-from backend.lib.hamster.auth import Auth
+from flask import Flask, request, jsonify, render_template
+from backend.src.model import db
+from backend.src.auth import Auth
+from backend.src.schema import HashTagSchema
+from backend.src.controller import ApiController
+
 
 app = Flask(__name__,
             static_folder="./dist/static",
@@ -20,7 +23,7 @@ def regen():
     db.drop_all()
     db.create_all()
     # todo тест каскадных удалений
-    from backend.lib.hamster.model import User, Project, TrackerUserLink, Tracker, UserProjectLink
+    from backend.src.model import User, Project, TrackerUserLink, Tracker, UserProjectLink
 
     user1 = User(login='first', hash='hash', token='asdasdasd')
     user2 = User(login='two', hash='hash', token='asdasd')

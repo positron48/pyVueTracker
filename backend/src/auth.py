@@ -1,9 +1,7 @@
-from backend.lib.hamster.model import db, User
-from backend.lib.helpers import StringHelper
-from flask import request, jsonify
+from backend.src.model import db, User
+from backend.src.helpers import StringHelper
+from flask import request, jsonify, Response
 from functools import wraps
-
-auth_path = 'auth'
 
 
 class Auth:
@@ -41,7 +39,7 @@ class Auth:
             if token is not None:
                 user_id = cls.get_token_id(token)
             if user_id is None:
-                return jsonify({'redirect': auth_path})
+                return Response(status=401)
             return func(*args, **kwargs)
 
         return argument_router
