@@ -51,7 +51,7 @@ export default {
     go (screen) {
       var isLogin = this.$isLogin()
       if (screen === 'Auth') {
-        if (isLogin()) {
+        if (isLogin) {
           this.$logout()
         }
         this.updateLogin()
