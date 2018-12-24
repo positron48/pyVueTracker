@@ -38,4 +38,10 @@ export function formatLabel (str, maxwidth) {
   return sections
 }
 
-export default {urlEncode, formatLabel}
+export function formatDate (date, short) {
+  return ('0' + date.getDate()).slice(-2) +
+    '.' + ('0' + (date.getMonth() + 1)).slice(-2) +
+    (short === undefined ? ('.' + date.getFullYear()) : '')
+}
+
+export default {urlEncode, formatLabel, formatDate}

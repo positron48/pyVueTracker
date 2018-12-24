@@ -4,6 +4,11 @@
     <nav>
       <div class="md-toolbar md-accent md-theme-demo-light md-elevation-1">
         <div class="md-title main-title">Time tracker</div>
+        <button type="button" class="md-button md-theme-demo-light" @click="currentComponent='Auth'">
+          <div class="md-ripple">
+              <div class="md-button-content">Авторизация</div>
+          </div>
+        </button>
         <button type="button" class="md-button md-theme-demo-light" @click="currentComponent='Home'">
           <div class="md-ripple">
               <div class="md-button-content">Главный экран</div>
@@ -26,6 +31,7 @@
 <script>
 import Home from './Home.vue'
 import Statistics from './Statistics.vue'
+import Auth from './Auth.vue'
 
 export default {
   data () {
@@ -34,7 +40,7 @@ export default {
     }
   },
   components: {
-    Home, Statistics
+    Home, Statistics, Auth
   }
 }
 </script>

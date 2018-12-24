@@ -82,9 +82,9 @@
 import TaskItem from './TaskItem.vue'
 import BarChart from './BarChart.vue'
 import Modal from './Modal.vue'
-import axios from 'axios'
-import {urlEncode, formatLabel} from './helpers.js'
+import {formatLabel, formatDate} from './helpers.js'
 import HorizontalBarChart from './HorizontalBarChart.vue'
+import API from './api.js'
 
 export default {
   data () {
@@ -152,8 +152,8 @@ export default {
       if (this.selectedDate.start.getTime() !== this.selectedDate.end.getTime()) {
         var current = new Date(this.selectedDate.start)
         while (current <= this.selectedDate.end) {
-          var formattedCurrent = this.formatDate(current)
-          labels.push(this.formatDate(current, true))
+          var formattedCurrent = formatDate(current)
+          labels.push(formatDate(current, true))
 
           if (this.groupedTasks['dates'][formattedCurrent] !== undefined) {
             values.push(this.groupedTasks['dates'][formattedCurrent]['duration'])
@@ -306,22 +306,13 @@ export default {
   },
   methods: {
     getTasks () {
-      var formattedStart = this.formatDate(this.selectedDate.start)
-      var formattedEnd = this.formatDate(this.selectedDate.end)
-
-      const path = `http://localhost:5000/api/tasks?interval=` + formattedStart + '-' + formattedEnd
-      axios.get(path)
+      API.getTasks(this.selectedDate.start, this.selectedDate.end)
         .then(response => {
           this.tasks = response.data.tasks
         })
         .catch(error => {
           console.log(['getTasks error', error])
         })
-    },
-    formatDate: function (date, short) {
-      return ('0' + date.getDate()).slice(-2) +
-        '.' + ('0' + (date.getMonth() + 1)).slice(-2) +
-        (short === undefined ? ('.' + date.getFullYear()) : '')
     },
     close: function () {
       this.show = false
@@ -331,15 +322,7 @@ export default {
       this.show = true
     },
     stopTask: function (task) {
-      const path = `http://localhost:5000/api/task/stop`
-      axios.post(path, urlEncode({
-        id: task.id
-      }),
-      {
-        headers: {
-          'Content-type': 'application/x-www-form-urlencoded'
-        }
-      })
+      API.stopTask(task.id)
         .then(response => {
           this.$emit('update')
         })
@@ -348,15 +331,7 @@ export default {
         })
     },
     resumeTask: function (task) {
-      const path = `http://localhost:5000/api/task/resume`
-      axios.post(path, urlEncode({
-        id: task.id
-      }),
-      {
-        headers: {
-          'Content-type': 'application/x-www-form-urlencoded'
-        }
-      })
+      API.resumeTask(task.id)
         .then(response => {
           this.$emit('update')
         })
@@ -366,15 +341,7 @@ export default {
     },
     deleteTask: function () {
       if (confirm('Вы действительно хотите удалить запись?')) {
-        const path = `http://localhost:5000/api/task/delete`
-        axios.post(path, urlEncode({
-          id: this.editTask.id
-        }),
-        {
-          headers: {
-            'Content-type': 'application/x-www-form-urlencoded'
-          }
-        })
+        API.deleteTask(this.editTask.id)
           .then(response => {
             this.$emit('update')
             this.closeModal()
@@ -385,22 +352,7 @@ export default {
       }
     },
     saveTask: function () {
-      const path = `http://localhost:5000/api/task/edit`
-      axios.post(path, urlEncode({
-        id: this.editTask.id,
-        name: this.editTask.name,
-        category: this.editTask.category,
-        date: this.editTask.date,
-        start_time: this.editTask.start_time,
-        end_time: this.editTask.end_time,
-        description: this.editTask.description,
-        tags: this.editTask.tags
-      }),
-      {
-        headers: {
-          'Content-type': 'application/x-www-form-urlencoded'
-        }
-      })
+      API.updateTask(this.editTask)
         .then(response => {
           this.$emit('update')
           this.closeModal()

@@ -21,7 +21,7 @@
 
 <script>
 import TaskItem from './TaskItem.vue'
-import axios from 'axios'
+import API from './api.js'
 
 export default {
   data () {
@@ -31,8 +31,7 @@ export default {
   },
   methods: {
     getCurrentTask () {
-      const path = `http://localhost:5000/api/current`
-      axios.get(path)
+      API.getCurrentTask()
         .then(response => {
           this.current = response.data
         })
@@ -41,11 +40,10 @@ export default {
         })
     },
     stopTask () {
-      this.current = null
-      const path = `http://localhost:5000/api/stop`
-      axios.post(path)
+      API.stopTask(this.current.id)
         .then(response => {
           this.$emit('stop-task')
+          this.current = null
         })
         .catch(error => {
           console.log(['getCompletitions error', error])

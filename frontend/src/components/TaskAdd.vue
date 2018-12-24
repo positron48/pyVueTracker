@@ -23,9 +23,8 @@
 </template>
 
 <script>
-import axios from 'axios'
 import Autocomplete from './Autocomplete.vue'
-import {urlEncode} from './helpers.js'
+import API from './api.js'
 
 export default {
   data () {
@@ -58,8 +57,7 @@ export default {
   },
   methods: {
     getCompletitions () {
-      const path = `http://localhost:5000/api/completitions`
-      axios.get(path)
+      API.getCompletitions()
         .then(response => {
           this.taskCompletitions = response.data.values
         })
@@ -68,13 +66,7 @@ export default {
         })
     },
     addTask () {
-      const path = `http://localhost:5000/api/task`
-      axios.post(path, urlEncode({name: this.taskName}),
-        {
-          headers: {
-            'Content-type': 'application/x-www-form-urlencoded'
-          }
-        })
+      API.addTask(this.taskName)
         .then(response => {
           this.taskName = ''
           this.$emit('add-task')
