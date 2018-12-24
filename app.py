@@ -21,8 +21,24 @@ db.init_app(app)
 
 @app.route('/regen')
 def regen():
+    # генератор тестовых данных
+    from backend.src.model import Tracker, User, TrackerUserLink
     db.drop_all()
     db.create_all()
+    tracker = Tracker(title='intaro redmine', code='redmine', api_url='https://redmine.skillum.ru')
+    user = User(login='login', hash='password', token='MQinK4')
+    user2 = User(login='login2', hash='password2', token='MQinK42')
+    db.session.add(user)
+    db.session.add(user2)
+    db.session.add(tracker)
+    tracker_link = TrackerUserLink(tracker=tracker, user=user,
+                                   external_api_key='')
+    tracker_link2 = TrackerUserLink(tracker=tracker, user=user2, external_login='', external_password='')
+    db.session.add(tracker_link)
+    db.session.add(tracker_link2)
+    db.session.commit()
+
+    return None
     # todo тест каскадных удалений
     from backend.src.model import User, Project, TrackerUserLink, Tracker, UserProjectLink
 
@@ -36,6 +52,7 @@ def regen():
     db.session.add(user1)
     db.session.add(user2)
     db.session.add(user3)
+
 
     tracker = Tracker(title='title', code='code', ui_url='url', api_url='base')
     link = TrackerUserLink(tracker=tracker, user=user1, external_user_id=1234)
