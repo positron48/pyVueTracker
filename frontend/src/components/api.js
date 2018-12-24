@@ -5,7 +5,6 @@ import {urlEncode, formatDate} from './helpers.js'
 const HTTP = axios.create({
   baseURL: 'http://localhost:5000',
   headers: {
-    'token': getToken(),
     'Content-type': 'application/x-www-form-urlencoded'
   }
 })
@@ -23,6 +22,13 @@ HTTP.interceptors.response.use(function (response) {
   }
   return Promise.reject(error)
 })
+
+HTTP.interceptors.request.use(
+  config => {
+    config.headers.token = getToken()
+    return config
+  }
+)
 
 export var API = {
   /** ------------------------------------ авторизация  ------------------------------------ */
