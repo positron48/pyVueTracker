@@ -1,4 +1,4 @@
-from backend.src.model import db, User
+from backend.src.model.mysql import db, User
 from backend.src.helpers import StringHelper
 from flask import request, Response
 from functools import wraps
@@ -44,7 +44,7 @@ class Auth(object):
         @wraps(func)
         def argument_router(*args, **kwargs):
             token = cls.get_request_token()
-            user = None #type:User
+            user = None  # type:User
             if token is not None:
                 user = cls.get_user_by_token(token)
             if user is None:

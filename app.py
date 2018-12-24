@@ -4,9 +4,8 @@ from backend.lib.hamster.db import Storage
 from backend.lib.hamster import Fact
 from flask_cors import CORS
 from flask import Flask, request, jsonify, render_template
-from backend.src.model import db
+from backend.src.model.mysql import db
 from backend.src.auth import Auth
-from backend.src.schema import HashTagSchema
 from backend.src.controller import ApiController
 
 
@@ -22,7 +21,7 @@ db.init_app(app)
 @app.route('/regen')
 def regen():
     # генератор тестовых данных
-    from backend.src.model import Tracker, User, TrackerUserLink
+    from backend.src.model.mysql import Tracker, User, TrackerUserLink
     db.drop_all()
     db.create_all()
     tracker = Tracker(title='intaro redmine', code='redmine', api_url='https://redmine.skillum.ru')
@@ -40,7 +39,7 @@ def regen():
 
     return None
     # todo тест каскадных удалений
-    from backend.src.model import User, Project, TrackerUserLink, Tracker, UserProjectLink
+    from backend.src.model.mysql import User, Project, TrackerUserLink, Tracker, UserProjectLink
 
     user1 = User(login='first', hash='hash', token='asdasdasd')
     user2 = User(login='two', hash='hash', token='asdasd')

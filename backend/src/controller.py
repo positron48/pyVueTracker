@@ -1,5 +1,5 @@
-from backend.src.hamster import Fact
-from backend.src.logic import Logic
+from backend.src.model.hamster import Fact
+from backend.src.engine import Engine
 from flask import jsonify
 from functools import wraps
 
@@ -18,7 +18,7 @@ class ApiController(object):
         # сюда складывать данные для json-ответа. Допустимый формат - все, что поддается сериализации в json
         # для объектов это obj.__dict__
         self.response = Response()
-        self.logic = Logic()
+        self.engine = Engine()
 
     # декоратор, возвращающий self.response, сериализованный в json, после отработки декорированной функции
     # декорированные функции во время работы должны изменить self.response
@@ -36,8 +36,6 @@ class ApiController(object):
         self.response.fact = fact.__dict__
         self.response.status = fact.validate()
         if self.response.status:
-            self.response.status, self.response.message = self.logic.add_fact(fact)
-        if self.response.status is False and self.response.message is None:
+            self.response.status, self.response.message = self.engine.add_fact(fact)
+        if not self.response.status and self.response.message is None:
             self.response.message = 'Не заполнена обязательная часть:\nвремя номер_задачи [имя_активности][@проект] [#тег], [#тег2], [описание]'
-        if self.response.status is True:
-            del self.response.message

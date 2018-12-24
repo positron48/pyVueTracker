@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.associationproxy import association_proxy
+from marshmallow_sqlalchemy import ModelSchema
 
 db = SQLAlchemy()
 
@@ -40,8 +41,9 @@ class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     project_id = db.Column(db.Integer, db.ForeignKey(Project.id))
     title = db.Column(db.String(255))
-    #автозаполняемые справочники
-    external_task_id = db.Column(db.Integer)#redmine_task_id. evo не имеет сущностей task, а redmine пока один - храним id в сущности
+    # автозаполняемые справочники
+    external_task_id = db.Column(
+        db.Integer)  # redmine_task_id. evo не имеет сущностей task, а redmine пока один - храним id в сущности
 
 
 class Tracker(db.Model):
@@ -49,7 +51,7 @@ class Tracker(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255))
     code = db.Column(db.String(255))
-    ui_url = db.Column(db.String(255))#для генерации ссылок вида https://redmine.skillum.ru/issues/55597
+    ui_url = db.Column(db.String(255))  # для генерации ссылок вида https://redmine.skillum.ru/issues/55597
     api_url = db.Column(db.String(255), nullable=False)
 
     users = db.relationship(User, secondary='tracker_users')
@@ -98,9 +100,9 @@ class TrackerUserLink(db.Model):
     __tablename__ = 'tracker_users'
     tracker_id = db.Column(db.Integer, db.ForeignKey(Tracker.id), primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey(User.id), primary_key=True)
-    #у одного пользователя на каждом трекере user_id свой
+    # у одного пользователя на каждом трекере user_id свой
     external_user_id = db.Column(db.String(255))
-    #авторизация
+    # авторизация
     external_api_key = db.Column(db.String(255))
     external_login = db.Column(db.String(255))
     external_password = db.Column(db.String(255))
@@ -113,18 +115,19 @@ class TrackerProjectLink(db.Model):
     __tablename__ = 'tracker_projects'
     tracker_id = db.Column(db.Integer, db.ForeignKey(Tracker.id), primary_key=True)
     project_id = db.Column(db.Integer, db.ForeignKey(Project.id), primary_key=True)
-    #автозаполняемые справочники
+    # автозаполняемые справочники
     external_project_id = db.Column(db.Integer)
     external_project_title = db.Column(db.String(255))
 
     tracker = db.relationship(Tracker)
     project = db.relationship(Project)
 
+
 class UserProjectLink(db.Model):
     __tablename__ = 'user_projects'
     user_id = db.Column(db.Integer, db.ForeignKey(User.id), primary_key=True)
     project_id = db.Column(db.Integer, db.ForeignKey(Project.id), primary_key=True)
-    aliases = db.Column(db.Text)#список алиасов, для импорта из sqlite
+    aliases = db.Column(db.Text)  # список алиасов, для импорта из sqlite
 
     user = db.relationship(User)
     project = db.relationship(Project)
@@ -136,3 +139,16 @@ db.Index('project_name', Project.title, mysql_prefix='FULLTEXT')
 db.Index('activity_comment', Activity.comment, mysql_prefix='FULLTEXT')
 db.Index('activity_name', Activity.name, mysql_prefix='FULLTEXT')
 db.Index('hashtag_name', HashTag.name, mysql_prefix='FULLTEXT')
+
+
+################################################# schema: ##############################################################
+
+
+class ProjectSchema(ModelSchema):
+    class Meta(object):
+        model = Project
+
+
+class HashTagSchema(ModelSchema):
+    class Meta(object):
+        model = HashTag

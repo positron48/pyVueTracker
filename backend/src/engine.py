@@ -1,9 +1,7 @@
-from backend.src.hamster import Fact
-from backend.src.model import db, User, Activity, Task, HashTag, Project
-from flask import request
+from backend.src.model.hamster import Fact
+from backend.src.model.mysql import db, User, Activity, Task, HashTag, Project
 from backend.src.auth import Auth
 import re, datetime
-from backend.src.schema import HashTagSchema
 
 
 class FactTask(object):
@@ -22,7 +20,7 @@ class FactTask(object):
         self.tags = None
 
 
-class Logic(object):
+class Engine(object):
     def __init__(self):
         self.user_id = Auth.get_token_id(Auth.get_request_token())
         self.user = db.session.query(User).filter(User.id == self.user_id)
