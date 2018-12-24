@@ -22,13 +22,14 @@
 </template>
 
 <script>
-import {urlEncode} from './helpers.js'
+import API from './api.js'
+import {isLogin, logout} from './auth.js'
 
 export default {
   data () {
     return {
-      login: 'login',
-      password: 'password',
+      login: '',
+      password: '',
       radio: 'login',
       isLogin: false
     }
@@ -36,19 +37,16 @@ export default {
   computed: {},
   methods: {
     log_out () {
-      this.$logout()
-      this.isLogin = this.$isLogin()
+      logout()
+      this.isLogin = isLogin()
     },
     log_in () {
-      const path = this.$baseUrl + `/auth`
-      var data = {login: this.login, password: this.password, action: this.radio}
-      var options = {headers: {'Content-type': 'application/x-www-form-urlencoded'}}
-      this.$axios.post(path, urlEncode(data), options)
+      API.auth(this.login, this.password, this.radio)
         .then(response => {
           if (response.data.message !== undefined) {
             alert(response.data.message)
           } else {
-            this.isLogin = this.$isLogin()
+            this.isLogin = isLogin()
             this.$emit('login')
           }
         })
@@ -58,7 +56,7 @@ export default {
     }
   },
   mounted: function () {
-    this.isLogin = !!this.$cookie.get('token')
+    this.isLogin = isLogin()
   }
 }
 </script>

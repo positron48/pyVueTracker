@@ -36,6 +36,7 @@ class Auth:
         @wraps(func)
         def argument_router(*args, **kwargs):
             token = request.headers.get('token')
+            user_id = None
             if token is not None:
                 user_id = cls.get_token_id(token)
             if user_id is None:

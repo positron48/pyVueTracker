@@ -24,7 +24,7 @@
 
 <script>
 import Autocomplete from './Autocomplete.vue'
-import API from './api.js'
+import {API} from './api.js'
 
 export default {
   data () {

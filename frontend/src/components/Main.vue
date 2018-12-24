@@ -32,6 +32,7 @@
 import Home from './Home.vue'
 import Statistics from './Statistics.vue'
 import Auth from './Auth.vue'
+import {isLogin, logout} from './auth.js'
 
 export default {
   data () {
@@ -45,18 +46,18 @@ export default {
   },
   methods: {
     updateLogin () {
-      this.loginText = this.$isLogin() ? 'Выйти' : 'Войти'
-      this.currentComponent = this.$isLogin() ? 'Home' : 'Auth'
+      this.loginText = isLogin() ? 'Выйти' : 'Войти'
+      this.currentComponent = isLogin() ? 'Home' : 'Auth'
     },
     go (screen) {
-      var isLogin = this.$isLogin()
+      var isAuthorized = isLogin()
       if (screen === 'Auth') {
-        if (isLogin) {
-          this.$logout()
+        if (isAuthorized) {
+          logout()
         }
         this.updateLogin()
       } else {
-        if (isLogin) {
+        if (isAuthorized) {
           this.currentComponent = screen
         } else {
           this.updateLogin()
