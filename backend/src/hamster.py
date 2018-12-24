@@ -6,8 +6,9 @@ class Fact(object):
     def __init__(self, text):
         self.start_time = None
         self.end_time = None
-        self.activity = None
-        self.category = None
+        self.activity = None  # задача и имя активности
+        self.category = None  # проект
+        self.description = None  # описание
         self.tags = None
 
         if text is not None:
@@ -18,17 +19,23 @@ class Fact(object):
                 self.__dict__[key] = fact[key]
 
     def validate(self):
-        req_fields = ('start_time','category', 'activity')
+        req_fields = ('start_time', 'activity')
         for field in req_fields:
             if self.__dict__[field] is None:
                 return False
         return True
 
+    def get_task_id(self):
+        if self.activity is None:
+            return None
+        task_id = re.findall('^(\d*) .*', self.activity)
+        if len(task_id) < 1:
+            return None
+        task_id = int(task_id.pop())
+        return task_id
 
 
-
-
-class Hamster:
+class Hamster(object):
     @staticmethod
     def __looks_like_time(fragment):
         _time_fragment_re = [

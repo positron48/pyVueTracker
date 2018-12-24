@@ -15,6 +15,7 @@ app = Flask(__name__,
             template_folder="./dist")
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.config.from_pyfile('config.py')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
 
@@ -144,9 +145,14 @@ def complete_task():
 @app.route('/api/task', methods=['POST'])
 @Auth.check_api_request
 def add_entry():
-    storage = Storage()
-    result = storage.add_fact(request.values['name'])
-    return jsonify(result)
+    name = request.values.get('name').strip()
+    api = ApiController()
+    return api.add_activity(name)
+
+
+    # storage = Storage()
+    # result = storage.add_fact(request.values['name'])
+    # return jsonify(result)
 
 
 @app.route('/api/task/edit', methods=['POST'])
