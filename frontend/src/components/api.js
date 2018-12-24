@@ -11,7 +11,7 @@ const HTTP = axios.create({
 })
 
 HTTP.interceptors.response.use(function (response) {
-  if (response.data.token !== undefined) {
+  if (response.data !== null && response.data.token !== undefined) {
     localStorage.setItem('token', response.data.token)
     delete response.data.token
   }
