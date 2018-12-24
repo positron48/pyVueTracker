@@ -2,6 +2,7 @@ from backend.src.model import db, User
 from backend.src.helpers import StringHelper
 from flask import request, Response
 from functools import wraps
+import datetime
 
 
 class Auth(object):
@@ -19,6 +20,10 @@ class Auth(object):
     @staticmethod
     def get_user_by_login_and_hash(login, hash):
         return db.session.query(User.id, User.token).filter(User.login == login).filter(User.hash == hash).first()
+
+    @staticmethod
+    def get_user_by_token(token):
+        return db.session.query(User).filter(User.token == token).first()
 
     @staticmethod
     def get_token_id(token):
@@ -39,11 +44,14 @@ class Auth(object):
         @wraps(func)
         def argument_router(*args, **kwargs):
             token = cls.get_request_token()
-            user_id = None
+            user = None #type:User
             if token is not None:
-                user_id = cls.get_token_id(token)
-            if user_id is None:
+                user = cls.get_user_by_token(token)
+            if user is None:
                 return Response(status=401)
+            user.last_login = datetime.datetime.now()
+            db.session.add(user)
+            db.session.commit()
             return func(*args, **kwargs)
 
         return argument_router
