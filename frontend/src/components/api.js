@@ -11,13 +11,13 @@ const HTTP = axios.create({
 })
 
 HTTP.interceptors.response.use(function (response) {
-  if (response.data !== null && response.data.token !== undefined) {
+  if (response.data && 'token' in response.data) {
     localStorage.setItem('token', response.data.token)
     delete response.data.token
   }
   return response
 }, function (error) {
-  if (error.response.status === 401 && isLogin()) {
+  if ('status' in error.response && error.response.status === 401 && isLogin()) {
     logout()
     location.reload()
   }

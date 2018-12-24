@@ -68,9 +68,13 @@ export default {
     addTask () {
       API.addTask(this.taskName)
         .then(response => {
-          this.taskName = ''
-          this.$emit('add-task')
-          this.$refs.autocomplete.clear()
+          if (response.data.status) {
+            this.taskName = ''
+            this.$emit('add-task')
+            this.$refs.autocomplete.clear()
+          } else if ('message' in response.data) {
+            alert(response.data.message)
+          }
         })
         .catch(error => {
           console.log(['addTask error', error])
