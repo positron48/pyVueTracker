@@ -14,7 +14,6 @@ class Auth(object):
         token_len = User.token.property.columns[0].type.length >> 3
         user = User(login=login, hash=hash, token=StringHelper.get_random_ascii_string(token_len))
         db.session.add(user)
-        db.session.commit()
         return user
 
     @staticmethod
@@ -51,7 +50,11 @@ class Auth(object):
                 return Response(status=401)
             user.last_login = datetime.datetime.now()
             db.session.add(user)
+            result = func(*args, **kwargs)
+            # sqlalchemy при старте открывает транзакцию с БД
+            # этот коммит её закрывает - внутри ядра коммиты можно не ставить(если айдишники изменений не нужны), чтобы все изменения упали в одну транзакцию на запрос
+            # здесь же пилить функционал глобального rollback, только в result пробросить error, и тут отловить
             db.session.commit()
-            return func(*args, **kwargs)
+            return result
 
         return argument_router
