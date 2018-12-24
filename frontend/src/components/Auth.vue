@@ -1,115 +1,64 @@
 <template>
   <div>
-    <form novalidate class="md-layout md-gutter md-alignment-top-center" @submit.prevent="validateUser">
-      <md-card class="md-layout-item md-size-50 md-small-size-100">
-        <md-card-header>
-          <div class="md-title">Авторизация</div>
-        </md-card-header>
-
+    <form v-on:submit.prevent="log_in()">
+      <md-card class="md-layout-item md-size-15" style="margin: auto">
         <md-card-content>
-          <div class="md-layout md-gutter">
-            <div class="md-layout-item md-small-size-100">
-              <md-field :class="getValidationClass('login')">
-                <label for="first-name">Логин</label>
-                <md-input name="first-name" id="first-name" v-model="form.login" :disabled="sending" />
-                <span class="md-error" v-if="!$v.form.login.required">Введите логин</span>
-              </md-field>
-            </div>
-          </div>
-          <div class="md-layout md-gutter">
-            <div class="md-layout-item md-small-size-100">
-              <md-field :class="getValidationClass('password')">
-                <label for="last-name">Пароль</label>
-                <md-input name="last-name" id="last-name" v-model="form.password" :disabled="sending" />
-                <span class="md-error" v-if="!$v.form.password.required">Введите пароль</span>
-              </md-field>
-            </div>
-          </div>
+          <md-field>
+            <label>Login</label>
+            <md-input v-model.trim="login" type="text" required></md-input>
+          </md-field>
+          <md-field>
+            <label>Password</label>
+            <md-input v-model.trim="password" type="password" required></md-input>
+          </md-field>
+          <md-radio v-model="radio" value="registration">Registration</md-radio>
+          <md-radio v-model="radio" value="login">Login</md-radio>
+          <md-button type="submit" v-bind:disabled="isLogin">Send</md-button>
+          <md-button v-bind:disabled="!isLogin" v-on:click="log_out()">Logout</md-button>
         </md-card-content>
-
-        <md-progress-bar md-mode="indeterminate" v-if="sending" />
-
-        <md-card-actions>
-          <md-button type="submit" class="md-primary" :disabled="sending">Войти</md-button>
-        </md-card-actions>
       </md-card>
-
-      <md-snackbar :md-active.sync="userSaved">Вы вошли!</md-snackbar>
     </form>
   </div>
 </template>
 
 <script>
-import { validationMixin } from 'vuelidate'
-import {
-  required
-} from 'vuelidate/lib/validators'
+import {urlEncode} from './helpers.js'
 
 export default {
-  name: 'FormValidation',
-  mixins: [validationMixin],
-  data: () => ({
-    form: {
-      login: null,
-      password: null,
-      age: null
-    },
-    userSaved: false,
-    sending: false,
-    lastUser: null
-  }),
-  validations: {
-    form: {
-      login: {
-        required
-      },
-      password: {
-        required
-      }
+  data () {
+    return {
+      login: 'login',
+      password: 'password',
+      radio: 'login',
+      isLogin: false
     }
   },
+  computed: {},
   methods: {
-    getValidationClass (fieldName) {
-      const field = this.$v.form[fieldName]
-
-      if (field) {
-        return {
-          'md-invalid': field.$invalid && field.$dirty
-        }
-      }
+    log_out () {
+      this.$logout()
+      this.isLogin = this.$isLogin()
     },
-    clearForm () {
-      this.$v.$reset()
-      this.form.login = null
-      this.form.password = null
-    },
-    saveUser () {
-      this.sending = true
-
-      // Instead of this timeout, here you can call your API
-      window.setTimeout(() => {
-        this.lastUser = `${this.form.login} ${this.form.password}`
-        this.userSaved = true
-        this.sending = false
-        this.clearForm()
-      }, 1500)
-    },
-    validateUser () {
-      this.$v.$touch()
-
-      if (!this.$v.$invalid) {
-        this.saveUser()
-      }
+    log_in () {
+      const path = this.$baseUrl + `/auth`
+      var data = {login: this.login, password: this.password, action: this.radio}
+      var options = {headers: {'Content-type': 'application/x-www-form-urlencoded'}}
+      this.$axios.post(path, urlEncode(data), options)
+        .then(response => {
+          if (response.data.message !== undefined) {
+            alert(response.data.message)
+          } else {
+            this.isLogin = this.$isLogin()
+            this.$emit('login')
+          }
+        })
+        .catch(error => {
+          console.log(['auth error', error])
+        })
     }
+  },
+  mounted: function () {
+    this.isLogin = !!this.$cookie.get('token')
   }
 }
 </script>
-
-<style scoped>
-  .md-progress-bar {
-    position: absolute;
-    top: 0;
-    right: 0;
-    left: 0;
-  }
-</style>

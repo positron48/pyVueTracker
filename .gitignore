@@ -16,3 +16,4 @@ backend/venv
 
 # macOs
 .DS_Store
+/dist/**/*

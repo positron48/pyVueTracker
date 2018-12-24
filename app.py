@@ -1,14 +1,18 @@
 # все импорты
 import datetime as dt
 from backend.lib.hamster.db import Storage
-from backend.lib.hamster import parse_fact, Fact
+from backend.lib.hamster import Fact
 from flask_cors import CORS
 from flask import Flask, request, jsonify, render_template
-from backend.lib.hamster.model import db
+from backend.src.model import db
+from backend.src.auth import Auth
+from backend.src.schema import HashTagSchema
+from backend.src.controller import ApiController
+
 
 app = Flask(__name__,
-            static_folder = "./dist/static",
-            template_folder = "./dist")
+            static_folder="./dist/static",
+            template_folder="./dist")
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.config.from_pyfile('config.py')
 db.init_app(app)
@@ -19,7 +23,7 @@ def regen():
     db.drop_all()
     db.create_all()
     # todo тест каскадных удалений
-    from backend.lib.hamster.model import User, Project, TrackerUserLink, Tracker, UserProjectLink
+    from backend.src.model import User, Project, TrackerUserLink, Tracker, UserProjectLink
 
     user1 = User(login='first', hash='hash', token='asdasdasd')
     user2 = User(login='two', hash='hash', token='asdasd')
@@ -32,10 +36,9 @@ def regen():
     db.session.add(user2)
     db.session.add(user3)
 
-
     tracker = Tracker(title='title', code='code', ui_url='url', api_url='base')
-    link = TrackerUserLink(tracker=tracker,user=user1,external_user_id=1234)
-    alias = UserProjectLink(user=user1,project=proj1, aliases='alias1, alias2, alias3')
+    link = TrackerUserLink(tracker=tracker, user=user1, external_user_id=1234)
+    alias = UserProjectLink(user=user1, project=proj1, aliases='alias1, alias2, alias3')
     db.session.add(link)
     db.session.add(alias)
 
@@ -48,7 +51,51 @@ def regen():
     return result
 
 
+@app.route('/test')
+def test():
+    token = request.cookies.get('token')
+    return jsonify(locals())
+
+
+@app.route('/api/auth', methods=['POST'])
+def auth():
+    error = None
+
+    def get(field):
+        global error
+        value = request.values.get(field)
+        if value is None:
+            error = 'заполни' + field
+        if field not in ('password', 'token'):
+            return value.lower()
+        return value
+
+    login, password, action = get('login'), get('password'), get('action')
+
+    if error is not None:
+        return jsonify({'message': error})
+
+    user = {
+        'login': Auth.get_user_by_login_and_hash(login, password),
+        'registration': Auth.add_new_user(login, password)
+    }[action]
+
+    if user is None:
+        message = {
+            'login': 'У нас нет пользователя с такими учетными данными.\r\nСкорее всего ты очепятался.',
+            'registration': 'такой логин уже занят, попробуй другой'
+        }[action]
+        return jsonify({'message': message})
+
+    response = {'token': user.token}
+    if action == 'login':
+        response['redirect'] = '/'
+
+    return jsonify(response)
+
+
 @app.route('/api/tasks')
+@Auth.check_api_request
 def get_tasks():
     now = dt.datetime.now()
 
@@ -71,9 +118,10 @@ def get_tasks():
 
     return jsonify({"tasks": last_entries})
 
-@app.route('/api/current')
-def get_current():
 
+@app.route('/api/current')
+@Auth.check_api_request
+def get_current():
     dateFrom = dt.datetime.now()
 
     storage = Storage()
@@ -87,17 +135,22 @@ def get_current():
 
 
 @app.route('/api/completitions')
+@Auth.check_api_request
 def complete_task():
     storage = Storage()
     return jsonify({"values": storage.get_suggestions()})
 
+
 @app.route('/api/task', methods=['POST'])
+@Auth.check_api_request
 def add_entry():
     storage = Storage()
     result = storage.add_fact(request.values['name'])
     return jsonify(result)
 
+
 @app.route('/api/task/edit', methods=['POST'])
+@Auth.check_api_request
 def edit_task():
     storage = Storage()
 
@@ -130,16 +183,19 @@ def edit_task():
 
     result = storage.update_fact(fact['id'], factNew.serialized_name(), start_dt, end_dt)
 
-
     return jsonify(result)
 
+
 @app.route('/api/stop', methods=['POST'])
+@Auth.check_api_request
 def stop_tracking():
     storage = Storage()
     result = storage.stop_tracking(dt.datetime.now())
     return jsonify(result)
 
+
 @app.route('/api/task/stop', methods=['POST'])
+@Auth.check_api_request
 def stop_task():
     id = int(request.values['id'])
     storage = Storage()
@@ -149,6 +205,7 @@ def stop_task():
 
 
 @app.route('/api/task/resume', methods=['POST'])
+@Auth.check_api_request
 def resume_task():
     id = int(request.values['id'])
     storage = Storage()
@@ -156,7 +213,9 @@ def resume_task():
 
     return jsonify(result)
 
+
 @app.route('/api/task/delete', methods=['POST'])
+@Auth.check_api_request
 def delete_task():
     id = int(request.values['id'])
     storage = Storage()
@@ -169,3 +228,6 @@ def delete_task():
 @app.route('/<path:path>')
 def catch_all(path):
     return render_template("index.html")
+
+# if __name__ == '__main__':
+#     app.run(host='0.0.0.0', port=80)
