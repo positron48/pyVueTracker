@@ -10,6 +10,7 @@ class Redmine(object):
             self.api = RedmineLib(url, username=login, password=password)
         else:
             self.api = RedmineLib(url, key=token)
+        self.is_auth = self.is_auth()
 
     def is_auth(self):
         try:
@@ -25,5 +26,5 @@ class Redmine(object):
         return self.api.issue.all()
 
     def get_api_key(self):
-        if self.is_auth():
+        if self.is_auth:
             return self.api.auth().api_key
