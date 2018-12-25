@@ -107,8 +107,6 @@ def auth():
         return jsonify({'message': message})
 
     response = {'token': user.token}
-    if action == 'login':
-        response['redirect'] = '/'
 
     return jsonify(response)
 
