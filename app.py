@@ -7,7 +7,7 @@ from flask import Flask, request, jsonify, render_template
 from backend.src.model.mysql import db
 from backend.src.auth import Auth
 from backend.src.controller import ApiController
-import hashlib
+from hashlib import md5, sha256
 
 app = Flask(__name__,
             static_folder="./dist/static",
@@ -92,7 +92,11 @@ def auth():
     if error is not None:
         return jsonify({'message': error})
 
-    hash = hashlib.md5(password.encode()).hexdigest()
+    hash = sha256(
+        md5(password.encode()).hexdigest().encode() +
+        md5(login.encode()).hexdigest().encode() +
+        app.config.get('SALT')
+    ).hexdigest()
 
     user = {
         'login': Auth.get_user_by_login_and_hash(login, hash),
