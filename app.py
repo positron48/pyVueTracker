@@ -7,7 +7,6 @@ from flask import Flask, request, jsonify, render_template
 from backend.src.model.mysql import db
 from backend.src.auth import Auth
 from backend.src.controller import ApiController
-from hashlib import md5, sha256
 
 app = Flask(__name__,
             static_folder="./dist/static",
@@ -25,8 +24,8 @@ def regen():
     db.drop_all()
     db.create_all()
     tracker = Tracker(title='intaro redmine', code='redmine', api_url='https://redmine.skillum.ru')
-    user = User(login='login', hash='password', token='MQinK4')
-    user2 = User(login='login2', hash='password2', token='MQinK42')
+    user = User(login='login', hash=Auth.get_hash('login', 'password', app.config.get('SALT')), token='MQinK4')
+    user2 = User(login='login2', hash=Auth.get_hash('login2', 'password2', app.config.get('SALT')), token='MQinK42')
     db.session.add(user)
     db.session.add(user2)
     db.session.add(tracker)
@@ -52,7 +51,6 @@ def regen():
     db.session.add(user2)
     db.session.add(user3)
 
-
     tracker = Tracker(title='title', code='code', ui_url='url', api_url='base')
     link = TrackerUserLink(tracker=tracker, user=user1, external_user_id=1234)
     alias = UserProjectLink(user=user1, project=proj1, aliases='alias1, alias2, alias3')
@@ -74,6 +72,7 @@ def test():
     return jsonify(locals())
 
 
+
 @app.route('/api/auth', methods=['POST'])
 def auth():
     error = None
@@ -92,11 +91,7 @@ def auth():
     if error is not None:
         return jsonify({'message': error})
 
-    hash = sha256(
-        md5(password.encode()).hexdigest().encode() +
-        md5(login.encode()).hexdigest().encode() +
-        app.config.get('SALT')
-    ).hexdigest()
+    hash = Auth.get_hash(login, password, app.config.get('SALT'))
 
     user = {
         'login': Auth.get_user_by_login_and_hash(login, hash),
@@ -168,7 +163,6 @@ def add_entry():
     name = request.values.get('name').strip()
     api = ApiController()
     return api.add_activity(name)
-
 
     # storage = Storage()
     # result = storage.add_fact(request.values['name'])

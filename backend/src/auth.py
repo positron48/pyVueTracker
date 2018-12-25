@@ -3,6 +3,7 @@ from backend.src.helpers import StringHelper
 from flask import request, Response
 from functools import wraps
 import datetime
+from hashlib import md5, sha256
 
 
 class Auth(object):
@@ -32,6 +33,14 @@ class Auth(object):
     @classmethod
     def get_request_token(cls):
         return request.headers.get('token')
+
+    @classmethod
+    def get_hash(cls, login, password, salt):
+        return sha256(
+            md5(password.encode()).hexdigest().encode() +
+            md5(login.encode()).hexdigest().encode() +
+            salt
+        ).hexdigest()
 
     @classmethod
     def check_api_request(cls, func):
