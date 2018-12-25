@@ -74,11 +74,11 @@ class Sheduler(object):
             project_ids = {pr_link.external_project_id: pr_link.project_id for pr_link in db_projects}
 
             new_ids = task_ids - exist_ids
-            for task in tasks:
-                if task.id in new_ids:
-                    db_task = Task(project_id=project_ids[task.project['id']], title=task.subject,
-                                   external_task_id=task.id)
-                    db.session.add(db_task)
+            new = {task.id: task for task in tasks if task.id in new_ids}
+            for task_id in sorted(list(new_ids)):
+                task = new[task_id]
+                db_task = Task(project_id=project_ids[task.project['id']], title=task.subject, external_task_id=task.id)
+                db.session.add(db_task)
         db.session.commit()
 
     def fetch_external_data(self):
