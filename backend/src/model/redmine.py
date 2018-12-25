@@ -28,3 +28,7 @@ class Redmine(object):
     def get_api_key(self):
         if self.is_auth:
             return self.api.auth().api_key
+
+    def get_task(self, task_id):
+        if self.is_auth:
+            return self.api.issue.get(task_id)

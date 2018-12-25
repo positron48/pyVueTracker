@@ -37,6 +37,40 @@ class Engine(object):
             .filter(Project.title == project_name) \
             .filter(User.id == self.user.id).first()
 
+    def __get_project_by_code(self, project_code):
+        return db.session.query(Project.id) \
+            .join(User.projects) \
+            .filter(Project.code == project_code) \
+            .filter(User.id == self.user.id).first()
+
+    def get_autocomplete(self, text):
+        result = []
+        db_facts = None
+        if text is None:
+            db_facts = db.session.query(Activity) \
+                .filter(Activity.user_id == self.user.id) \
+                .order_by(desc(Activity.time_start)) \
+                .limit(15) \
+                .all()
+        else:
+            pass #todo тут будет парсинг текста для умного автокомплита
+        for db_fact in db_facts:  # type: Activity
+            task = {
+            'id': db_fact.task.external_task_id,
+            'name': db_fact.name,
+            'project': db_fact.task.project.code,
+            'tags': {'#' + tag.name for tag in db_fact.hashtags},
+            'desc': db_fact.comment,
+            }
+            s = ''
+            if task['id']: s += str(task['id'])
+            if task['name']: s += ' ' + task['name']
+            if task['project']: s += '@' + task['project']
+            if len(task['tags']) > 0: s += ' ' + ', '.join(task['tags'])
+            if task['desc']: s += ', ' + task['desc']
+            result.append(s)
+        return result
+
     def add_fact(self, fact: Fact):
         """
         Добавляет факт в БД, добавляет недостающие теги, проставляет связи
@@ -59,6 +93,8 @@ class Engine(object):
             if fact.category is None:
                 return False, 'не указан проект для новой задачи'
             project = self.__get_project_by_name(fact.category)
+            if project is None:
+                project = self.__get_project_by_code(fact.category)
             if project is None:
                 return False, 'среди ваших проектов нет проекта ' + fact.category
             task = Task(external_task_id=external_task_id, project_id=project.id)

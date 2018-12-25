@@ -159,8 +159,12 @@ def get_current():
 @app.route('/api/completitions')
 @Auth.check_api_request
 def complete_task():
-    storage = Storage()
-    return jsonify({"values": storage.get_suggestions()})
+    text = request.values.get('text')
+    api = ApiController()
+    return api.get_autocomlete(text)
+
+    # storage = Storage()
+    # return jsonify({"values": storage.get_suggestions()})
 
 
 @app.route('/api/task', methods=['POST'])

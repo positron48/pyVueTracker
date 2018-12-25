@@ -54,8 +54,12 @@ export var API = {
   },
 
   // список последних задач для автодополнения
-  getCompletitions () {
-    return HTTP.get('/api/completitions')
+  getCompletitions (text) {
+    if (text) {
+      return HTTP.get('/api/completitions?text=' + text)
+    } else {
+      return HTTP.get('/api/completitions')
+    }
   },
 
   // добавления задания
