@@ -51,6 +51,7 @@ class Tracker(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255))
     code = db.Column(db.String(255))
+    type = db.Column(db.String(255))
     ui_url = db.Column(db.String(255))  # для генерации ссылок вида https://redmine.skillum.ru/issues/55597
     api_url = db.Column(db.String(255), nullable=False)
 
@@ -118,6 +119,7 @@ class TrackerProjectLink(db.Model):
     # автозаполняемые справочники
     external_project_id = db.Column(db.Integer)
     external_project_title = db.Column(db.String(255))
+    last_updated = db.Column(db.DateTime)
 
     tracker = db.relationship(Tracker)
     project = db.relationship(Project)
