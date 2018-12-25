@@ -41,7 +41,6 @@ def regen():
     s.fetch_external_data()
     db.session.commit()
 
-
     return 'success!'
     # todo тест каскадных удалений
     from backend.src.model.mysql import User, Project, TrackerUserLink, Tracker, UserProjectLink
@@ -76,6 +75,7 @@ def regen():
 def test():
     token = request.cookies.get('token')
     return jsonify(locals())
+
 
 
 
@@ -125,7 +125,7 @@ def get_tasks():
     dateFrom = now - dt.timedelta(days=1)
     dateTo = now
 
-    if interval != None:
+    if interval is not None:
         interval = interval.split('-')
         if len(interval) == 2:
             dateFrom = dt.datetime.strptime(interval[0], "%d.%m.%Y")

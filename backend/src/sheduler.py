@@ -12,7 +12,8 @@ class Sheduler(object):
         self.user = user
         self.tracker_links = db.session.query(TrackerUserLink).filter(TrackerUserLink.user_id == self.user.id).all()
 
-    def __get_engine(self, type, url, api_key):
+    @staticmethod
+    def __get_engine(type, url, api_key):
         return {
             'redmine': Redmine(url, api_key),
         }[type]

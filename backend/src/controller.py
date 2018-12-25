@@ -13,6 +13,7 @@ class Response(object):
         return jsonify(self.__dict__)
 
 
+# noinspection PyArgumentList
 class ApiController(object):
     def __init__(self):
         # сюда складывать данные для json-ответа. Допустимый формат - все, что поддается сериализации в json

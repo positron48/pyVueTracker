@@ -1,7 +1,10 @@
+import datetime
+import re
+
+from backend.src.auth import Auth
 from backend.src.model.hamster import Fact
 from backend.src.model.mysql import db, User, Activity, Task, HashTag, Project
-from backend.src.auth import Auth
-import re, datetime
+from sqlalchemy import desc
 
 
 class FactTask(object):
@@ -24,7 +27,8 @@ class Engine(object):
     def __init__(self):
         self.user = Auth.get_request_user()
 
-    def __get_task_by_external_id(self, external_task_id):
+    @staticmethod
+    def __get_task_by_external_id(external_task_id):
         return db.session.query(Task.id).filter(Task.external_task_id == external_task_id).first()
 
     def __get_project_by_name(self, project_name):
