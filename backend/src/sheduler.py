@@ -12,17 +12,10 @@ class Sheduler(object):
         self.user = user
         self.tracker_links = db.session.query(TrackerUserLink).filter(TrackerUserLink.user_id == self.user.id).all()
 
-    def __get_engine(self, type, url, api_key=None, login=None, password=None):
-        engine = None
-        if api_key is None:
-            engine = {
-                'redmine': Redmine(url, login=login, password=password),
-            }[type]
-        else:
-            engine = {
-                'redmine': Redmine(url, api_key),
-            }[type]
-        return engine
+    def __get_engine(self, type, url, api_key):
+        return {
+            'redmine': Redmine(url, api_key),
+        }[type]
 
     def __check_auth(self, type, url, api):
         response = requests.get(url)
@@ -31,30 +24,6 @@ class Sheduler(object):
         return {
             'redmine': api.is_auth(),
         }[type]
-
-    def __get_api_key(self, type, api):
-        return {
-            'redmine': api.get_api_key(),
-        }[type]
-
-    def __fetch_api_key(self):
-        for link in self.tracker_links:  # type: TrackerUserLink
-            api_key = link.external_api_key
-            if api_key is not None:
-                api = self.__get_engine(link.tracker.type, link.tracker.api_url, api_key)
-                auth = self.__check_auth(link.tracker.type, link.tracker.api_url, api)
-                if auth is not False:
-                    continue
-            api = self.__get_engine(link.tracker.type, link.tracker.api_url, login=link.external_login,
-                                    password=link.external_password)
-            auth = self.__check_auth(link.tracker.type, link.tracker.api_url, api)
-            if auth is not True:
-                continue
-            api_key = self.__get_api_key(link.tracker.type, api)
-            if api_key is not None:
-                link.external_api_key = api_key
-                db.session.add(link)
-        db.session.commit()
 
     def __fetch_projects(self):
         for link in self.tracker_links:  # type: TrackerUserLink
@@ -113,7 +82,6 @@ class Sheduler(object):
         db.session.commit()
 
     def fetch_external_data(self):
-        self.__fetch_api_key()
         self.__fetch_projects()
         self.__fetch_tasks()
         return 'done!'

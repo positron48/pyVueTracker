@@ -105,8 +105,6 @@ class TrackerUserLink(db.Model):
     external_user_id = db.Column(db.Integer)
     # авторизация
     external_api_key = db.Column(db.String(255))
-    external_login = db.Column(db.String(255))
-    external_password = db.Column(db.String(255))
 
     tracker = db.relationship(Tracker)
     user = db.relationship(User)
