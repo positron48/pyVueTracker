@@ -37,7 +37,7 @@ import {isLogin, logout} from './auth.js'
 export default {
   data () {
     return {
-      currentComponent: 'Home',
+      currentComponent: 'Auth',
       loginText: 'Выйти'
     }
   },

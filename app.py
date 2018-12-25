@@ -7,7 +7,7 @@ from flask import Flask, request, jsonify, render_template
 from backend.src.model.mysql import db
 from backend.src.auth import Auth
 from backend.src.controller import ApiController
-
+import hashlib
 
 app = Flask(__name__,
             static_folder="./dist/static",
@@ -92,9 +92,11 @@ def auth():
     if error is not None:
         return jsonify({'message': error})
 
+    hash = hashlib.md5(password.encode()).hexdigest()
+
     user = {
-        'login': Auth.get_user_by_login_and_hash(login, password),
-        'registration': Auth.add_new_user(login, password)
+        'login': Auth.get_user_by_login_and_hash(login, hash),
+        'registration': Auth.add_new_user(login, hash)
     }[action]
 
     if user is None:
