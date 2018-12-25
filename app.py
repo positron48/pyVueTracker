@@ -29,15 +29,14 @@ def regen():
     db.session.add(user)
     db.session.add(user2)
     db.session.add(tracker)
-    tracker_link = TrackerUserLink(tracker=tracker, user=user,
-                                   external_api_key='')
-    tracker_link2 = TrackerUserLink(tracker=tracker, user=user2, external_login='', external_password='')
+    tracker_link = TrackerUserLink(tracker=tracker, user=user, external_api_key='123456')
+    tracker_link2 = TrackerUserLink(tracker=tracker, user=user2)
     db.session.add(tracker_link)
     db.session.add(tracker_link2)
     db.session.commit()
 
     from backend.src.sheduler import Sheduler
-    s = Sheduler(Auth.get_user_by_token('MQinK42'))
+    s = Sheduler(Auth.get_user_by_token('MQinK4'))
     s.fetch_external_data()
     db.session.commit()
 
