@@ -10,7 +10,7 @@ virtualenv venv
 
 source venv/bin/activate
 
-pip3 install -r requirements.txt
+pip3 install -U -r requirements.txt
 
 cd ..
 
@@ -33,3 +33,13 @@ npm run dev
 ### prod
 
 npm run build
+
+Для развертывания сервера:
+* git clone
+* установить зависимости: cd frontend && npm install (или yarn install)
+* собрать фронт: cd frontend && npm run build (или yarn build)
+* войти в виртуальное окружение:  cd backend && virtualenv venv && source venv/bin/activate
+* установить зависимости: cd backend && pip3 install -U -r requirements.txt
+* отредактировать путь к БД в config.py
+* запустить сервер: cd backend && flask run
+Node.js используется только для сборки фронта, сервер - питон
