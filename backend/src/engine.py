@@ -22,8 +22,7 @@ class FactTask(object):
 
 class Engine(object):
     def __init__(self):
-        self.user_id = Auth.get_token_id(Auth.get_request_token())
-        self.user = db.session.query(User).filter(User.id == self.user_id)
+        self.user = Auth.get_request_user()
 
     def __get_task_by_external_id(self, external_task_id):
         return db.session.query(Task.id).filter(Task.external_task_id == external_task_id).first()
@@ -32,7 +31,7 @@ class Engine(object):
         return db.session.query(Project.id) \
             .join(User.projects) \
             .filter(Project.title == project_name) \
-            .filter(User.id == self.user_id).first()
+            .filter(User.id == self.user.id).first()
 
     def add_fact(self, fact: Fact):
         """
@@ -42,10 +41,10 @@ class Engine(object):
         """
         new_activity = Activity()
 
-        # user_id
-        if self.user_id is None:
+        # user
+        if self.user is None:
             return False, 'нет пользователя с таким токеном'
-        new_activity.user_id = self.user_id
+        new_activity.user_id = self.user.id
 
         # task_id
         external_task_id = fact.get_task_id()

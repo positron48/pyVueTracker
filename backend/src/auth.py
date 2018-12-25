@@ -35,6 +35,10 @@ class Auth(object):
         return request.headers.get('token')
 
     @classmethod
+    def get_request_user(cls):
+        return db.session.query(User).filter(User.token == cls.get_request_token()).first()
+
+    @classmethod
     def get_hash(cls, login, password, salt):
         return sha256(
             md5(password.encode()).hexdigest().encode() +
