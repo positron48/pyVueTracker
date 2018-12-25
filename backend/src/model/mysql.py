@@ -31,6 +31,7 @@ class Project(db.Model):
     users = db.relationship(User, secondary='user_projects')
     tracker_properties = db.relationship(lambda: TrackerProjectLink)
     sqlite_aliases = db.relationship(lambda: UserProjectLink)
+    categories = db.relationship(lambda: Category)
 
     def __repr__(self):
         return 'Project: %r' % self.title
@@ -44,6 +45,8 @@ class Task(db.Model):
     # автозаполняемые справочники
     external_task_id = db.Column(
         db.Integer)  # redmine_task_id. evo не имеет сущностей task, а redmine пока один - храним id в сущности
+
+    project = db.relationship(lambda: Project)
 
 
 class Tracker(db.Model):
@@ -59,11 +62,22 @@ class Tracker(db.Model):
     properties = db.relationship(lambda: TrackerUserLink)
 
 
+class Category(db.Model):
+    __tablename__ = 'categories'
+    id = db.Column(db.Integer, primary_key=True)
+    project_id = db.Column(db.Integer, db.ForeignKey(Project.id))
+    name = db.Column(db.String(255))
+    external_id = db.Column(db.Integer)
+
+    project = db.relationship(lambda: Project)
+
+
 class Activity(db.Model):
     __tablename__ = 'activities'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey(User.id))
     task_id = db.Column(db.Integer, db.ForeignKey(Task.id))
+    category_id = db.Column(db.Integer, db.ForeignKey(Category.id))
     name = db.Column(db.String(255))
     comment = db.Column(db.String(255))
     time_start = db.Column(db.DateTime)
@@ -71,7 +85,9 @@ class Activity(db.Model):
     deleted = db.Column(db.Boolean, default=False)
     last_updated = db.Column(db.DateTime)
 
+    task = db.relationship(lambda: Task)
     hashtags = db.relationship(lambda: HashTag, secondary='activity_hashtags')
+    category = db.relationship(lambda: Category)
 
 
 class HashTag(db.Model):
