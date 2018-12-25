@@ -36,6 +36,12 @@ def regen():
     db.session.add(tracker_link2)
     db.session.commit()
 
+    from backend.src.sheduler import Sheduler
+    s = Sheduler(Auth.get_user_by_token('MQinK42'))
+    s.fetch_external_data()
+    db.session.commit()
+
+
     return 'success!'
     # todo тест каскадных удалений
     from backend.src.model.mysql import User, Project, TrackerUserLink, Tracker, UserProjectLink
