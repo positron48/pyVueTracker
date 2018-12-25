@@ -102,7 +102,7 @@ class TrackerUserLink(db.Model):
     tracker_id = db.Column(db.Integer, db.ForeignKey(Tracker.id), primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey(User.id), primary_key=True)
     # у одного пользователя на каждом трекере user_id свой
-    external_user_id = db.Column(db.String(255))
+    external_user_id = db.Column(db.Integer)
     # авторизация
     external_api_key = db.Column(db.String(255))
     external_login = db.Column(db.String(255))
