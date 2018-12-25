@@ -36,7 +36,7 @@ def regen():
     db.session.add(tracker_link2)
     db.session.commit()
 
-    return None
+    return 'success!'
     # todo тест каскадных удалений
     from backend.src.model.mysql import User, Project, TrackerUserLink, Tracker, UserProjectLink
 
