@@ -29,6 +29,7 @@ def regen():
     db.session.add(user)
     db.session.add(user2)
     db.session.add(tracker)
+    #подставь ниже api_key - при пересоздании таблиц проекты и задачи подтянутся в БД с редмайна
     tracker_link = TrackerUserLink(tracker=tracker, user=user, external_api_key='123456')
     tracker_link2 = TrackerUserLink(tracker=tracker, user=user2)
     db.session.add(tracker_link)
