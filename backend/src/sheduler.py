@@ -21,6 +21,8 @@ class Sheduler(object):
     def __check_auth(self, type, url, api):
         response = requests.options(url)
         if response.status_code != requests.codes.ok:
+            response = requests.get(url)
+        if response.status_code != requests.codes.ok:
             return None
         return {
             'redmine': api.is_auth(),
