@@ -1,5 +1,6 @@
 import datetime as dt
 import re
+from backend.src.model.mysql import Activity
 
 
 class Fact(object):
@@ -13,15 +14,23 @@ class Fact(object):
         self.__task_id = None
         self.__task_name = None
 
-        if text is None:
+        if text is not None:
+            if type(text) == str:
+                fact = Hamster.parse_fact(text)
+                for key in fact:
+                    if fact[key] == '':
+                        fact[key] = None
+                    self.__dict__[key] = fact[key]
+            if isinstance(text, Activity):
+                name = str(text.task.external_task_id) + ' ' + text.name
+                self.activity = name
+                self.category = text.task.project.code
+                self.tags = text.hashtags
+                self.description = text.comment
+
+        if len(kwargs):
             for key, value in kwargs.items():
                 self.__dict__[key] = value
-        else:
-            fact = Hamster.parse_fact(text)
-            for key in fact:
-                if fact[key] == '':
-                    fact[key] = None
-                self.__dict__[key] = fact[key]
 
         self.__task_id = self.get_task_id()
         self.__task_name = self.get_task_name()

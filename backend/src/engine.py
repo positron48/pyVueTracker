@@ -55,9 +55,7 @@ class Engine(object):
         else:
             pass  # todo тут будет парсинг текста для умного автокомплита
         for db_fact in db_facts:  # type: Activity
-            name = str(db_fact.task.external_task_id)+' '+db_fact.name
-            fact = Fact(activity=name, category=db_fact.task.project.code, tags=db_fact.hashtags, description=db_fact.comment)
-            result.append(fact.as_text())
+            result.append(Fact(db_fact).as_text())
 
         return result
 
