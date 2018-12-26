@@ -53,21 +53,15 @@ class Engine(object):
                 .limit(15) \
                 .all()
         else:
-            pass #todo тут будет парсинг текста для умного автокомплита
+            pass  # todo тут будет парсинг текста для умного автокомплита
         for db_fact in db_facts:  # type: Activity
-            task = {
-            'id': db_fact.task.external_task_id,
-            'name': db_fact.name,
-            'project': db_fact.task.project.code,
-            'tags': {'#' + tag.name for tag in db_fact.hashtags},
-            'desc': db_fact.comment,
-            }
+            tags = {'#' + tag.name for tag in db_fact.hashtags}
             s = ''
-            if task['id']: s += str(task['id'])
-            if task['name']: s += ' ' + task['name']
-            if task['project']: s += '@' + task['project']
-            if len(task['tags']) > 0: s += ' ' + ', '.join(task['tags'])
-            if task['desc']: s += ', ' + task['desc']
+            if db_fact.task.external_task_id: s += str(db_fact.task.external_task_id)
+            if db_fact.name: s += ' ' + db_fact.name
+            if db_fact.task.project.code: s += '@' + db_fact.task.project.code
+            if len(tags): s += ' ' + ', '.join(tags)
+            if db_fact.comment: s += ', ' + db_fact.comment
             result.append(s)
         return result
 
