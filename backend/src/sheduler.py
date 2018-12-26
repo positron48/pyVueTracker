@@ -19,7 +19,7 @@ class Sheduler(object):
         }[type]
 
     def __check_auth(self, type, url, api):
-        response = requests.get(url)
+        response = requests.options(url)
         if response.status_code != requests.codes.ok:
             return None
         return {

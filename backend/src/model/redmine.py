@@ -10,14 +10,17 @@ class Redmine(object):
             self.api = RedmineLib(url, username=login, password=password)
         else:
             self.api = RedmineLib(url, key=token)
-        self.is_auth = self.is_auth()
+        self.auth = self.__is_auth()
 
-    def is_auth(self):
+    def __is_auth(self):
         try:
             auth = self.api.auth()
         except AuthError:
             auth = None
         return auth is not None
+
+    def is_auth(self):
+        return self.auth
 
     def get_all_projects(self):
         return self.api.project.all()
@@ -26,9 +29,9 @@ class Redmine(object):
         return self.api.issue.all()
 
     def get_api_key(self):
-        if self.is_auth:
+        if self.auth:
             return self.api.auth().api_key
 
     def get_task(self, task_id):
-        if self.is_auth:
+        if self.auth:
             return self.api.issue.get(task_id)
