@@ -46,7 +46,7 @@ class Engine(object):
     def get_autocomplete(self, text):
         result = []
         db_facts = None
-        if text is None:
+        if text is None or True:
             db_facts = db.session.query(Activity) \
                 .filter(Activity.user_id == self.user.id) \
                 .order_by(desc(Activity.time_start)) \
