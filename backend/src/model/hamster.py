@@ -40,7 +40,7 @@ class Fact(object):
         if self.activity is None:
             return None
 
-        task_id = re.findall('^(\d*) .*', self.activity)
+        task_id = re.findall('^(\d*)\s*.*', self.activity)
         if len(task_id) < 1:
             return None
 
@@ -54,7 +54,10 @@ class Fact(object):
         if self.activity is None:
             return None
 
-        name = re.findall('^\d* (.*)', self.activity).pop().strip()
+        name = re.findall('^\d*\s*(.*)', self.activity)
+        if name is None:
+            return None
+        name = name.pop().strip()
 
         self.__task_name = name
         return self.__task_name

@@ -93,9 +93,9 @@ class Engine(object):
         new_activity.task_id = task.id
 
         # name
-        name = re.findall('^\d* (.*)', fact.activity).pop().strip()
-        if name is not False and name != '':
-            new_activity.name = name
+        name = re.findall('^\d*\s*(.*)', fact.activity)
+        if name is not False and name != '' and name is not None:
+            new_activity.name = name.pop().strip()
 
         # comment
         if fact.description is not None:
