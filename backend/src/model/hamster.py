@@ -202,7 +202,10 @@ class Hamster(object):
                 res["tags"] = tags
 
             if (desc or "").strip():
-                res["description"] = desc.strip()
+                if '#' in desc:
+                    res['tags'].append(desc.replace('#', '', 1).strip())
+                else:
+                    res["description"] = desc.strip()
 
             return res
 
