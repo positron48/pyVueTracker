@@ -1,4 +1,4 @@
-// Statistics.vue
+// History.vue
 <template>
   <div>
     <div class="md-layout md-gutter md-alignment-top-center">

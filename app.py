@@ -9,6 +9,7 @@ from backend.src.auth import Auth
 from backend.src.schema import HashTagSchema
 from backend.src.controller import ApiController
 import hashlib
+import json
 
 app = Flask(__name__,
             static_folder="./dist/static",
@@ -141,6 +142,32 @@ def get_current():
 def complete_task():
     storage = Storage()
     return jsonify({"values": storage.get_suggestions()})
+
+
+@app.route('/api/grouped_tasks')
+@Auth.check_api_request
+def get_grouped_tasks():
+    now = dt.datetime.now()
+
+    interval = request.args.get('interval')
+    dateFrom = now - dt.timedelta(days=1)
+    dateTo = now
+
+    if interval != None:
+        interval = interval.split('-')
+        if len(interval) == 2:
+            dateFrom = dt.datetime.strptime(interval[0], "%d.%m.%Y")
+            dateTo = dt.datetime.strptime(interval[1], "%d.%m.%Y")
+        else:
+            dateFrom = dt.datetime.strptime(interval[0], "%d.%m.%Y")
+            dateTo = dateFrom
+
+    storage = Storage()
+
+    tasks = storage.get_facts_by_dates(dateFrom, dateTo)
+
+    # jsonify always encode unicode
+    return app.response_class(json.dumps(tasks, ensure_ascii=False), mimetype='application/json')
 
 
 @app.route('/api/task', methods=['POST'])

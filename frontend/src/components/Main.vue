@@ -4,14 +4,14 @@
     <nav>
       <div class="md-toolbar md-accent md-theme-demo-light md-elevation-1">
         <div class="md-title main-title">Time tracker</div>
-        <button type="button" class="md-button md-theme-demo-light" @click="go('Home')">
+        <button v-if="isLogin" type="button" class="md-button md-theme-demo-light" @click="go('Home')">
           <div class="md-ripple">
               <div class="md-button-content">Главный экран</div>
           </div>
         </button>
-        <button type="button" class="md-button md-theme-demo-light">
+        <button v-if="isLogin" type="button" class="md-button md-theme-demo-light">
           <div class="md-ripple">
-              <div class="md-button-content" @click="go('Statistics')">Статистика</div>
+              <div class="md-button-content" @click="go('History')">История</div>
           </div>
         </button>
         <button type="button" class="md-button md-theme-demo-light">
@@ -30,7 +30,7 @@
 
 <script>
 import Home from './Home.vue'
-import Statistics from './Statistics.vue'
+import History from './History.vue'
 import Auth from './Auth.vue'
 import {isLogin, logout} from './auth.js'
 
@@ -38,26 +38,27 @@ export default {
   data () {
     return {
       currentComponent: 'Auth',
-      loginText: 'Выйти'
+      loginText: 'Выйти',
+      isLogin: false
     }
   },
   components: {
-    Home, Statistics, Auth
+    Home, History, Auth
   },
   methods: {
     updateLogin () {
-      this.loginText = isLogin() ? 'Выйти' : 'Войти'
-      this.currentComponent = isLogin() ? 'Home' : 'Auth'
+      this.isLogin = isLogin()
+      this.loginText = this.isLogin ? 'Выйти' : 'Войти'
+      this.currentComponent = this.isLogin ? 'Home' : 'Auth'
     },
     go (screen) {
-      var isAuthorized = isLogin()
       if (screen === 'Auth') {
-        if (isAuthorized) {
+        if (this.isLogin) {
           logout()
         }
         this.updateLogin()
       } else {
-        if (isAuthorized) {
+        if (this.isLogin) {
           this.currentComponent = screen
         } else {
           this.updateLogin()
