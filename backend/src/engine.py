@@ -55,14 +55,10 @@ class Engine(object):
         else:
             pass  # todo тут будет парсинг текста для умного автокомплита
         for db_fact in db_facts:  # type: Activity
-            tags = {'#' + tag.name for tag in db_fact.hashtags}
-            s = ''
-            if db_fact.task.external_task_id: s += str(db_fact.task.external_task_id)
-            if db_fact.name: s += ' ' + db_fact.name
-            if db_fact.task.project.code: s += '@' + db_fact.task.project.code
-            if len(tags): s += ' ' + ', '.join(tags)
-            if db_fact.comment: s += ', ' + db_fact.comment
-            result.append(s)
+            name = str(db_fact.task.external_task_id)+' '+db_fact.name
+            fact = Fact(activity=name, category=db_fact.task.project.code, tags=db_fact.hashtags, description=db_fact.comment)
+            result.append(fact.as_text())
+
         return result
 
     def add_fact(self, fact: Fact):

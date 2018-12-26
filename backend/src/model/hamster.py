@@ -3,20 +3,28 @@ import re
 
 
 class Fact(object):
-    def __init__(self, text):
+    def __init__(self, text=None, **kwargs):
         self.start_time = None
         self.end_time = None
         self.activity = None  # задача и имя активности
         self.category = None  # проект
         self.description = None  # описание
         self.tags = None
+        self.__task_id = None
+        self.__task_name = None
 
-        if text is not None:
+        if text is None:
+            for key, value in kwargs.items():
+                self.__dict__[key] = value
+        else:
             fact = Hamster.parse_fact(text)
             for key in fact:
                 if fact[key] == '':
                     fact[key] = None
                 self.__dict__[key] = fact[key]
+
+        self.__task_id = self.get_task_id()
+        self.__task_name = self.get_task_name()
 
     def validate(self):
         req_fields = ('start_time', 'activity')
@@ -26,13 +34,40 @@ class Fact(object):
         return True
 
     def get_task_id(self):
+        if self.__task_id is not None:
+            return self.__task_id
+
         if self.activity is None:
             return None
+
         task_id = re.findall('^(\d*) .*', self.activity)
         if len(task_id) < 1:
             return None
-        task_id = int(task_id.pop())
-        return task_id
+
+        self.__task_id = int(task_id.pop())
+        return self.__task_id
+
+    def get_task_name(self):
+        if self.__task_name is not None:
+            return self.__task_name
+
+        if self.activity is None:
+            return None
+
+        name = re.findall('^\d* (.*)', self.activity).pop().strip()
+
+        self.__task_name = name
+        return self.__task_name
+
+    def as_text(self):
+        tags = {'#' + tag.name for tag in self.tags}
+        s = ''
+        if self.__task_id: s += str(self.__task_id)
+        if self.__task_name: s += ' ' + self.__task_name
+        if self.category: s += '@' + self.category
+        if len(tags): s += ' ' + ', '.join(tags)
+        if self.description: s += ', ' + self.description
+        return s
 
 
 class Hamster(object):
