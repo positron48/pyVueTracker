@@ -584,8 +584,6 @@ class Storage(storage.Storage):
         end_date = end_date or date
         datetime_to = datetime.datetime.combine(end_date, split_time) + datetime.timedelta(days = 1)
 
-        print(datetime_from, datetime_to)
-
         query = """
                    SELECT a.id AS id,
                           a.start_time AS start_time,
@@ -900,8 +898,6 @@ class Storage(storage.Storage):
                     ORDER BY a.start_time ASC"""
 
         allTasks = self.fetchall(query)
-        for (i, task) in enumerate(allTasks):
-            print([task[0], task[1]])
 
         return allTasks
 
