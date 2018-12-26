@@ -14,6 +14,11 @@
               <div class="md-button-content" @click="go('History')">История</div>
           </div>
         </button>
+        <button v-if="isLogin" type="button" class="md-button md-theme-demo-light">
+          <div class="md-ripple">
+              <div class="md-button-content" @click="go('Export')">Экспорт</div>
+          </div>
+        </button>
         <button type="button" class="md-button md-theme-demo-light">
           <div class="md-ripple">
               <div class="md-button-content" @click="go('Auth')">{{loginText}}</div>
@@ -32,6 +37,7 @@
 import Home from './Home.vue'
 import History from './History.vue'
 import Auth from './Auth.vue'
+import Export from './Export.vue'
 import {isLogin, logout} from './auth.js'
 
 export default {
@@ -43,7 +49,7 @@ export default {
     }
   },
   components: {
-    Home, History, Auth
+    Home, History, Auth, Export
   },
   methods: {
     updateLogin () {

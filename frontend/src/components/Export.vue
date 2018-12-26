@@ -1,4 +1,4 @@
-// History.vue
+// Export.vue
 <template>
   <div>
     <div class="md-layout md-gutter md-alignment-top-center center">
@@ -16,13 +16,13 @@
         </date-picker>
       </div>
     </div>
-    <Tasks :initialDate="selectedDate" ref="tasks" @update="refreshData()"/>
+    <GroupedTasks :initialDate="selectedDate" ref="grouped_tasks" @update="refreshData()"/>
   </div>
 </template>
 
 <script>
 import DatePicker from 'vue2-datepicker'
-import Tasks from './Tasks.vue'
+import GroupedTasks from './GroupedTasks.vue'
 
 export default {
   data () {
@@ -41,15 +41,15 @@ export default {
     onDateSelected: function (daterange) {
       this.selectedDate.start = daterange[0]
       this.selectedDate.end = daterange[1]
-      this.$refs.tasks.selectedDate = this.selectedDate
-      this.$refs.tasks.getTasks()
+      this.$refs.grouped_tasks.selectedDate = this.selectedDate
+      this.refreshData()
     },
     refreshData () {
-      this.$refs.tasks.getTasks()
+      this.$refs.grouped_tasks.getTasks()
     }
   },
   components: {
-    DatePicker, Tasks
+    DatePicker, GroupedTasks
   },
   mounted () {
     this.$refs.rangeDatePicker.dateRange = this.selectedDate

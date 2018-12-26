@@ -23,6 +23,7 @@ import re
 import copy
 from collections import defaultdict
 from backend.lib.hamster import Fact
+from math import ceil
 
 class Storage(object):
 
@@ -270,7 +271,7 @@ class Storage(object):
             if description is not '':
                 formated_tasks[taskDate][task['task_id']]['description'].append(description)
 
-        tasks = {}
+        tasks = []
         i = 0
         for formated_tasks in formated_tasks.values():
             for task in formated_tasks.values():
@@ -280,16 +281,17 @@ class Storage(object):
                 except ValueError:
                     task_id = ""
 
-                tasks[i] = {
+                new_task = {
                     'id': task['id'],
-                    'start': task['start'].strftime('%d.%m.%Y'),
-                    'hours': round(task['hours'], 2),
+                    'date': task['start'].strftime('%d.%m.%Y'),
+                    'delta': ceil(task['hours'] * 10) / 10,
                     'description': description,
                     'name': task['name'],
-                    'cat': task['cat'],
+                    'category': task['cat'],
                     'tag': task['tag'],
                     'task_id': task_id
                 }
                 i += 1
+                tasks.append(new_task)
 
         return tasks
