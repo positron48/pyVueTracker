@@ -119,139 +119,150 @@ def auth():
 @app.route('/api/tasks')
 @Auth.check_api_request
 def get_tasks():
-    now = dt.datetime.now()
+    if app.config.get('SQLITE'):
+        now = dt.datetime.now()
 
-    interval = request.args.get('interval')
-    dateFrom = now - dt.timedelta(days=1)
-    dateTo = now
+        interval = request.args.get('interval')
+        dateFrom = now - dt.timedelta(days=1)
+        dateTo = now
 
-    if interval is not None:
-        interval = interval.split('-')
-        if len(interval) == 2:
-            dateFrom = dt.datetime.strptime(interval[0], "%d.%m.%Y")
-            dateTo = dt.datetime.strptime(interval[1], "%d.%m.%Y")
-        else:
-            dateFrom = dt.datetime.strptime(interval[0], "%d.%m.%Y")
-            dateTo = dateFrom
+        if interval is not None:
+            interval = interval.split('-')
+            if len(interval) == 2:
+                dateFrom = dt.datetime.strptime(interval[0], "%d.%m.%Y")
+                dateTo = dt.datetime.strptime(interval[1], "%d.%m.%Y")
+            else:
+                dateFrom = dt.datetime.strptime(interval[0], "%d.%m.%Y")
+                dateTo = dateFrom
 
-    storage = Storage()
+        storage = Storage()
 
-    last_entries = storage.get_formated_facts(dateFrom, dateTo)
+        last_entries = storage.get_formated_facts(dateFrom, dateTo)
 
-    return jsonify({"tasks": last_entries})
+        return jsonify({"tasks": last_entries})
 
 
 @app.route('/api/current')
 @Auth.check_api_request
 def get_current():
-    dateFrom = dt.datetime.now()
+    if app.config.get('SQLITE'):
+        dateFrom = dt.datetime.now()
 
-    storage = Storage()
-    last_entries = storage.get_formated_facts(dateFrom)
+        storage = Storage()
+        last_entries = storage.get_formated_facts(dateFrom)
 
-    for k, item in enumerate(last_entries):
-        if item['end_time'] is '':
-            return jsonify(item)
+        for k, item in enumerate(last_entries):
+            if item['end_time'] is '':
+                return jsonify(item)
 
-    return jsonify(None)
+        return jsonify(None)
 
 
 @app.route('/api/completitions')
 @Auth.check_api_request
 def complete_task():
+    if app.config.get('SQLITE'):
+        storage = Storage()
+        return jsonify({"values": storage.get_suggestions()})
+
     text = request.values.get('text')
     api = ApiController()
     return api.get_autocomlete(text)
 
-    # storage = Storage()
-    # return jsonify({"values": storage.get_suggestions()})
+
 
 
 @app.route('/api/task', methods=['POST'])
 @Auth.check_api_request
 def add_entry():
+    if app.config.get('SQLITE'):
+        storage = Storage()
+        result = storage.add_fact(request.values['name'])
+        return jsonify(result)
+
     name = request.values.get('name').strip()
     api = ApiController()
     return api.add_activity(name)
-
-    # storage = Storage()
-    # result = storage.add_fact(request.values['name'])
-    # return jsonify(result)
 
 
 @app.route('/api/task/edit', methods=['POST'])
 @Auth.check_api_request
 def edit_task():
-    storage = Storage()
+    if app.config.get('SQLITE'):
+        storage = Storage()
 
-    fact = storage.get_fact(request.values['id'])
-    fact['name'] = request.values['name']
-    fact['category'] = request.values['category']
-    fact['date'] = request.values['date']
-    fact['start_time'] = request.values['start_time']
-    fact['end_time'] = request.values['end_time']
-    fact['description'] = request.values['description']
-    fact['tags'] = [tag.strip() for tag in request.values['tags'].split(',')]
+        fact = storage.get_fact(request.values['id'])
+        fact['name'] = request.values['name']
+        fact['category'] = request.values['category']
+        fact['date'] = request.values['date']
+        fact['start_time'] = request.values['start_time']
+        fact['end_time'] = request.values['end_time']
+        fact['description'] = request.values['description']
+        fact['tags'] = [tag.strip() for tag in request.values['tags'].split(',')]
 
-    start_dt = dt.datetime.strptime(fact['date'] + ' ' + fact['start_time'], "%d.%m.%Y %H:%M")
+        start_dt = dt.datetime.strptime(fact['date'] + ' ' + fact['start_time'], "%d.%m.%Y %H:%M")
 
-    if fact['end_time']:
-        end_dt = dt.datetime.strptime(fact['date'] + ' ' + fact['end_time'], "%d.%m.%Y %H:%M")
-    else:
-        end_dt = None
+        if fact['end_time']:
+            end_dt = dt.datetime.strptime(fact['date'] + ' ' + fact['end_time'], "%d.%m.%Y %H:%M")
+        else:
+            end_dt = None
 
-    # todo: сделать инициализацию факта по id
-    factNew = Fact(
-        id=fact['id'],
-        activity=fact['name'],
-        category=fact['category'],
-        start_time=fact['start_time'],
-        end_time=fact['end_time'],
-        description=fact['description'],
-        tags=fact['tags']
-    )
+        # todo: сделать инициализацию факта по id
+        factNew = Fact(
+            id=fact['id'],
+            activity=fact['name'],
+            category=fact['category'],
+            start_time=fact['start_time'],
+            end_time=fact['end_time'],
+            description=fact['description'],
+            tags=fact['tags']
+        )
 
-    result = storage.update_fact(fact['id'], factNew.serialized_name(), start_dt, end_dt)
+        result = storage.update_fact(fact['id'], factNew.serialized_name(), start_dt, end_dt)
 
-    return jsonify(result)
+        return jsonify(result)
 
 
 @app.route('/api/stop', methods=['POST'])
 @Auth.check_api_request
 def stop_tracking():
-    storage = Storage()
-    result = storage.stop_tracking(dt.datetime.now())
-    return jsonify(result)
+    if app.config.get('SQLITE'):
+        storage = Storage()
+        result = storage.stop_tracking(dt.datetime.now())
+        return jsonify(result)
 
 
 @app.route('/api/task/stop', methods=['POST'])
 @Auth.check_api_request
 def stop_task():
-    id = int(request.values['id'])
-    storage = Storage()
-    result = storage.touch_fact(id)
+    if app.config.get('SQLITE'):
+        id = int(request.values['id'])
+        storage = Storage()
+        result = storage.touch_fact(id)
 
-    return jsonify(result)
+        return jsonify(result)
 
 
 @app.route('/api/task/resume', methods=['POST'])
 @Auth.check_api_request
 def resume_task():
-    id = int(request.values['id'])
-    storage = Storage()
-    result = storage.resume_fact(id)
+    if app.config.get('SQLITE'):
+        id = int(request.values['id'])
+        storage = Storage()
+        result = storage.resume_fact(id)
 
-    return jsonify(result)
+        return jsonify(result)
 
 
 @app.route('/api/task/delete', methods=['POST'])
 @Auth.check_api_request
 def delete_task():
-    id = int(request.values['id'])
-    storage = Storage()
-    result = storage.remove_fact(id)
+    if app.config.get('SQLITE'):
+        id = int(request.values['id'])
+        storage = Storage()
+        result = storage.remove_fact(id)
 
-    return jsonify(result)
+        return jsonify(result)
 
 
 @app.route('/', defaults={'path': ''})
