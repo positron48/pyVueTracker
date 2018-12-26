@@ -41,9 +41,8 @@ class Auth(object):
     @classmethod
     def get_hash(cls, login, password, salt):
         return sha256(
-            md5(password.encode()).hexdigest().encode() +
-            md5(login.encode()).hexdigest().encode() +
-            salt
+            md5(password.encode() + salt).hexdigest().encode() +
+            md5(login.encode() + salt).hexdigest().encode()
         ).hexdigest()
 
     @classmethod
