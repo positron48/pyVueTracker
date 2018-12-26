@@ -4,11 +4,9 @@ from backend.lib.hamster.db import Storage
 from backend.lib.hamster import Fact
 from flask_cors import CORS
 from flask import Flask, request, jsonify, render_template
-from backend.src.model import db
+from backend.src.model.mysql import db
 from backend.src.auth import Auth
-from backend.src.schema import HashTagSchema
 from backend.src.controller import ApiController
-import hashlib
 import json
 
 app = Flask(__name__,
@@ -16,15 +14,37 @@ app = Flask(__name__,
             template_folder="./dist")
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.config.from_pyfile('config.py')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
 
 @app.route('/regen')
 def regen():
+    # генератор тестовых данных
+    from backend.src.model.mysql import Tracker, User, TrackerUserLink
     db.drop_all()
     db.create_all()
+    tracker = Tracker(title='intaro redmine', code='redmine', api_url='https://redmine.skillum.ru', type='redmine')
+    user = User(login='login', hash=Auth.get_hash('login', 'password', app.config.get('SALT')), token='MQinK4')
+    user2 = User(login='login2', hash=Auth.get_hash('login2', 'password2', app.config.get('SALT')), token='MQinK42')
+    db.session.add(user)
+    db.session.add(user2)
+    db.session.add(tracker)
+    #подставь ниже api_key - при пересоздании таблиц проекты и задачи подтянутся в БД с редмайна
+    tracker_link = TrackerUserLink(tracker=tracker, user=user, external_api_key='123456')
+    tracker_link2 = TrackerUserLink(tracker=tracker, user=user2)
+    db.session.add(tracker_link)
+    db.session.add(tracker_link2)
+    db.session.commit()
+
+    from backend.src.sheduler import Sheduler
+    s = Sheduler(Auth.get_user_by_token('MQinK4'))
+    s.fetch_external_data()
+    db.session.commit()
+
+    return 'success!'
     # todo тест каскадных удалений
-    from backend.src.model import User, Project, TrackerUserLink, Tracker, UserProjectLink
+    from backend.src.model.mysql import User, Project, TrackerUserLink, Tracker, UserProjectLink
 
     user1 = User(login='first', hash='hash', token='asdasdasd')
     user2 = User(login='two', hash='hash', token='asdasd')
@@ -58,6 +78,8 @@ def test():
     return jsonify(locals())
 
 
+
+
 @app.route('/api/auth', methods=['POST'])
 def auth():
     error = None
@@ -76,7 +98,7 @@ def auth():
     if error is not None:
         return jsonify({'message': error})
 
-    hash = hashlib.md5(password.encode()).hexdigest()
+    hash = Auth.get_hash(login, password, app.config.get('SALT'))
 
     user = {
         'login': Auth.get_user_by_login_and_hash(login, hash),
@@ -91,8 +113,6 @@ def auth():
         return jsonify({'message': message})
 
     response = {'token': user.token}
-    if action == 'login':
-        response['redirect'] = '/'
 
     return jsonify(response)
 
@@ -100,48 +120,60 @@ def auth():
 @app.route('/api/tasks')
 @Auth.check_api_request
 def get_tasks():
-    now = dt.datetime.now()
+    if app.config.get('SQLITE'):
+        now = dt.datetime.now()
 
-    interval = request.args.get('interval')
-    dateFrom = now - dt.timedelta(days=1)
-    dateTo = now
+        interval = request.args.get('interval')
+        dateFrom = now - dt.timedelta(days=1)
+        dateTo = now
 
-    if interval != None:
-        interval = interval.split('-')
-        if len(interval) == 2:
-            dateFrom = dt.datetime.strptime(interval[0], "%d.%m.%Y")
-            dateTo = dt.datetime.strptime(interval[1], "%d.%m.%Y")
-        else:
-            dateFrom = dt.datetime.strptime(interval[0], "%d.%m.%Y")
-            dateTo = dateFrom
+        if interval is not None:
+            interval = interval.split('-')
+            if len(interval) == 2:
+                dateFrom = dt.datetime.strptime(interval[0], "%d.%m.%Y")
+                dateTo = dt.datetime.strptime(interval[1], "%d.%m.%Y")
+            else:
+                dateFrom = dt.datetime.strptime(interval[0], "%d.%m.%Y")
+                dateTo = dateFrom
 
-    storage = Storage()
+        storage = Storage()
 
-    last_entries = storage.get_formated_facts(dateFrom, dateTo)
+        last_entries = storage.get_formated_facts(dateFrom, dateTo)
 
-    return jsonify({"tasks": last_entries})
+        return jsonify({"tasks": last_entries})
 
 
 @app.route('/api/current')
 @Auth.check_api_request
 def get_current():
-    dateFrom = dt.datetime.now()
+    if app.config.get('SQLITE'):
+        dateFrom = dt.datetime.now()
 
-    storage = Storage()
-    last_entries = storage.get_formated_facts(dateFrom)
+        storage = Storage()
+        last_entries = storage.get_formated_facts(dateFrom)
 
-    for k, item in enumerate(last_entries):
-        if item['end_time'] is '':
-            return jsonify(item)
+        for k, item in enumerate(last_entries):
+            if item['end_time'] is '':
+                return jsonify(item)
 
-    return jsonify(None)
+        return jsonify(None)
+
+    api = ApiController()
+    return api.get_current()
 
 
 @app.route('/api/completitions')
 @Auth.check_api_request
 def complete_task():
-    storage = Storage()
-    return jsonify({"values": storage.get_suggestions()})
+    if app.config.get('SQLITE'):
+        storage = Storage()
+        return jsonify({"values": storage.get_suggestions()})
+
+    text = request.values.get('text')
+    api = ApiController()
+    return api.get_autocomlete(text)
+
+
 
 
 @app.route('/api/grouped_tasks')
@@ -173,84 +205,94 @@ def get_grouped_tasks():
 @app.route('/api/task', methods=['POST'])
 @Auth.check_api_request
 def add_entry():
-    storage = Storage()
-    result = storage.add_fact(request.values['name'])
-    return jsonify(result)
+    if app.config.get('SQLITE'):
+        storage = Storage()
+        result = storage.add_fact(request.values['name'])
+        return jsonify(result)
+
+    name = request.values.get('name').strip()
+    api = ApiController()
+    return api.add_activity(name)
 
 
 @app.route('/api/task/edit', methods=['POST'])
 @Auth.check_api_request
 def edit_task():
-    storage = Storage()
+    if app.config.get('SQLITE'):
+        storage = Storage()
 
-    fact = storage.get_fact(request.values['id'])
-    fact['name'] = request.values['name']
-    fact['category'] = request.values['category']
-    fact['date'] = request.values['date']
-    fact['start_time'] = request.values['start_time']
-    fact['end_time'] = request.values['end_time']
-    fact['description'] = request.values['description']
-    fact['tags'] = [tag.strip() for tag in request.values['tags'].split(',')]
+        fact = storage.get_fact(request.values['id'])
+        fact['name'] = request.values['name']
+        fact['category'] = request.values['category']
+        fact['date'] = request.values['date']
+        fact['start_time'] = request.values['start_time']
+        fact['end_time'] = request.values['end_time']
+        fact['description'] = request.values['description']
+        fact['tags'] = [tag.strip() for tag in request.values['tags'].split(',')]
 
-    start_dt = dt.datetime.strptime(fact['date'] + ' ' + fact['start_time'], "%d.%m.%Y %H:%M")
+        start_dt = dt.datetime.strptime(fact['date'] + ' ' + fact['start_time'], "%d.%m.%Y %H:%M")
 
-    if fact['end_time']:
-        end_dt = dt.datetime.strptime(fact['date'] + ' ' + fact['end_time'], "%d.%m.%Y %H:%M")
-    else:
-        end_dt = None
+        if fact['end_time']:
+            end_dt = dt.datetime.strptime(fact['date'] + ' ' + fact['end_time'], "%d.%m.%Y %H:%M")
+        else:
+            end_dt = None
 
-    # todo: сделать инициализацию факта по id
-    factNew = Fact(
-        id=fact['id'],
-        activity=fact['name'],
-        category=fact['category'],
-        start_time=fact['start_time'],
-        end_time=fact['end_time'],
-        description=fact['description'],
-        tags=fact['tags']
-    )
+        # todo: сделать инициализацию факта по id
+        factNew = Fact(
+            id=fact['id'],
+            activity=fact['name'],
+            category=fact['category'],
+            start_time=fact['start_time'],
+            end_time=fact['end_time'],
+            description=fact['description'],
+            tags=fact['tags']
+        )
 
-    result = storage.update_fact(fact['id'], factNew.serialized_name(), start_dt, end_dt)
+        result = storage.update_fact(fact['id'], factNew.serialized_name(), start_dt, end_dt)
 
-    return jsonify(result)
+        return jsonify(result)
 
 
 @app.route('/api/stop', methods=['POST'])
 @Auth.check_api_request
 def stop_tracking():
-    storage = Storage()
-    result = storage.stop_tracking(dt.datetime.now())
-    return jsonify(result)
+    if app.config.get('SQLITE'):
+        storage = Storage()
+        result = storage.stop_tracking(dt.datetime.now())
+        return jsonify(result)
 
 
 @app.route('/api/task/stop', methods=['POST'])
 @Auth.check_api_request
 def stop_task():
-    id = int(request.values['id'])
-    storage = Storage()
-    result = storage.touch_fact(id)
+    if app.config.get('SQLITE'):
+        id = int(request.values['id'])
+        storage = Storage()
+        result = storage.touch_fact(id)
 
-    return jsonify(result)
+        return jsonify(result)
 
 
 @app.route('/api/task/resume', methods=['POST'])
 @Auth.check_api_request
 def resume_task():
-    id = int(request.values['id'])
-    storage = Storage()
-    result = storage.resume_fact(id)
+    if app.config.get('SQLITE'):
+        id = int(request.values['id'])
+        storage = Storage()
+        result = storage.resume_fact(id)
 
-    return jsonify(result)
+        return jsonify(result)
 
 
 @app.route('/api/task/delete', methods=['POST'])
 @Auth.check_api_request
 def delete_task():
-    id = int(request.values['id'])
-    storage = Storage()
-    result = storage.remove_fact(id)
+    if app.config.get('SQLITE'):
+        id = int(request.values['id'])
+        storage = Storage()
+        result = storage.remove_fact(id)
 
-    return jsonify(result)
+        return jsonify(result)
 
 
 @app.route('/', defaults={'path': ''})
