@@ -46,3 +46,7 @@ class ApiController(object):
     def get_autocomlete(self, text):
         self.response.values = self.engine.get_autocomplete(text)
 
+    @send_response
+    def get_current(self):
+        for k, v in self.engine.get_current().__dict__.items():
+            self.response.__dict__[k] = v

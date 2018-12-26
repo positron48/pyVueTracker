@@ -1,26 +1,10 @@
-import datetime
+from datetime import date, datetime
 import re
 
 from backend.src.auth import Auth
-from backend.src.model.hamster import Fact
+from backend.src.model.hamster import Fact, FormattedFact
 from backend.src.model.mysql import db, User, Activity, Task, HashTag, Project
-from sqlalchemy import desc
-
-
-class FactTask(object):
-    def __init__(self):
-        self.activity_id = None  # активность
-        self.category = None  # проект
-        self.date = None  # дата
-        self.delta = None
-        self.description = None
-        self.end_time = None
-        self.id = None
-        self.name = None
-        self.start_time = None
-        self.end_time = None
-        self.tag = None
-        self.tags = None
+from sqlalchemy import desc, cast, Date
 
 
 class Engine(object):
@@ -107,7 +91,7 @@ class Engine(object):
             new_activity.time_end = fact.end_time
 
         # last_updated
-        new_activity.last_updated = datetime.datetime.now()
+        new_activity.last_updated = datetime.now()
 
         # tags
         if fact.tags is not None:
@@ -126,25 +110,13 @@ class Engine(object):
         db.session.commit()
         return True, None
 
-    def get_facts(self):
-        facts = {
-            "tasks": [
-                {
-                    "activity_id": 2119,
-                    "category": "asdd ",
-                    "date": "21.12.2018",
-                    "delta": 0.4,
-                    "description": null,
-                    "end_time": "",
-                    "id": 10199,
-                    "name": "12345 asddasd",
-                    "start_time": "11:40",
-                    "end_time": "12:00",
-                    "tag": "one",
-                    "tags": [
-                        "one",
-                        "two"
-                    ]
-                }
-            ]
-        }
+    def get_current(self):
+        current = db.session.query(Activity) \
+            .filter(Activity.user_id == self.user.id) \
+            .filter(cast(Activity.time_start, Date) == date.today()) \
+            .filter(Activity.time_end.is_(None)) \
+            .order_by(desc(Activity.time_start)) \
+            .first()
+        if current is None:
+            return None
+        return FormattedFact(current, id=current.id, activity_id=current.task.external_task_id)

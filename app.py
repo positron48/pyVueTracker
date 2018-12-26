@@ -157,6 +157,9 @@ def get_current():
 
         return jsonify(None)
 
+    api = ApiController()
+    return api.get_current()
+
 
 @app.route('/api/completitions')
 @Auth.check_api_request

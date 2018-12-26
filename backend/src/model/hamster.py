@@ -4,13 +4,14 @@ from backend.src.model.mysql import Activity
 
 
 class Fact(object):
-    def __init__(self, text=None, **kwargs):
-        self.start_time = None
-        self.end_time = None
-        self.activity = None  # задача и имя активности
-        self.category = None  # проект
-        self.description = None  # описание
-        self.tags = None
+    def __init__(self, text=None, start_time=None, end_time=None, activity=None, category=None, description=None,
+                 tags=None):
+        self.start_time = start_time
+        self.end_time = end_time
+        self.activity = activity  # задача и имя активности
+        self.category = category  # проект
+        self.description = description  # описание
+        self.tags = tags
         self.__task_id = None
         self.__task_name = None
 
@@ -22,15 +23,16 @@ class Fact(object):
                         fact[key] = None
                     self.__dict__[key] = fact[key]
             if isinstance(text, Activity):
-                name = str(text.task.external_task_id) + ' ' + text.name
-                self.activity = name
+                self.start_time = text.time_start
+                self.end_time = text.time_end
+                self.activity = str(text.task.external_task_id) + ' ' + text.name
                 self.category = text.task.project.code
-                self.tags = text.hashtags
                 self.description = text.comment
+                self.tags = {tag.name for tag in text.hashtags}
 
-        if len(kwargs):
-            for key, value in kwargs.items():
-                self.__dict__[key] = value
+        # if len(kwargs):
+        #     for key, value in kwargs.items():
+        #         self.__dict__[key] = value
 
         self.__task_id = self.get_task_id()
         self.__task_name = self.get_task_name()
@@ -72,7 +74,7 @@ class Fact(object):
         return self.__task_name
 
     def as_text(self):
-        tags = {'#' + tag.name for tag in self.tags}
+        tags = {'#' + tag for tag in self.tags}
         s = ''
         if self.__task_id: s += str(self.__task_id)
         if self.__task_name: s += ' ' + self.__task_name
@@ -80,6 +82,26 @@ class Fact(object):
         if len(tags): s += ' ' + ', '.join(tags)
         if self.description: s += ', ' + self.description
         return s
+
+
+class FormattedFact(Fact):
+    def __init__(self, text=None, start_time=None, end_time=None, activity=None, category=None, description=None,
+                 tags=None, id=None, activity_id=None):
+        super().__init__(text, start_time, end_time, activity, category, description, tags)
+        self.delta = self.__delta()
+        self.date = self.start_time.strftime('%d.%m.%Y') if self.start_time is not None else None
+        self.start_time = self.start_time.strftime('%H:%M') if self.start_time is not None else None
+        self.end_time = self.end_time.strftime('%H:%M') if self.end_time is not None else None
+        self.id = id
+        self.activity_id = activity_id
+        self.tags = {}
+
+    def __delta(self):
+        if self.start_time is None:
+            return None
+        end_time = self.end_time or dt.datetime.now()
+        delta = end_time - self.start_time
+        return round(delta.total_seconds() / 3600, 2)
 
 
 class Hamster(object):
