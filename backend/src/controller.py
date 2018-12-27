@@ -33,14 +33,8 @@ class ApiController(object):
 
     @send_response
     def add_activity(self, text):
-        fact = Fact(text)
-        self.response.fact = fact.__dict__
-        self.response.status = fact.validate()
-        if self.response.status:
-            self.response.status, self.response.message = self.engine.add_fact(fact)
-        if not self.response.status and self.response.message is None:
-            self.response.message = 'Не заполнена обязательная часть:\n' \
-                                    'время номер_задачи [имя_активности][@проект] [#тег], [#тег2], [описание]'
+        self.response.fact, self.response.status, self.response.message = self.engine.add_fact(text)
+        self.response.fact = self.response.fact.__dict__
 
     @send_response
     def get_autocomlete(self, text):

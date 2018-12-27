@@ -71,32 +71,37 @@ class Engine(object):
 
         return result
 
-    def add_fact(self, fact: Fact):
+    def add_fact(self, text):
         """
         Добавляет факт в БД, добавляет недостающие теги, проставляет связи
         :param fact:
-        :return:
+        :return: fact, status, message
         """
+        fact = Fact(text)
+        if not fact.validate():
+            return fact, False, 'Не заполнена обязательная часть:\n' \
+                                'время номер_задачи [имя_активности][@проект] [#тег], [#тег2], [описание]'
+
         new_activity = Activity()
 
         # user
         if self.user is None:
-            return False, 'нет пользователя с таким токеном'
+            return fact, False, 'нет пользователя с таким токеном'
         new_activity.user_id = self.user.id
 
         # task_id
         external_task_id = fact.get_task_id()
         if external_task_id is None:
-            return False, 'не указан номер задачи'
+            return fact, False, 'не указан номер задачи'
         task = self.__get_task_by_external_id(external_task_id)
         if task is None:
             if fact.category is None:
-                return False, 'не указан проект для новой задачи'
+                return fact, False, 'не указан проект для новой задачи'
             project = self.__get_project_by_name(fact.category)
             if project is None:
                 project = self.__get_project_by_code(fact.category)
             if project is None:
-                return False, 'среди ваших проектов нет проекта ' + fact.category
+                return fact, False, 'среди ваших проектов нет проекта ' + fact.category
             task = Task(external_task_id=external_task_id, project_id=project.id)
             db.session.add(task)
             db.session.commit()
@@ -125,7 +130,7 @@ class Engine(object):
         new_activity.update_hashtags(fact.tags)
 
         db.session.add(new_activity)
-        return True, None
+        return fact, True, None
 
     def get_current(self):
         current = db.session.query(Activity) \
