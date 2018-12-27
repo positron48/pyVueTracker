@@ -289,12 +289,15 @@ def resume_task():
 @app.route('/api/task/delete', methods=['POST'])
 @Auth.check_api_request
 def delete_task():
+    id = int(request.values['id'])
+
     if app.config.get('SQLITE'):
-        id = int(request.values['id'])
         storage = Storage()
         result = storage.remove_fact(id)
-
         return jsonify(result)
+
+    api = ApiController()
+    return api.delete_task(id)
 
 
 @app.route('/', defaults={'path': ''})

@@ -131,3 +131,15 @@ class Engine(object):
             .filter(cast(Activity.time_start, Date) <= dateTo) \
             .all()
         return [FormattedFact(fact) for fact in facts]
+
+    def delete_fact(self, id: int):
+        if id < 1:
+            return False
+        fact = db.session.query(Activity) \
+            .filter(Activity.user_id == self.user.id) \
+            .filter(Activity.id == id) \
+            .first()
+        if fact is None:
+            return False
+        db.session.delete(fact)
+        return True

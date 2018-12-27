@@ -63,3 +63,7 @@ class ApiController(object):
         if self.response.status:
             for fact in facts:
                 self.response.tasks.append(fact.__dict__)
+
+    @send_response
+    def delete_task(self, id):
+        self.response.status = self.engine.delete_fact(id)
