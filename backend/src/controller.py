@@ -57,5 +57,9 @@ class ApiController(object):
 
     @send_response
     def get_tasks(self, dateFrom, dateTo):
-        self.response.tasks = self.engine.get_facts(dateFrom, dateTo)
-        self.response.status = self.response.tasks is not None
+        facts = self.engine.get_facts(dateFrom, dateTo)
+        self.response.tasks = []
+        self.response.status = facts is not None
+        if self.response.status:
+            for fact in facts:
+                self.response.tasks.append(fact.__dict__)
