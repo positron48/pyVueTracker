@@ -94,7 +94,8 @@ class FormattedFact(Fact):
         self.end_time = self.end_time.strftime('%H:%M') if self.end_time is not None else None
         self.id = id
         self.activity_id = activity_id
-        self.tags = {}
+        self.tags = list(self.tags)
+        self.name = self.activity
 
         if isinstance(text, Activity):
             self.id = text.id
