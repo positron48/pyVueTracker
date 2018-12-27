@@ -67,7 +67,7 @@ class Engine(object):
             result.append(Fact(db_fact).as_text())
 
         if len(result) == 0:
-            return None
+            return []
 
         return result
 
