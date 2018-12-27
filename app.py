@@ -193,12 +193,15 @@ def get_grouped_tasks():
             dateFrom = dt.datetime.strptime(interval[0], "%d.%m.%Y")
             dateTo = dateFrom + dt.timedelta(days=1)
 
-    storage = Storage()
+    if app.config.get('SQLITE'):
+        storage = Storage()
+        tasks = storage.get_facts_by_dates(dateFrom, dateTo)
+        # jsonify always encode unicode
+        return app.response_class(json.dumps({"tasks": tasks}, ensure_ascii=False), mimetype='application/json')
 
-    tasks = storage.get_facts_by_dates(dateFrom, dateTo)
-
-    # jsonify always encode unicode
-    return app.response_class(json.dumps({"tasks": tasks}, ensure_ascii=False), mimetype='application/json')
+    return 'asdasd'
+    api = ApiController()
+    return api.get_grouped_tasks()
 
 
 @app.route('/api/task', methods=['POST'])
