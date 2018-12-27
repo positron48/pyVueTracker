@@ -263,6 +263,8 @@ def stop_tracking():
         storage = Storage()
         result = storage.stop_tracking(dt.datetime.now())
         return jsonify(result)
+    # метод не используется на фронте
+    return ''
 
 
 @app.route('/api/task/stop', methods=['POST'])
