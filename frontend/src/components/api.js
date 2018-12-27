@@ -10,7 +10,7 @@ const HTTP = axios.create({
 })
 
 HTTP.interceptors.response.use(function (response) {
-  if (response.data && 'token' in response.data) {
+  if (Array.isArray(response.data) && 'token' in response.data) {
     localStorage.setItem('token', response.data.token)
     delete response.data.token
   }
