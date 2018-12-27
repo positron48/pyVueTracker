@@ -65,7 +65,7 @@
           <md-textarea v-model="editTask.description" md-autogrow></md-textarea>
         </md-field>
         <md-field>
-          <label>тег</label>
+          <label>теги</label>
           <md-input v-model="editTaskTags"></md-input>
         </md-field>
       </div>
@@ -296,10 +296,10 @@ export default {
         if (this.editTask.tags === undefined) {
           return ''
         }
-        return this.editTask.tags.join(',')
+        return this.editTask.tags.join(', ')
       },
       set: function (value) {
-        var data = value.split(',')
+        var data = value.replace(/\s*/, '').split(',')
         this.editTask.tags = data
       }
     }
