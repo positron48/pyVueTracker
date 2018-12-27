@@ -155,9 +155,10 @@ def get_current():
 
         for k, item in enumerate(last_entries):
             if item['end_time'] is '':
+                item['status'] = True
                 return jsonify(item)
 
-        return jsonify(None)
+        return jsonify({"status": False})
 
     api = ApiController()
     return api.get_current()
@@ -209,8 +210,8 @@ def get_grouped_tasks():
 def add_entry():
     if app.config.get('SQLITE'):
         storage = Storage()
-        result = storage.add_fact(request.values['name'])
-        return jsonify(result)
+        id = storage.add_fact(request.values['name'])
+        return jsonify({"status": True, "id": id})
 
     name = request.values.get('name').strip()
     api = ApiController()

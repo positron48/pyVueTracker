@@ -14,6 +14,7 @@ pip3 install -U -r requirements.txt
 
 cd ..
 
+cp config.py.dist config.py
 edit config.py
 
 flask run
