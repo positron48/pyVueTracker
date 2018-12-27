@@ -1,6 +1,6 @@
 <template>
   <div>
-      <form action="" method="post" class="md-layout md-gutter md-alignment-top-center" v-on:submit.prevent="addTask()">
+      <form action="" method="post" class="md-layout md-gutter md-alignment-top-center center" v-on:submit.prevent="addTask()">
         <md-card class="md-layout-item md-large-size-50 md-xlarge-size-50 md-medium-size-70 md-small-size-100">
           <md-card-content>
             <div class="md-layout">

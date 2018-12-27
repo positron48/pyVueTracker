@@ -48,6 +48,15 @@ export var API = {
     return HTTP.get(path)
   },
 
+  // список заданий за период
+  getGroupedTasks (dateStart, dateEnd) {
+    var formattedStart = formatDate(dateStart)
+    var formattedEnd = formatDate(dateEnd)
+
+    const path = '/api/grouped_tasks?interval=' + formattedStart + '-' + formattedEnd
+    return HTTP.get(path)
+  },
+
   // последнее незавершенное задание
   getCurrentTask () {
     return HTTP.get('/api/current')

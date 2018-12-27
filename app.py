@@ -7,6 +7,7 @@ from flask import Flask, request, jsonify, render_template
 from backend.src.model.mysql import db
 from backend.src.auth import Auth
 from backend.src.controller import ApiController
+import json
 
 app = Flask(__name__,
             static_folder="./dist/static",
@@ -172,6 +173,32 @@ def complete_task():
     text = request.values.get('text')
     api = ApiController()
     return api.get_autocomlete(text)
+
+
+@app.route('/api/grouped_tasks')
+@Auth.check_api_request
+def get_grouped_tasks():
+    now = dt.datetime.now()
+
+    interval = request.args.get('interval')
+    dateFrom = now
+    dateTo = now + dt.timedelta(days=1)
+
+    if interval != None:
+        interval = interval.split('-')
+        if len(interval) == 2:
+            dateFrom = dt.datetime.strptime(interval[0], "%d.%m.%Y")
+            dateTo = dt.datetime.strptime(interval[1], "%d.%m.%Y") + dt.timedelta(days=1)
+        else:
+            dateFrom = dt.datetime.strptime(interval[0], "%d.%m.%Y")
+            dateTo = dateFrom + dt.timedelta(days=1)
+
+    storage = Storage()
+
+    tasks = storage.get_facts_by_dates(dateFrom, dateTo)
+
+    # jsonify always encode unicode
+    return app.response_class(json.dumps({"tasks": tasks}, ensure_ascii=False), mimetype='application/json')
 
 
 @app.route('/api/task', methods=['POST'])

@@ -584,8 +584,6 @@ class Storage(storage.Storage):
         end_date = end_date or date
         datetime_to = datetime.datetime.combine(end_date, split_time) + datetime.timedelta(days = 1)
 
-        print(datetime_from, datetime_to)
-
         query = """
                    SELECT a.id AS id,
                           a.start_time AS start_time,
@@ -880,7 +878,43 @@ class Storage(storage.Storage):
             con.commit()
             cur.close()
 
+    def __get_facts_by_dates(self, day_from, day_to):
+        # get all tasks from date
+        query = """SELECT a.id AS id,
+                          a.start_time AS start_time,
+                          a.end_time AS end_time,
+                          a.description as description,
+                          b.name AS name,
+                          b.id as activity_id,
+                          c.name as category,
+                          e.name as tag
+                    FROM facts a
+                    LEFT JOIN activities b ON a.activity_id = b.id
+                    LEFT JOIN categories c ON b.category_id = c.id
+                    LEFT JOIN fact_tags d ON d.fact_id = a.id
+                    LEFT JOIN tags e ON e.id = d.tag_id
+                    WHERE a.start_time > '""" + day_from.strftime('%Y-%m-%d') + """'
+                        AND a.end_time < '""" + day_to.strftime('%Y-%m-%d') + """'
+                    ORDER BY a.start_time ASC"""
 
+        allTasks = self.fetchall(query)
+
+        return allTasks
+
+    def get_projects(self):
+        query = """SELECT name as category FROM categories"""
+
+        allCategories = self.fetchall(query)
+
+
+        # format cats data
+        categories = []
+        for (i, cat) in enumerate(allCategories):
+            categories.append(cat[0].strip())
+
+        categories_unique = list(set(categories))
+
+        return categories_unique
 
     def start_transaction(self):
         # will give some hints to execute not to close or commit anything

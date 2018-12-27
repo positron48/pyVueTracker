@@ -20,8 +20,10 @@
 
 import datetime as dt
 import re
+import copy
 from collections import defaultdict
 from backend.lib.hamster import Fact
+from math import ceil
 
 class Storage(object):
 
@@ -201,3 +203,95 @@ class Storage(object):
             suggestions.append(rec[0])
 
         return suggestions
+
+    def get_facts_by_dates(self, day_from, day_to):
+        allTasks = self.__get_facts_by_dates(day_from, day_to)
+
+        # format tasks data
+        tasks = {}
+        for (i, task) in enumerate(allTasks):
+            # start = re.sub(
+            #     r"\.\d*$",
+            #     "",
+            #     task[1]
+            # )
+            # end = re.sub(
+            #     r"\.\d*$",
+            #     "",
+            #     task[2]
+            # )
+
+            start = task[1]
+            end = task[2]
+            hours = (end - start).seconds / 3600.0
+
+            if task[3] is None:
+                description = ''
+            else:
+                description = task[3]
+
+            tasks[i] = {
+                'id': task[0],
+                'start': start,
+                # 'end': end,
+                'hours': hours,
+                'description': description,
+                'name': task[4],
+                'cat': task[6],
+                'tag': task[7]
+            }
+
+
+
+        # parse task_id (first number in activity name)
+        for task in tasks.values():
+            result = re.match(r'^\d+', task['name'])
+            if result:
+                task_id = result.group(0)
+                task['task_id'] = task_id
+            else:
+                task['task_id'] = ''
+
+        # format data: group by date, task_id
+        formated_tasks = {}
+        for task in tasks.values():
+            taskDate = task['start'].strftime('%Y-%m-%d')
+            if not taskDate in formated_tasks:
+                formated_tasks[taskDate] = {}
+            if task['task_id'] == '':
+                task['task_id'] = 'empty_' + task['cat']
+
+            if not task['task_id'] in formated_tasks[taskDate]:
+                formated_tasks[taskDate][task['task_id']] = copy.copy(task)
+                formated_tasks[taskDate][task['task_id']]['description'] = []
+            else:
+                formated_tasks[taskDate][task['task_id']]['hours'] += task['hours']
+
+            description = copy.copy(task['description'])
+            if description is not '':
+                formated_tasks[taskDate][task['task_id']]['description'].append(description)
+
+        tasks = []
+        i = 0
+        for formated_tasks in formated_tasks.values():
+            for task in formated_tasks.values():
+                description = ', '.join(list(set(task['description'])))
+                try:
+                    task_id = int(task['task_id'])
+                except ValueError:
+                    task_id = ""
+
+                new_task = {
+                    'id': task['id'],
+                    'date': task['start'].strftime('%d.%m.%Y'),
+                    'delta': ceil(task['hours'] * 10) / 10,
+                    'description': description,
+                    'name': task['name'],
+                    'category': task['cat'],
+                    'tag': task['tag'],
+                    'task_id': task_id
+                }
+                i += 1
+                tasks.append(new_task)
+
+        return tasks
