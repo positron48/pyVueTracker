@@ -93,10 +93,14 @@ class Activity(db.Model):
 
     @staticmethod
     def get_hashtags(tag_names):
+        if tag_names is None:
+            return None
         return db.session.query(HashTag).filter(HashTag.name.in_(tag_names)).all()
 
     def update_hashtags(self, tag_names):
         tags = self.get_hashtags(tag_names)
+        if tags is None:
+            return None
         for name in set(tag_names) - {tag.name for tag in tags}:
             tag = HashTag(name=name)
             db.session.add(tag)

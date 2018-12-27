@@ -52,7 +52,8 @@ class Fact(object):
             return None
 
         task_id = re.findall('^(\d*)\s*.*', self.activity)
-        if len(task_id) < 1:
+        return task_id
+        if len(task_id) < 1 or task_id is None or task_id == '':
             return None
 
         self.__task_id = int(task_id.pop())
