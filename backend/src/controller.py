@@ -50,3 +50,8 @@ class ApiController(object):
     def get_current(self):
         for k, v in self.engine.get_current().__dict__.items():
             self.response.__dict__[k] = v
+
+    @send_response
+    def get_tasks(self, dateFrom, dateTo):
+        self.response.tasks = self.engine.get_facts(dateFrom, dateTo)
+        self.response.status = self.response.tasks is not None

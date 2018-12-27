@@ -119,27 +119,28 @@ def auth():
 @app.route('/api/tasks')
 @Auth.check_api_request
 def get_tasks():
+    now = dt.datetime.now()
+
+    interval = request.args.get('interval')
+    dateFrom = now - dt.timedelta(days=1)
+    dateTo = now
+
+    if interval is not None:
+        interval = interval.split('-')
+        if len(interval) == 2:
+            dateFrom = dt.datetime.strptime(interval[0], "%d.%m.%Y")
+            dateTo = dt.datetime.strptime(interval[1], "%d.%m.%Y")
+        else:
+            dateFrom = dt.datetime.strptime(interval[0], "%d.%m.%Y")
+            dateTo = dateFrom
+
     if app.config.get('SQLITE'):
-        now = dt.datetime.now()
-
-        interval = request.args.get('interval')
-        dateFrom = now - dt.timedelta(days=1)
-        dateTo = now
-
-        if interval is not None:
-            interval = interval.split('-')
-            if len(interval) == 2:
-                dateFrom = dt.datetime.strptime(interval[0], "%d.%m.%Y")
-                dateTo = dt.datetime.strptime(interval[1], "%d.%m.%Y")
-            else:
-                dateFrom = dt.datetime.strptime(interval[0], "%d.%m.%Y")
-                dateTo = dateFrom
-
         storage = Storage()
-
         last_entries = storage.get_formated_facts(dateFrom, dateTo)
-
         return jsonify({"tasks": last_entries})
+
+    api = ApiController()
+    return api.get_tasks(dateFrom, dateTo)
 
 
 @app.route('/api/current')
@@ -171,8 +172,6 @@ def complete_task():
     text = request.values.get('text')
     api = ApiController()
     return api.get_autocomlete(text)
-
-
 
 
 @app.route('/api/task', methods=['POST'])

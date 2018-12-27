@@ -120,3 +120,10 @@ class Engine(object):
         if current is None:
             return None
         return FormattedFact(current)
+
+    def get_facts(self, dateFrom, dateTo):
+        facts = db.session.query(Activity) \
+            .filter(Activity.user_id == self.user.id) \
+            .filter(Activity.time_start.between(dateFrom, dateTo)) \
+            .all()
+        return [FormattedFact(fact) for fact in facts]
