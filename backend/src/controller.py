@@ -45,11 +45,15 @@ class ApiController(object):
     @send_response
     def get_autocomlete(self, text):
         self.response.values = self.engine.get_autocomplete(text)
+        self.response.status = self.response.values is not None
 
     @send_response
     def get_current(self):
-        for k, v in self.engine.get_current().__dict__.items():
-            self.response.__dict__[k] = v
+        current = self.engine.get_current()
+        self.response.status = current is not None
+        if self.response.status:
+            for k, v in current.__dict__.items():
+                self.response.__dict__[k] = v
 
     @send_response
     def get_tasks(self, dateFrom, dateTo):

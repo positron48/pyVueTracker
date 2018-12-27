@@ -33,7 +33,9 @@ export default {
     getCurrentTask () {
       API.getCurrentTask()
         .then(response => {
-          this.current = response.data
+          if (response.data.status) {
+            this.current = response.data
+          }
         })
         .catch(error => {
           console.log(['getCurrentTask error', error])

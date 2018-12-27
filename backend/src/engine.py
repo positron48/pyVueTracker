@@ -41,6 +41,9 @@ class Engine(object):
         for db_fact in db_facts:  # type: Activity
             result.append(Fact(db_fact).as_text())
 
+        if len(result) == 0:
+            return None
+
         return result
 
     def add_fact(self, fact: Fact):
