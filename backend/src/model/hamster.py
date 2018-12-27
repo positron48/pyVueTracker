@@ -96,6 +96,10 @@ class FormattedFact(Fact):
         self.activity_id = activity_id
         self.tags = {}
 
+        if isinstance(text, Activity):
+            self.id = text.id
+            self.activity_id = text.task.external_task_id
+
     def __delta(self):
         if self.start_time is None:
             return None

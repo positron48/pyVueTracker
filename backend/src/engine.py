@@ -119,4 +119,4 @@ class Engine(object):
             .first()
         if current is None:
             return None
-        return FormattedFact(current, id=current.id, activity_id=current.task.external_task_id)
+        return FormattedFact(current)
