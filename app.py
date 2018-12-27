@@ -267,23 +267,27 @@ def stop_tracking():
 @app.route('/api/task/stop', methods=['POST'])
 @Auth.check_api_request
 def stop_task():
+    id = int(request.values['id'])
     if app.config.get('SQLITE'):
-        id = int(request.values['id'])
         storage = Storage()
         result = storage.touch_fact(id)
-
         return jsonify(result)
+
+    api = ApiController()
+    return api.stop_task(id)
 
 
 @app.route('/api/task/resume', methods=['POST'])
 @Auth.check_api_request
 def resume_task():
+    id = int(request.values['id'])
     if app.config.get('SQLITE'):
-        id = int(request.values['id'])
         storage = Storage()
         result = storage.resume_fact(id)
-
         return jsonify(result)
+
+    api = ApiController()
+    return api.resume_task(id)
 
 
 @app.route('/api/task/delete', methods=['POST'])

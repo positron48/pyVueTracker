@@ -67,3 +67,11 @@ class ApiController(object):
     @send_response
     def delete_task(self, id):
         self.response.status = self.engine.delete_fact(id)
+
+    @send_response
+    def stop_task(self, id):
+        self.response.status = self.engine.stop_fact(id)
+
+    @send_response
+    def resume_task(self, id):
+        self.response.status = self.engine.resume_fact(id)

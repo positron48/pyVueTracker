@@ -1,6 +1,8 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.associationproxy import association_proxy
 from marshmallow_sqlalchemy import ModelSchema
+import datetime as dt
+from sqlalchemy.orm.session import make_transient
 
 db = SQLAlchemy()
 
@@ -88,6 +90,41 @@ class Activity(db.Model):
     task = db.relationship(lambda: Task)
     hashtags = db.relationship(lambda: HashTag, secondary='activity_hashtags')
     category = db.relationship(lambda: Category)
+
+    @staticmethod
+    def get_hashtags(tag_names):
+        return db.session.query(HashTag).filter(HashTag.name.in_(tag_names)).all()
+
+    def update_hashtags(self, tag_names):
+        tags = self.get_hashtags(tag_names)
+        for name in set(tag_names) - {tag.name for tag in tags}:
+            tag = HashTag(name=name)
+            db.session.add(tag)
+            tags.append(tag)
+        for tag in tags:
+            self.hashtags.append(tag)
+        return tags
+
+    def stop(self):
+        self.time_end = dt.datetime.now()
+        # если отменить активность в течении минуты - она удаляется
+        if self.time_end - self.time_start < dt.timedelta(minutes=1):
+            db.session.delete(self)
+        else:
+            db.session.add(self)
+
+    def resume(self):
+        tags = self.hashtags
+        db.session.expunge(self)
+        make_transient(self)
+        self.id = self.time_end = None
+        self.time_start = dt.datetime.now()
+        db.session.add(self)
+        db.session.commit()
+        for tag in tags:
+            self.hashtags.append(tag)
+        db.session.add(self)
+        db.session.commit()
 
 
 class HashTag(db.Model):

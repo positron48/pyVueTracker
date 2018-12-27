@@ -1,15 +1,22 @@
-from datetime import date, datetime
+import datetime as dt
 import re
 
 from backend.src.auth import Auth
 from backend.src.model.hamster import Fact, FormattedFact
 from backend.src.model.mysql import db, User, Activity, Task, HashTag, Project
 from sqlalchemy import desc, cast, Date
+from sqlalchemy.orm.session import make_transient
 
 
 class Engine(object):
     def __init__(self):
         self.user = Auth.get_request_user()
+
+    def __clone_object(self, obj):
+        db.session.expunge(obj)
+        make_transient(obj)
+        obj.id = None
+        return obj
 
     @staticmethod
     def __get_task_by_external_id(external_task_id):
@@ -26,6 +33,24 @@ class Engine(object):
             .join(User.projects) \
             .filter(Project.code == project_code) \
             .filter(User.id == self.user.id).first()
+
+    def __get_hashtags(self, tag_names):
+        result = db.session.query(HashTag).filter(HashTag.name.in_(tag_names)).all()
+        db_tag_names = {tag.name for tag in result}
+        new_tag_names = set(tag_names) - db_tag_names
+        for name in new_tag_names:
+            hashtag = HashTag(name=name)
+            result.append(hashtag)
+            db.session.add(hashtag)
+        return result
+
+    def __get_fact_by_id(self, id: int):
+        if id < 1:
+            return None
+        return db.session.query(Activity) \
+            .filter(Activity.user_id == self.user.id) \
+            .filter(Activity.id == id) \
+            .first()  # type:Activity
 
     def get_autocomplete(self, text):
         result = []
@@ -94,29 +119,18 @@ class Engine(object):
             new_activity.time_end = fact.end_time
 
         # last_updated
-        new_activity.last_updated = datetime.now()
+        new_activity.last_updated = dt.datetime.now()
 
         # tags
-        if fact.tags is not None:
-            tags = db.session.query(HashTag).filter(HashTag.name.in_(fact.tags)).all()
-
-            tag_names = set()
-            for tag in tags:
-                tag_names.add(tag.name)
-                new_activity.hashtags.append(tag)
-
-            new_tags = set(fact.tags) - tag_names
-            for tag in new_tags:
-                new_activity.hashtags.append(HashTag(name=tag))
+        new_activity.update_hashtags(fact.tags)
 
         db.session.add(new_activity)
-        db.session.commit()
         return True, None
 
     def get_current(self):
         current = db.session.query(Activity) \
             .filter(Activity.user_id == self.user.id) \
-            .filter(cast(Activity.time_start, Date) == date.today()) \
+            .filter(cast(Activity.time_start, Date) == dt.date.today()) \
             .filter(Activity.time_end.is_(None)) \
             .order_by(desc(Activity.time_start)) \
             .first()
@@ -142,4 +156,18 @@ class Engine(object):
         if fact is None:
             return False
         db.session.delete(fact)
+        return True
+
+    def stop_fact(self, id):
+        fact = self.__get_fact_by_id(id)  # type:Activity
+        if fact is None:
+            return False
+        fact.stop()
+        return True
+
+    def resume_fact(self, id):
+        fact = self.__get_fact_by_id(id)  # type:Activity
+        if fact is None:
+            return False
+        fact.resume()
         return True
