@@ -299,7 +299,7 @@ export default {
         return this.editTask.tags.join(', ')
       },
       set: function (value) {
-        var data = value.replace(/\s*/, '').split(',')
+        var data = value.replace(/\s*/, '').split(', ')
         this.editTask.tags = data
       }
     }

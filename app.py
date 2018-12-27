@@ -78,8 +78,6 @@ def test():
     return jsonify(locals())
 
 
-
-
 @app.route('/api/auth', methods=['POST'])
 def auth():
     error = None
