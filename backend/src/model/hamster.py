@@ -199,17 +199,19 @@ class Hamster(object):
             return next_phase("", "tags")
 
         if "tags" in phases:
-            tags, desc = text.split(",", 1) if "," in text else (text, None)
 
-            tags = [tag.strip() for tag in re.split("[#]", tags) if tag.strip()]
+            tags, desc = text.rsplit(",", 1) if "," in text else (text, None)
+
+            if '#' in desc:
+                tags += ', ' + desc.strip()
+                desc = None
+
+            tags = [tag.strip().replace(',', '') for tag in re.split("[#]", tags) if tag.strip()]
             if tags:
                 res["tags"] = tags
 
             if (desc or "").strip():
-                if '#' in desc:
-                    res['tags'].append(desc.replace('#', '', 1).strip())
-                else:
-                    res["description"] = desc.strip()
+                res["description"] = desc.strip()
 
             return res
 
