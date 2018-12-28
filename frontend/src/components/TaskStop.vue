@@ -33,7 +33,7 @@ export default {
     getCurrentTask () {
       API.getCurrentTask()
         .then(response => {
-          if (response.data.status) {
+          if (('status' in response.data && response.data.status) || !('status' in response.data)) {
             this.current = response.data
           }
         })

@@ -354,8 +354,13 @@ export default {
     saveTask: function () {
       API.updateTask(this.editTask)
         .then(response => {
-          this.$emit('update')
-          this.closeModal()
+          if ('message' in response.data) {
+            alert(response.data.message())
+          }
+          if (('status' in response.data && response.data.status) || !('status' in response.data)) {
+            this.$emit('update')
+            this.closeModal()
+          }
         })
         .catch(error => {
           console.log(['savePost error', error])
