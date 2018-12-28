@@ -102,10 +102,11 @@ def auth():
 
     hash = Auth.get_hash(login, password, app.config.get('SALT'))
 
-    user = {
-        'login': Auth.get_user_by_login_and_hash(login, hash),
-        'registration': Auth.add_new_user(login, hash)
-    }[action]
+    user = None
+    if action == 'login':
+        user = Auth.get_user_by_login_and_hash(login, hash)
+    if action == 'registration':
+        user = Auth.add_new_user(login, hash)
 
     if user is None:
         message = {
