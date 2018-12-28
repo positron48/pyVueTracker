@@ -98,16 +98,15 @@ class Activity(db.Model):
         return db.session.query(HashTag).filter(HashTag.name.in_(tag_names)).all()
 
     def update_hashtags(self, tag_names):
-        tags = self.get_hashtags(tag_names)
-        if tags is None:
-            return None
-        for name in set(tag_names) - {tag.name for tag in tags}:
-            tag = HashTag(name=name)
-            db.session.add(tag)
-            tags.append(tag)
-        for tag in tags:
-            self.hashtags.append(tag)
-        return tags
+        tags = set(tag_names)
+        db_tags = self.get_hashtags(tag_names)
+        old_tags = {tag.name for tag in self.hashtags}
+        del_tags = old_tags - tags
+        new_tags = tags - old_tags - {tag.name for tag in db_tags}
+        upd_tags = {tag for tag in db_tags if tag.name not in del_tags and tag.name not in new_tags}
+        insert = {self.hashtags.append(HashTag(name=name)) for name in new_tags}
+        update = {self.hashtags.append(tag) for tag in upd_tags}
+        remove = {self.hashtags.remove(tag) for tag in self.hashtags if tag.name in del_tags}
 
     def stop(self):
         self.time_end = dt.datetime.now()
