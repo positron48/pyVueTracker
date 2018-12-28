@@ -31,18 +31,15 @@ def fill():
 
 @app.route('/debug/add_user')
 def add_users():
-    # подставь ниже api_key - при пересоздании таблиц проекты и задачи подтянутся в БД с редмайна
-    api_key = '12345'
     from backend.src.model.mysql import Tracker, User, TrackerUserLink
-    tracker = Tracker(title='intaro redmine', code='redmine', api_url='https://redmine.skillum.ru', type='redmine')
+    tracker = Tracker(title='intaro redmine', code='redmine', api_url=app.config.get('REDMINE_URL'), type='redmine')
     user = User(login='login', hash=Auth.get_hash('login', 'password', app.config.get('SALT')), token='MQinK4')
     user2 = User(login='login2', hash=Auth.get_hash('login2', 'password2', app.config.get('SALT')), token='MQinK42')
     db.session.add(user)
     db.session.add(user2)
     db.session.add(tracker)
 
-    tracker_link = TrackerUserLink(tracker=tracker, user=user,
-                                   external_api_key=api_key)
+    tracker_link = TrackerUserLink(tracker=tracker, user=user, external_api_key=app.config.get('REDMINE_KEY'))
     tracker_link2 = TrackerUserLink(tracker=tracker, user=user2)
     db.session.add(tracker_link)
     db.session.add(tracker_link2)
@@ -88,7 +85,7 @@ def regen():
 
 
 @app.route('/regen')
-def regen():
+def regen_old():
     # генератор тестовых данных
     from backend.src.model.mysql import Tracker, User, TrackerUserLink
     db.drop_all()
