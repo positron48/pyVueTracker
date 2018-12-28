@@ -7,6 +7,7 @@ from flask import Flask, request, jsonify, render_template
 from backend.src.model.mysql import db
 from backend.src.auth import Auth
 from backend.src.controller import ApiController
+from flask_debugtoolbar import DebugToolbarExtension
 import json
 
 app = Flask(__name__,
@@ -16,6 +17,7 @@ cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.config.from_pyfile('config.py')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
+dtb = DebugToolbarExtension(app)
 
 
 @app.route('/regen')
