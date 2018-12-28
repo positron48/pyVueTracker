@@ -44,35 +44,45 @@ class Fact(object):
                 return False
         return True
 
-    def get_task_id(self):
-        if self.__task_id is not None:
-            return self.__task_id
+    def get_task_id(self, text=None):
+        value = text
+        if text is None:
+            if self.__task_id is not None:
+                return self.__task_id
+            if self.activity is None:
+                return None
 
-        if self.activity is None:
-            return None
+            value = self.activity
 
-        task_id = re.findall('^(\d*)\s*.*', self.activity)
-        return task_id
+        task_id = re.findall('^(\d*)\s*.*', value)
+
         if len(task_id) < 1 or task_id is None or task_id == '':
             return None
 
-        self.__task_id = int(task_id.pop())
-        return self.__task_id
+        task_id = int(task_id.pop())
 
-    def get_task_name(self):
-        if self.__task_name is not None:
-            return self.__task_name
+        if text is None:
+            self.__task_id = task_id
 
-        if self.activity is None:
-            return None
+        return task_id
 
-        name = re.findall('^\d*\s*(.*)', self.activity)
+    def get_task_name(self, text=None):
+        value = text
+        if text is None:
+            if self.__task_name is not None:
+                return self.__task_name
+            if self.activity is None:
+                return None
+            value = self.activity
+
+        name = re.findall('^\d*\s*(.*)', value)
         if name is None:
             return None
         name = name.pop().strip()
 
-        self.__task_name = name
-        return self.__task_name
+        if text is None:
+            self.__task_name = name
+        return name
 
     def as_text(self):
         tags = {'#' + tag for tag in self.tags}

@@ -7,7 +7,9 @@ from flask import Flask, request, jsonify, render_template
 from backend.src.model.mysql import db
 from backend.src.auth import Auth
 from backend.src.controller import ApiController
+from flask_debugtoolbar import DebugToolbarExtension
 import json
+from flask_migrate import Migrate
 
 app = Flask(__name__,
             static_folder="./dist/static",
@@ -16,9 +18,17 @@ cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.config.from_pyfile('config.py')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
+migrate = Migrate(app, db)
+dtb = DebugToolbarExtension(app)
 
 
-@app.route('/regen')
+@app.route('/debug/fill')
+def fill():
+    from backend.src.sheduler import Sheduler
+    s = Sheduler(Auth.get_request_user())
+    return s.fetch_external_data()
+
+@app.route('/debug/regen')
 def regen():
     # генератор тестовых данных
     from backend.src.model.mysql import Tracker, User, TrackerUserLink
@@ -32,17 +42,14 @@ def regen():
     db.session.add(user2)
     db.session.add(trackerRedmine)
     #подставь ниже api_key - при пересоздании таблиц проекты и задачи подтянутся в БД с редмайна
-    tracker_link = TrackerUserLink(tracker=trackerRedmine, user=user, external_api_key='cebea38b9da9e558bb530eb76d58e93b766767ad')
-    tracker_link2 = TrackerUserLink(tracker=trackerEvo, user=user, external_api_key='1oy3pjkmhhacklnide94tr9xf31z21rj')
+    tracker_link = TrackerUserLink(tracker=trackerRedmine, user=user,
+                                   external_api_key='123')
+    tracker_link2 = TrackerUserLink(tracker=trackerEvo, user=user,
+                                    external_api_key='123')
     tracker_link3 = TrackerUserLink(tracker=trackerRedmine, user=user2)
     db.session.add(tracker_link)
     db.session.add(tracker_link2)
     db.session.add(tracker_link3)
-    db.session.commit()
-
-    from backend.src.sheduler import Sheduler
-    s = Sheduler(Auth.get_user_by_token('MQinK4'))
-    s.fetch_external_data()
     db.session.commit()
 
     return 'success!'
@@ -101,10 +108,11 @@ def auth():
 
     hash = Auth.get_hash(login, password, app.config.get('SALT'))
 
-    user = {
-        'login': Auth.get_user_by_login_and_hash(login, hash),
-        'registration': Auth.add_new_user(login, hash)
-    }[action]
+    user = None
+    if action == 'login':
+        user = Auth.get_user_by_login_and_hash(login, hash)
+    if action == 'registration':
+        user = Auth.add_new_user(login, hash)
 
     if user is None:
         message = {
@@ -255,17 +263,6 @@ def edit_task():
         result = storage.update_fact(fact['id'], factNew.serialized_name(), start_dt, end_dt)
 
         return jsonify(result)
-
-
-@app.route('/api/stop', methods=['POST'])
-@Auth.check_api_request
-def stop_tracking():
-    if app.config.get('SQLITE'):
-        storage = Storage()
-        result = storage.stop_tracking(dt.datetime.now())
-        return jsonify(result)
-    # метод не используется на фронте
-    return ''
 
 
 @app.route('/api/task/stop', methods=['POST'])
