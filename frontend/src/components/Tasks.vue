@@ -354,8 +354,8 @@ export default {
     saveTask: function () {
       API.updateTask(this.editTask)
         .then(response => {
-          if ('message' in response.data) {
-            alert(response.data.message())
+          if ('message' in response.data && response.data.message) {
+            alert(response.data.message)
           }
           if (('status' in response.data && response.data.status) || !('status' in response.data)) {
             this.$emit('update')
