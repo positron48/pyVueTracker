@@ -22,11 +22,32 @@ migrate = Migrate(app, db)
 dtb = DebugToolbarExtension(app)
 
 
-@app.route('/debug/fill')
+@app.route('/debug/fill_external')
 def fill():
     from backend.src.sheduler import Sheduler
-    s = Sheduler(Auth.get_request_user())
+    user = Auth.get_user_by_token('MQinK4')
+    s = Sheduler(user)
     return s.fetch_external_data()
+
+@app.route('/debug/add_user')
+def add_users():
+    # подставь ниже api_key - при пересоздании таблиц проекты и задачи подтянутся в БД с редмайна
+    api_key = '12345'
+    from backend.src.model.mysql import Tracker, User, TrackerUserLink
+    tracker = Tracker(title='intaro redmine', code='redmine', api_url='https://redmine.skillum.ru', type='redmine')
+    user = User(login='login', hash=Auth.get_hash('login', 'password', app.config.get('SALT')), token='MQinK4')
+    user2 = User(login='login2', hash=Auth.get_hash('login2', 'password2', app.config.get('SALT')), token='MQinK42')
+    db.session.add(user)
+    db.session.add(user2)
+    db.session.add(tracker)
+
+    tracker_link = TrackerUserLink(tracker=tracker, user=user,
+                                   external_api_key=api_key)
+    tracker_link2 = TrackerUserLink(tracker=tracker, user=user2)
+    db.session.add(tracker_link)
+    db.session.add(tracker_link2)
+    db.session.commit()
+    return 'done!'
 
 @app.route('/debug/regen')
 def regen():
@@ -34,21 +55,9 @@ def regen():
     from backend.src.model.mysql import Tracker, User, TrackerUserLink
     db.drop_all()
     db.create_all()
-    tracker = Tracker(title='intaro redmine', code='redmine', api_url='https://redmine.skillum.ru', type='redmine')
-    user = User(login='login', hash=Auth.get_hash('login', 'password', app.config.get('SALT')), token='MQinK4')
-    user2 = User(login='login2', hash=Auth.get_hash('login2', 'password2', app.config.get('SALT')), token='MQinK42')
-    db.session.add(user)
-    db.session.add(user2)
-    db.session.add(tracker)
-    # подставь ниже api_key - при пересоздании таблиц проекты и задачи подтянутся в БД с редмайна
-    tracker_link = TrackerUserLink(tracker=tracker, user=user,
-                                   external_api_key='2d4492e123be18377d21af8c936ec515b722906a')
-    tracker_link2 = TrackerUserLink(tracker=tracker, user=user2)
-    db.session.add(tracker_link)
-    db.session.add(tracker_link2)
-    db.session.commit()
-
     return 'success!'
+
+
     # todo тест каскадных удалений
     from backend.src.model.mysql import User, Project, TrackerUserLink, Tracker, UserProjectLink
 
