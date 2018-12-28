@@ -9,6 +9,7 @@ from backend.src.auth import Auth
 from backend.src.controller import ApiController
 from flask_debugtoolbar import DebugToolbarExtension
 import json
+from flask_migrate import Migrate
 
 app = Flask(__name__,
             static_folder="./dist/static",
@@ -17,6 +18,7 @@ cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.config.from_pyfile('config.py')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
+migrate = Migrate(app, db)
 dtb = DebugToolbarExtension(app)
 
 

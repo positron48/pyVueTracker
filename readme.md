@@ -42,5 +42,7 @@ npm run build
 * войти в виртуальное окружение:  cd backend && virtualenv venv && source venv/bin/activate
 * установить зависимости: cd backend && pip3 install -U -r requirements.txt
 * отредактировать путь к БД в config.py
+* создать БД без таблиц внешним инструментом
+* накатить миграции: flask db upgrade
 * запустить сервер: cd backend && flask run
 Node.js используется только для сборки фронта, сервер - питон
