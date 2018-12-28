@@ -24,17 +24,20 @@ def regen():
     from backend.src.model.mysql import Tracker, User, TrackerUserLink
     db.drop_all()
     db.create_all()
-    tracker = Tracker(title='intaro redmine', code='redmine', api_url='https://redmine.skillum.ru', type='redmine')
+    trackerRedmine = Tracker(title='intaro redmine', code='redmine', api_url='https://redmine.skillum.ru', type='redmine')
+    trackerEvo = Tracker(title='evolution', code='evo', api_url='https://evo.skillum.ru', type='evo')
     user = User(login='login', hash=Auth.get_hash('login', 'password', app.config.get('SALT')), token='MQinK4')
     user2 = User(login='login2', hash=Auth.get_hash('login2', 'password2', app.config.get('SALT')), token='MQinK42')
     db.session.add(user)
     db.session.add(user2)
-    db.session.add(tracker)
+    db.session.add(trackerRedmine)
     #подставь ниже api_key - при пересоздании таблиц проекты и задачи подтянутся в БД с редмайна
-    tracker_link = TrackerUserLink(tracker=tracker, user=user, external_api_key='123456')
-    tracker_link2 = TrackerUserLink(tracker=tracker, user=user2)
+    tracker_link = TrackerUserLink(tracker=trackerRedmine, user=user, external_api_key='cebea38b9da9e558bb530eb76d58e93b766767ad')
+    tracker_link2 = TrackerUserLink(tracker=trackerEvo, user=user, external_api_key='1oy3pjkmhhacklnide94tr9xf31z21rj')
+    tracker_link3 = TrackerUserLink(tracker=trackerRedmine, user=user2)
     db.session.add(tracker_link)
     db.session.add(tracker_link2)
+    db.session.add(tracker_link3)
     db.session.commit()
 
     from backend.src.sheduler import Sheduler
@@ -57,8 +60,8 @@ def regen():
     db.session.add(user2)
     db.session.add(user3)
 
-    tracker = Tracker(title='title', code='code', ui_url='url', api_url='base')
-    link = TrackerUserLink(tracker=tracker, user=user1, external_user_id=1234)
+    trackerRedmine = Tracker(title='title', code='code', ui_url='url', api_url='base')
+    link = TrackerUserLink(tracker=trackerRedmine, user=user1, external_user_id=1234)
     alias = UserProjectLink(user=user1, project=proj1, aliases='alias1, alias2, alias3')
     db.session.add(link)
     db.session.add(alias)
