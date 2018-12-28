@@ -69,3 +69,8 @@ class ApiController(object):
     @send_response
     def resume_task(self, id):
         self.response.status = self.engine.resume_fact(id)
+
+    @send_response
+    def edit_task(self, id, fact):
+        self.response.fact, self.response.status, self.response.message = self.engine.edit_fact(id, fact)
+        self.response.fact = self.response.fact.__dict__

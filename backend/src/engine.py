@@ -176,3 +176,33 @@ class Engine(object):
             return False
         fact.resume()
         return True
+
+    def edit_fact(self, id, fact: Fact):
+        db_fact = self.__get_fact_by_id(int(id))  # type:Activity
+        if db_fact is None:
+            return fact, False, 'Такой активности не существует'
+        if fact.start_time is None:
+            return fact, False, 'Не заполнено время начала активности'
+        external_task_id = fact.get_task_id()
+        if external_task_id is None:
+            return fact, False, 'не указан номер задачи'
+        task = self.__get_task_by_external_id(external_task_id)
+        if task is None:
+            if fact.category is None:
+                return fact, False, 'не указан проект для новой задачи'
+            project = self.__get_project_by_name(fact.category)
+            if project is None:
+                project = self.__get_project_by_code(fact.category)
+            if project is None:
+                return fact, False, 'среди ваших проектов нет проекта ' + fact.category
+            task = Task(external_task_id=external_task_id, project_id=project.id)
+            db.session.add(task)
+            db.session.commit()
+        db_fact.time_start = fact.start_time
+        db_fact.time_end = fact.end_time
+        db_fact.name = fact.get_task_name()
+        db_fact.task_id = task.id
+        db_fact.comment = fact.description
+        db_fact.update_hashtags(fact.tags)
+        db.session.add(db_fact)
+        return fact, True, None

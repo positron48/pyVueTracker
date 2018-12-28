@@ -2,6 +2,7 @@
 import datetime as dt
 from backend.lib.hamster.db import Storage
 from backend.lib.hamster import Fact
+from backend.src.model.hamster import Fact as Fact2
 from flask_cors import CORS
 from flask import Flask, request, jsonify, render_template
 from backend.src.model.mysql import db
@@ -257,25 +258,28 @@ def add_entry():
 @app.route('/api/task/edit', methods=['POST'])
 @Auth.check_api_request
 def edit_task():
+    fact = {
+        'id': request.values['id'],
+        'name': request.values['name'],
+        'category': request.values['category'],
+        'date': request.values['date'],
+        'start_time': request.values['start_time'],
+        'end_time': request.values['end_time'],
+        'description': request.values['description'],
+        'tags': [tag.strip() for tag in request.values['tags'].split(',')]
+    }
+    start_dt = dt.datetime.strptime(fact['date'] + ' ' + fact['start_time'], "%d.%m.%Y %H:%M")
+    if len(fact['end_time']) < 5:
+        end_dt = None
+    else:
+        end_dt = dt.datetime.strptime(fact['date'] + ' ' + fact['end_time'], "%d.%m.%Y %H:%M")
+
     if app.config.get('SQLITE'):
         storage = Storage()
-
-        fact = storage.get_fact(request.values['id'])
-        fact['name'] = request.values['name']
-        fact['category'] = request.values['category']
-        fact['date'] = request.values['date']
-        fact['start_time'] = request.values['start_time']
-        fact['end_time'] = request.values['end_time']
-        fact['description'] = request.values['description']
-        fact['tags'] = [tag.strip() for tag in request.values['tags'].split(',')]
-
-        start_dt = dt.datetime.strptime(fact['date'] + ' ' + fact['start_time'], "%d.%m.%Y %H:%M")
-
-        if fact['end_time']:
-            end_dt = dt.datetime.strptime(fact['date'] + ' ' + fact['end_time'], "%d.%m.%Y %H:%M")
-        else:
-            end_dt = None
-
+        db_fact = storage.get_fact(request.values['id'])
+        for k, v in fact.items():
+            db_fact[k] = v
+        fact = db_fact
         # todo: сделать инициализацию факта по id
         factNew = Fact(
             id=fact['id'],
@@ -286,10 +290,18 @@ def edit_task():
             description=fact['description'],
             tags=fact['tags']
         )
-
         result = storage.update_fact(fact['id'], factNew.serialized_name(), start_dt, end_dt)
-
         return jsonify(result)
+
+    api = ApiController()
+    return api.edit_task(fact['id'], Fact2(
+        activity=fact['name'],
+        category=fact['category'],
+        description=fact['description'],
+        start_time=start_dt,
+        end_time=end_dt,
+        tags=fact['tags']
+    ))
 
 
 @app.route('/api/task/stop', methods=['POST'])
