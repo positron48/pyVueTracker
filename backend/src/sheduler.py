@@ -1,6 +1,7 @@
 from backend.src.model.mysql import db, User, TrackerUserLink, Tracker, Project, TrackerProjectLink, UserProjectLink, \
     Task
 from backend.src.model.redmine import Redmine
+from backend.src.model.evolution import Evolution
 from backend.src.auth import Auth
 import requests
 
@@ -14,9 +15,12 @@ class Sheduler(object):
 
     @staticmethod
     def __get_engine(type, url, api_key):
-        return {
-            'redmine': Redmine(url, api_key),
-        }[type]
+        if type == 'redmine':
+            return Redmine(url, api_key)
+        elif type == 'evo':
+            return Evolution(url, api_key)
+
+        return None
 
     def __check_auth(self, type, url, api):
         response = requests.options(url)
@@ -26,33 +30,59 @@ class Sheduler(object):
             return None
         return {
             'redmine': api.is_auth(),
+            'evo': api.is_auth(),
         }[type]
 
-    def __fetch_projects(self):
+    def __fetch_redmine_projects(self):
         for link in self.tracker_links:  # type: TrackerUserLink
             if link.tracker.type != 'redmine':
                 continue
+
             api = self.__get_engine(link.tracker.type, link.tracker.api_url, link.external_api_key)
             auth = self.__check_auth(link.tracker.type, link.tracker.api_url, api)
             if not auth:
                 continue
-            projects = {
-                'redmine': api.get_all_projects(),
-            }[link.tracker.type]
-            codes = {pr.identifier for pr in projects}
+            projects = api.get_all_projects()
+
+            codes = {pr['identifier'] for pr in projects}
             db_projects = db.session.query(Project).filter(Project.code.in_(codes)).all()
             exist = {db_pr.code for db_pr in db_projects}
             new = codes - exist
             for project in projects:
-                if project.identifier in new:
-                    db_project = Project(code=project.identifier, title=project.name)
-                    project_link = TrackerProjectLink(external_project_title=project.name,
-                                                      external_project_id=project.id,
+                if project['identifier'] in new:
+                    db_project = Project(code=project['identifier'], title=project['name'])
+                    project_link = TrackerProjectLink(external_project_title=project['name'],
+                                                      external_project_id=project['id'],
                                                       tracker=link.tracker,
                                                       project=db_project)
                     user_link = UserProjectLink(project=db_project, user=self.user)
                     db.session.add(project_link)
                     db.session.add(user_link)
+        db.session.commit()
+
+    def __fetch_evo_projects(self):
+        for link in self.tracker_links:  # type: TrackerUserLink
+            if link.tracker.type != 'evo':
+                continue
+
+            api = self.__get_engine(link.tracker.type, link.tracker.api_url, link.external_api_key)
+            auth = self.__check_auth(link.tracker.type, link.tracker.api_url, api)
+            if not auth:
+                continue
+            projects = api.get_all_projects()
+
+            codes = {pr['id'] for pr in projects}
+            db_projects = db.session.query(Project).filter(Project.code.in_(codes)).all()
+            exist = {db_pr.code for db_pr in db_projects}
+            new = codes - exist
+            for project in projects:
+                if project['id'] in new:
+                    db_project = Project(code=project['id'], title=project['name'])
+                    project_link = TrackerProjectLink(external_project_title=project['name'],
+                                                      external_project_id=project['id'],
+                                                      tracker=link.tracker,
+                                                      project=db_project)
+                    db.session.add(project_link)
         db.session.commit()
 
     def __fetch_tasks(self):
@@ -85,6 +115,7 @@ class Sheduler(object):
         db.session.commit()
 
     def fetch_external_data(self):
-        self.__fetch_projects()
+        self.__fetch_evo_projects()
+        self.__fetch_redmine_projects()
         self.__fetch_tasks()
         return 'done!'
