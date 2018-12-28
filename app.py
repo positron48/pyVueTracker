@@ -258,17 +258,6 @@ def edit_task():
         return jsonify(result)
 
 
-@app.route('/api/stop', methods=['POST'])
-@Auth.check_api_request
-def stop_tracking():
-    if app.config.get('SQLITE'):
-        storage = Storage()
-        result = storage.stop_tracking(dt.datetime.now())
-        return jsonify(result)
-    # метод не используется на фронте
-    return ''
-
-
 @app.route('/api/task/stop', methods=['POST'])
 @Auth.check_api_request
 def stop_task():
