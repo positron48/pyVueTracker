@@ -19,7 +19,9 @@ import TaskStop from './TaskStop.vue'
 
 export default {
   data () {
-    return {}
+    return {
+      timer: null
+    }
   },
   methods: {
     refreshData () {
@@ -32,7 +34,10 @@ export default {
     Tasks, TaskAdd, TaskStop
   },
   mounted () {
-    setInterval(this.refreshData, 60000)
+    this.timer = setInterval(this.refreshData, 60000)
+  },
+  destroyed () {
+    clearInterval(this.timer)
   }
 }
 </script>

@@ -216,7 +216,7 @@ class Hamster(object):
 
             tags, desc = text.rsplit(",", 1) if "," in text else (text, None)
 
-            if '#' in desc:
+            if desc is not None and '#' in desc:
                 tags += ', ' + desc.strip()
                 desc = None
 

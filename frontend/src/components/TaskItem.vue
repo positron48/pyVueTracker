@@ -13,7 +13,7 @@
     <div class="task-col task-start-time">{{task.start_time}}</div>
     <div class="task-col task-end-time">{{task.end_time}}</div>
     <div class="task-col task-name">{{task.name}}</div>
-    <md-badge class="task-col task-category md-primary md-square" :md-content="task.category"/>
+    <md-badge class="task-col task-category md-primary md-square" :md-content="task.category" v-if="task.category"/>
     <div class="task-col task-tags">
       <template v-for="tag in task.tags">
         <md-badge class="md-square" :md-content="tag" :key="tag"/>
@@ -40,7 +40,10 @@ export default {
   .task-edit, .task-resume, .task-stop{
     cursor: pointer;
   }
-  .task-col, .task-tag {
+  .task-tags{
+    display: flex;
+  }
+  .task-col, .task-tags .md-badge {
     float: left;
     margin-right: 5px;
   }

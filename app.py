@@ -291,7 +291,7 @@ def edit_task():
             tags=fact['tags']
         )
         result = storage.update_fact(fact['id'], factNew.serialized_name(), start_dt, end_dt)
-        return jsonify(result)
+        return jsonify({"status": True, "id": result})
 
     api = ApiController()
     return api.edit_task(fact['id'], Fact2(
