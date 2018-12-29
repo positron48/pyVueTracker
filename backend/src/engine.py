@@ -117,6 +117,10 @@ class Engine(object):
         new_activity.update_hashtags(fact.tags)
 
         db.session.add(new_activity)
+        # закрываем текущую активность, если есть
+        current = self.get_current()  # type:Activity
+        if current is not None:
+            current.stop()
         return True, None
 
     def get_current(self):
@@ -159,6 +163,10 @@ class Engine(object):
         fact = self.__get_fact_by_id(id)  # type:Activity
         if fact is None:
             return False
+        # закрываем текущую активность, если есть
+        current = self.get_current()  # type:Activity
+        if current is not None:
+            current.stop()
         fact.resume()
         return True
 
