@@ -25,8 +25,13 @@ class Fact(object):
             if isinstance(text, Activity):
                 self.start_time = text.time_start
                 self.end_time = text.time_end
-                self.activity = str(text.task.external_task_id) + ' ' + text.name
-                self.category = text.task.project.code
+                self.activity = text.name
+                if text.task is not None:
+                    self.activity = str(text.task.external_task_id)
+                    if text.name is not None:
+                        self.activity += ' ' + text.name
+                    if text.task.project is not None:
+                        self.category = text.task.project.code or text.task.project.title
                 self.description = text.comment
                 self.tags = {tag.name for tag in text.hashtags}
 
@@ -38,11 +43,7 @@ class Fact(object):
         self.__task_name = self.get_task_name()
 
     def validate(self):
-        req_fields = ('start_time', 'activity')
-        for field in req_fields:
-            if self.__dict__[field] is None:
-                return False
-        return True
+        return self.activity is not None
 
     def get_task_id(self, text=None):
         value = text
@@ -56,7 +57,7 @@ class Fact(object):
 
         task_id = re.findall('^(\d*)\s*.*', value)
 
-        if len(task_id) < 1 or task_id is None or task_id == '':
+        if task_id[0] == '':
             return None
 
         task_id = int(task_id.pop())
@@ -76,7 +77,7 @@ class Fact(object):
             value = self.activity
 
         name = re.findall('^\d*\s*(.*)', value)
-        if name is None:
+        if name[0] == '':
             return None
         name = name.pop().strip()
 
@@ -110,7 +111,8 @@ class FormattedFact(Fact):
 
         if isinstance(text, Activity):
             self.id = text.id
-            self.activity_id = text.task.external_task_id
+            if text.task is not None:
+                self.activity_id = text.task.external_task_id
 
     def __delta(self):
         if self.start_time is None:

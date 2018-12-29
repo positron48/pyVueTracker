@@ -87,6 +87,7 @@ class Activity(db.Model):
     deleted = db.Column(db.Boolean, default=False)
     last_updated = db.Column(db.DateTime)
 
+    user = db.relationship(lambda: User)
     task = db.relationship(lambda: Task)
     hashtags = db.relationship(lambda: HashTag, secondary='activity_hashtags')
     category = db.relationship(lambda: Category)
@@ -98,20 +99,21 @@ class Activity(db.Model):
         return db.session.query(HashTag).filter(HashTag.name.in_(tag_names)).all()
 
     def update_hashtags(self, tag_names):
-        tags = self.get_hashtags(tag_names)
-        if tags is None:
-            return None
-        for name in set(tag_names) - {tag.name for tag in tags}:
-            tag = HashTag(name=name)
-            db.session.add(tag)
-            tags.append(tag)
-        for tag in tags:
-            self.hashtags.append(tag)
-        return tags
+        if tag_names is None:
+            return
+        tags = set(tag_names)
+        db_tags = self.get_hashtags(tag_names)
+        old_tags = {tag.name for tag in self.hashtags}
+        del_tags = old_tags - tags
+        new_tags = tags - old_tags - {tag.name for tag in db_tags}
+        upd_tags = {tag for tag in db_tags if tag.name not in del_tags and tag.name not in new_tags}
+        insert = {self.hashtags.append(HashTag(name=name)) for name in new_tags}
+        update = {self.hashtags.append(tag) for tag in upd_tags}
+        remove = {self.hashtags.remove(tag) for tag in self.hashtags if tag.name in del_tags}
 
-    def stop(self):
-        self.time_end = dt.datetime.now()
-        # если отменить активность в течении минуты - она удаляется
+    def stop(self, time_end=dt.datetime.now()):
+        self.time_end = time_end
+        # если закрыть активность в течении минуты - она считается ошибочной, и удаляется
         if self.time_end - self.time_start < dt.timedelta(minutes=1):
             db.session.delete(self)
         else:
@@ -140,15 +142,6 @@ class HashTag(db.Model):
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
-
-
-class Error(db.Model):
-    __tablename__ = 'errors'
-    id = db.Column(db.Integer, primary_key=True)
-    time = db.Column(db.DateTime)
-    type = db.Column(db.String(255))
-    target = db.Column(db.String(255))
-    data = db.Column(db.Text)
 
 
 ########################################### MTM: #######################################################################

@@ -2,6 +2,7 @@
 import datetime as dt
 from backend.lib.hamster.db import Storage
 from backend.lib.hamster import Fact
+from backend.src.model.hamster import Fact as Fact2
 from flask_cors import CORS
 from flask import Flask, request, jsonify, render_template
 from backend.src.model.mysql import db
@@ -22,14 +23,70 @@ migrate = Migrate(app, db)
 dtb = DebugToolbarExtension(app)
 
 
-@app.route('/debug/fill')
+@app.route('/debug/fill_external')
 def fill():
     from backend.src.sheduler import Sheduler
-    s = Sheduler(Auth.get_request_user())
+    user = Auth.get_user_by_token('MQinK4')
+    s = Sheduler(user)
     return s.fetch_external_data()
+
+@app.route('/debug/add_user')
+def add_users():
+    from backend.src.model.mysql import Tracker, User, TrackerUserLink
+    trackerRedmine = Tracker(title='intaro redmine', code='redmine', api_url=app.config.get('REDMINE_URL'), type='redmine')
+    trackerEvo = Tracker(title='evolution', code='evo', api_url=app.config.get('EVO_URL'), type='evo')
+    user = User(login='login', hash=Auth.get_hash('login', 'password', app.config.get('SALT')), token='MQinK4')
+    user2 = User(login='login2', hash=Auth.get_hash('login2', 'password2', app.config.get('SALT')), token='MQinK42')
+
+    tracker_link = TrackerUserLink(tracker=trackerRedmine, user=user, external_api_key=app.config.get('REDMINE_KEY'))
+    tracker_link2 = TrackerUserLink(tracker=trackerEvo, user=user, external_api_key=app.config.get('EVO_KEY'))
+    tracker_link3 = TrackerUserLink(tracker=trackerRedmine, user=user2)
+    db.session.add(tracker_link)
+    db.session.add(tracker_link2)
+    db.session.add(tracker_link3)
+    db.session.commit()
+    return 'done!'
 
 @app.route('/debug/regen')
 def regen():
+    # генератор тестовых данных
+    from backend.src.model.mysql import Tracker, User, TrackerUserLink
+    db.drop_all()
+    db.create_all()
+    return 'success!'
+
+
+    # todo тест каскадных удалений
+    from backend.src.model.mysql import User, Project, TrackerUserLink, Tracker, UserProjectLink
+
+    user1 = User(login='first', hash='hash', token='asdasdasd')
+    user2 = User(login='two', hash='hash', token='asdasd')
+    user3 = User(login='three', hash='hash', token='asdasdfd')
+    proj1 = Project(title='first2', code='frst')
+    proj2 = Project(title='two', code='two')
+    user2.projects.append(proj2)
+    user3.projects.append(proj1)
+    db.session.add(user1)
+    db.session.add(user2)
+    db.session.add(user3)
+
+    tracker = Tracker(title='title', code='code', ui_url='url', api_url='base')
+    link = TrackerUserLink(tracker=tracker, user=user1, external_user_id=1234)
+    alias = UserProjectLink(user=user1, project=proj1, aliases='alias1, alias2, alias3')
+    db.session.add(link)
+    db.session.add(alias)
+
+    db.session.commit()
+    result = '<p>add</p>'
+    for user in User.query.all():
+        result += repr(user)
+    db.session.delete(user2)
+    db.session.commit()
+    return result
+
+
+@app.route('/regen')
+def regen_old():
     # генератор тестовых данных
     from backend.src.model.mysql import Tracker, User, TrackerUserLink
     db.drop_all()
@@ -51,33 +108,6 @@ def regen():
     db.session.commit()
 
     return 'success!'
-    # todo тест каскадных удалений
-    from backend.src.model.mysql import User, Project, TrackerUserLink, Tracker, UserProjectLink
-
-    user1 = User(login='first', hash='hash', token='asdasdasd')
-    user2 = User(login='two', hash='hash', token='asdasd')
-    user3 = User(login='three', hash='hash', token='asdasdfd')
-    proj1 = Project(title='first2', code='frst')
-    proj2 = Project(title='two', code='two')
-    user2.projects.append(proj2)
-    user3.projects.append(proj1)
-    db.session.add(user1)
-    db.session.add(user2)
-    db.session.add(user3)
-
-    trackerRedmine = Tracker(title='title', code='code', ui_url='url', api_url='base')
-    link = TrackerUserLink(tracker=trackerRedmine, user=user1, external_user_id=1234)
-    alias = UserProjectLink(user=user1, project=proj1, aliases='alias1, alias2, alias3')
-    db.session.add(link)
-    db.session.add(alias)
-
-    db.session.commit()
-    result = '<p>add</p>'
-    for user in User.query.all():
-        result += repr(user)
-    db.session.delete(user2)
-    db.session.commit()
-    return result
 
 
 @app.route('/test')
@@ -207,9 +237,9 @@ def get_grouped_tasks():
         # jsonify always encode unicode
         return app.response_class(json.dumps({"tasks": tasks}, ensure_ascii=False), mimetype='application/json')
 
-    return 'asdasd'
     api = ApiController()
-    return api.get_grouped_tasks()
+    # return api.get_grouped_tasks(dateFrom, dateTo) # неправильный формат
+    return api.get_tasks(dateFrom, dateTo)
 
 
 @app.route('/api/task', methods=['POST'])
@@ -228,25 +258,28 @@ def add_entry():
 @app.route('/api/task/edit', methods=['POST'])
 @Auth.check_api_request
 def edit_task():
+    fact = {
+        'id': request.values['id'],
+        'name': request.values['name'],
+        'category': request.values['category'],
+        'date': request.values['date'],
+        'start_time': request.values['start_time'],
+        'end_time': request.values['end_time'],
+        'description': request.values['description'],
+        'tags': [tag.strip() for tag in request.values['tags'].split(',')]
+    }
+    start_dt = dt.datetime.strptime(fact['date'] + ' ' + fact['start_time'], "%d.%m.%Y %H:%M")
+    if len(fact['end_time']) < 5:
+        end_dt = None
+    else:
+        end_dt = dt.datetime.strptime(fact['date'] + ' ' + fact['end_time'], "%d.%m.%Y %H:%M")
+
     if app.config.get('SQLITE'):
         storage = Storage()
-
-        fact = storage.get_fact(request.values['id'])
-        fact['name'] = request.values['name']
-        fact['category'] = request.values['category']
-        fact['date'] = request.values['date']
-        fact['start_time'] = request.values['start_time']
-        fact['end_time'] = request.values['end_time']
-        fact['description'] = request.values['description']
-        fact['tags'] = [tag.strip() for tag in request.values['tags'].split(',')]
-
-        start_dt = dt.datetime.strptime(fact['date'] + ' ' + fact['start_time'], "%d.%m.%Y %H:%M")
-
-        if fact['end_time']:
-            end_dt = dt.datetime.strptime(fact['date'] + ' ' + fact['end_time'], "%d.%m.%Y %H:%M")
-        else:
-            end_dt = None
-
+        db_fact = storage.get_fact(request.values['id'])
+        for k, v in fact.items():
+            db_fact[k] = v
+        fact = db_fact
         # todo: сделать инициализацию факта по id
         factNew = Fact(
             id=fact['id'],
@@ -257,10 +290,18 @@ def edit_task():
             description=fact['description'],
             tags=fact['tags']
         )
-
         result = storage.update_fact(fact['id'], factNew.serialized_name(), start_dt, end_dt)
-
         return jsonify(result)
+
+    api = ApiController()
+    return api.edit_task(fact['id'], Fact2(
+        activity=fact['name'],
+        category=fact['category'],
+        description=fact['description'],
+        start_time=start_dt,
+        end_time=end_dt,
+        tags=fact['tags']
+    ))
 
 
 @app.route('/api/task/stop', methods=['POST'])

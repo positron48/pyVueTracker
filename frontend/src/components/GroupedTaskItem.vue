@@ -10,7 +10,7 @@
     <md-table-cell>
       <md-field>
         <label></label>
-        <md-input v-model="task.task_id" type="number"></md-input>
+        <md-input v-model="task.task_id" type="number" min="1"></md-input>
       </md-field>
     </md-table-cell>
     <md-table-cell>
@@ -28,7 +28,7 @@
     <md-table-cell>
       <md-field>
         <label></label>
-        <md-input v-model="task.delta"></md-input>
+        <md-input v-model="task.delta" type="number" min="0" step="0.05"></md-input>
       </md-field>
     </md-table-cell>
   </md-table-row>

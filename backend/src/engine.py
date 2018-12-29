@@ -1,38 +1,47 @@
 import datetime as dt
-import re
+
+from sqlalchemy import desc, cast, Date
 
 from backend.src.auth import Auth
-from backend.src.model.hamster import Fact, FormattedFact
+from backend.src.model.hamster import Fact
 from backend.src.model.mysql import db, User, Activity, Task, HashTag, Project
-from sqlalchemy import desc, cast, Date
-from sqlalchemy.orm.session import make_transient
 
 
 class Engine(object):
     def __init__(self):
         self.user = Auth.get_request_user()
 
-    def __clone_object(self, obj):
-        db.session.expunge(obj)
-        make_transient(obj)
-        obj.id = None
-        return obj
+    def __get_task_by_external_id(self, external_task_id=None, project_name=None):
+        if external_task_id is None:
+            return None
+        task = db.session.query(Task).filter(Task.external_task_id == external_task_id).first()  # type:Task
+        if task is None:
+            if project_name is not None:
+                project = self.__get_project_by_name(project_name) or self.__get_project_by_code(project_name)
+                if project is None:
+                    project = Project(title=project_name)
+                    project.users.append(self.user)
+            task = Task(external_task_id=external_task_id)
+            if project is not None:
+                task.project = project
+            db.session.add(task)
+            db.session.commit()
 
-    @staticmethod
-    def __get_task_by_external_id(external_task_id):
-        return db.session.query(Task.id).filter(Task.external_task_id == external_task_id).first()
+        return task
 
     def __get_project_by_name(self, project_name):
-        return db.session.query(Project.id) \
+        return db.session.query(Project) \
             .join(User.projects) \
             .filter(Project.title == project_name) \
-            .filter(User.id == self.user.id).first()
+            .filter(User.id == self.user.id) \
+            .first()
 
     def __get_project_by_code(self, project_code):
-        return db.session.query(Project.id) \
+        return db.session.query(Project) \
             .join(User.projects) \
             .filter(Project.code == project_code) \
-            .filter(User.id == self.user.id).first()
+            .filter(User.id == self.user.id) \
+            .first()
 
     def __get_hashtags(self, tag_names):
         result = db.session.query(HashTag).filter(HashTag.name.in_(tag_names)).all()
@@ -53,7 +62,6 @@ class Engine(object):
             .first()  # type:Activity
 
     def get_autocomplete(self, text):
-        result = []
         db_facts = None
         if text is None or True:
             db_facts = db.session.query(Activity) \
@@ -63,74 +71,32 @@ class Engine(object):
                 .all()
         else:
             pass  # todo тут будет парсинг текста для умного автокомплита
-        for db_fact in db_facts:  # type: Activity
-            result.append(Fact(db_fact).as_text())
+        return db_facts
 
-        if len(result) == 0:
-            return []
-
-        return result
-
-    def add_fact(self, text):
-        """
-        Добавляет факт в БД, добавляет недостающие теги, проставляет связи
-        :param fact:
-        :return: fact, status, message
-        """
-        fact = Fact(text)
+    def add_fact(self, fact: Fact):
         if not fact.validate():
-            return fact, False, 'Не заполнена обязательная часть:\n' \
-                                'время номер_задачи [имя_активности][@проект] [#тег], [#тег2], [описание]'
-
-        new_activity = Activity()
-
-        # user
+            return 'Не заполнена обязательная часть:\n' \
+                   '[время] [номер_задачи] имя_активности[@проект] [#тег], [#тег2], [описание]'
         if self.user is None:
-            return fact, False, 'нет пользователя с таким токеном'
-        new_activity.user_id = self.user.id
-
-        # task_id
-        external_task_id = fact.get_task_id()
-        if external_task_id is None:
-            return fact, False, 'не указан номер задачи'
-        task = self.__get_task_by_external_id(external_task_id)
-        if task is None:
-            if fact.category is None:
-                return fact, False, 'не указан проект для новой задачи'
-            project = self.__get_project_by_name(fact.category)
-            if project is None:
-                project = self.__get_project_by_code(fact.category)
-            if project is None:
-                return fact, False, 'среди ваших проектов нет проекта ' + fact.category
-            task = Task(external_task_id=external_task_id, project_id=project.id)
-            db.session.add(task)
-            db.session.commit()
-        new_activity.task_id = task.id
-
-        # name
-        name = re.findall('^\d*\s*(.*)', fact.activity)
-        if name is not False and name != '' and name is not None:
-            new_activity.name = name.pop().strip()
-
-        # comment
-        if fact.description is not None:
-            new_activity.comment = fact.description
-
-        # time_start
-        new_activity.time_start = fact.start_time
-
-        # time_end
-        if fact.end_time is not None:
-            new_activity.time_end = fact.end_time
-
-        # last_updated
+            return 'нет пользователя с таким токеном'
+        new_activity = Activity()
+        new_activity.time_start = fact.start_time or dt.datetime.now()
+        new_activity.time_end = fact.end_time
+        new_activity.name = fact.get_task_name()
+        new_activity.update_hashtags(fact.tags)
+        new_activity.comment = fact.description
+        new_activity.user = self.user
+        new_activity.task = self.__get_task_by_external_id(fact.get_task_id(), fact.category)
         new_activity.last_updated = dt.datetime.now()
 
-        # tags
-        new_activity.update_hashtags(fact.tags)
+        # закрываем текущую активность, если есть
+        # время завершения = время начала новой
+        current = self.get_current()  # type:Activity
+        if current is not None:
+            current.stop(new_activity.time_start)
 
         db.session.add(new_activity)
-        return fact, True, None
+        return True
 
     def get_current(self):
         current = db.session.query(Activity) \
@@ -139,9 +105,7 @@ class Engine(object):
             .filter(Activity.time_end.is_(None)) \
             .order_by(desc(Activity.time_start)) \
             .first()
-        if current is None:
-            return None
-        return FormattedFact(current)
+        return current
 
     def get_facts(self, dateFrom, dateTo):
         facts = db.session.query(Activity) \
@@ -149,7 +113,7 @@ class Engine(object):
             .filter(cast(Activity.time_start, Date) >= dateFrom) \
             .filter(cast(Activity.time_start, Date) <= dateTo) \
             .all()
-        return [FormattedFact(fact) for fact in facts]
+        return facts
 
     def delete_fact(self, id: int):
         if id < 1:
@@ -174,5 +138,28 @@ class Engine(object):
         fact = self.__get_fact_by_id(id)  # type:Activity
         if fact is None:
             return False
+        # закрываем текущую активность, если есть
+        current = self.get_current()  # type:Activity
+        if current is not None:
+            current.stop()
         fact.resume()
+        return True
+
+    def edit_fact(self, id, fact: Fact):
+        db_fact = self.__get_fact_by_id(int(id))  # type:Activity
+        if db_fact is None:
+            return 'Такой активности не существует'
+        if fact.start_time is None:
+            return 'Не заполнено время начала активности'
+        external_task_id = fact.get_task_id()
+        if external_task_id is None:
+            return 'не указан номер задачи'
+        task = self.__get_task_by_external_id(external_task_id)
+        db_fact.time_start = fact.start_time
+        db_fact.time_end = fact.end_time
+        db_fact.name = fact.get_task_name()
+        db_fact.task_id = task.id
+        db_fact.comment = fact.description
+        db_fact.update_hashtags(fact.tags)
+        db.session.add(db_fact)
         return True

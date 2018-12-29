@@ -1,4 +1,5 @@
-from backend.src.model.hamster import Fact
+from backend.src.model.hamster import Fact, FormattedFact
+from backend.src.model.mysql import Activity
 from backend.src.engine import Engine
 from flask import jsonify
 from functools import wraps
@@ -33,30 +34,39 @@ class ApiController(object):
 
     @send_response
     def add_activity(self, text):
-        self.response.fact, self.response.status, self.response.message = self.engine.add_fact(text)
-        self.response.fact = self.response.fact.__dict__
+        fact = Fact(text)
+        self.response.fact = fact.__dict__
+        result = self.engine.add_fact(fact)
+        self.response.status = isinstance(result, bool)
+        if isinstance(result, str):
+            self.response.message = result
 
     @send_response
     def get_autocomlete(self, text):
-        self.response.values = self.engine.get_autocomplete(text)
-        self.response.status = self.response.values is not None
+        result = []
+        for db_fact in self.engine.get_autocomplete(text):  # type: Activity
+            result.append(Fact(db_fact).as_text())
+        self.response.values = result
+        self.response.status = len(self.response.values) > 0
 
     @send_response
     def get_current(self):
         current = self.engine.get_current()
         self.response.status = current is not None
         if self.response.status:
-            for k, v in current.__dict__.items():
+            for k, v in FormattedFact(current).__dict__.items():
                 self.response.__dict__[k] = v
 
     @send_response
     def get_tasks(self, dateFrom, dateTo):
         facts = self.engine.get_facts(dateFrom, dateTo)
-        self.response.tasks = []
         self.response.status = facts is not None
+        self.response.tasks = []
         if self.response.status:
             for fact in facts:
-                self.response.tasks.append(fact.__dict__)
+                task = FormattedFact(fact).__dict__
+                task['task_id'] = task['activity_id']
+                self.response.tasks.append(task)
 
     @send_response
     def delete_task(self, id):
@@ -69,3 +79,30 @@ class ApiController(object):
     @send_response
     def resume_task(self, id):
         self.response.status = self.engine.resume_fact(id)
+
+    @send_response
+    def edit_task(self, id, fact):
+        self.response.fact = fact.__dict__
+        result = self.engine.edit_fact(id, fact)
+        self.response.status = isinstance(result, bool)
+        if isinstance(result, str):
+            self.response.message = result
+
+    @send_response
+    def get_grouped_tasks(self, dateFrom, dateTo):
+        result = []
+        for db_fact in self.engine.get_facts(dateFrom, dateTo):
+            fact = FormattedFact(db_fact)
+            task = {
+                'id': fact.id,
+                'start': fact.start_time,
+                # 'end': fact.end_time,
+                'hours': fact.delta,
+                'description': fact.description or '',
+                'name': fact.activity,
+                'cat': fact.category,
+                'tag': fact.tags
+            }
+            result.append(task)
+        self.response.status = len(result) > 0
+        self.response.tasks = result
