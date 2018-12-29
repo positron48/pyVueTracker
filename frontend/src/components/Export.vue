@@ -50,7 +50,7 @@ export default {
         {
           text: 'эта неделя',
           start: new Date(new Date().setDate(new Date().getDate() - (new Date().getDay() || 7) + 1)),
-          end: new Date()
+          end: new Date(new Date().setDate(new Date().getDate() - (new Date().getDay() || 7) + 7))
         },
         {
           text: 'прошлая',
@@ -60,12 +60,12 @@ export default {
         {
           text: 'месяц',
           start: new Date(new Date().setDate(1)),
-          end: new Date()
+          end: new Date(new Date(new Date(new Date().setDate(1)).setMonth(new Date().getMonth() + 1)).setDate(0))
         },
         {
           text: 'прошлый',
           start: new Date(new Date(new Date().setDate(1)).setMonth(new Date().getMonth() - 1)),
-          end: new Date(new Date(new Date().setDate(1)).setDate(-1))
+          end: new Date(new Date(new Date().setDate(1)).setDate(0))
         }
       ]
     }
