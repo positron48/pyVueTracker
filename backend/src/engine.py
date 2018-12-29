@@ -53,7 +53,6 @@ class Engine(object):
             .first()  # type:Activity
 
     def get_autocomplete(self, text):
-        result = []
         db_facts = None
         if text is None or True:
             db_facts = db.session.query(Activity) \
@@ -63,45 +62,33 @@ class Engine(object):
                 .all()
         else:
             pass  # todo тут будет парсинг текста для умного автокомплита
-        for db_fact in db_facts:  # type: Activity
-            result.append(Fact(db_fact).as_text())
+        return db_facts
 
-        if len(result) == 0:
-            return []
-
-        return result
-
-    def add_fact(self, text):
-        """
-        Добавляет факт в БД, добавляет недостающие теги, проставляет связи
-        :param fact:
-        :return: fact, status, message
-        """
-        fact = Fact(text)
+    def add_fact(self, fact: Fact):
         if not fact.validate():
-            return fact, False, 'Не заполнена обязательная часть:\n' \
-                                'время номер_задачи [имя_активности][@проект] [#тег], [#тег2], [описание]'
+            return False, 'Не заполнена обязательная часть:\n' \
+                          'время номер_задачи [имя_активности][@проект] [#тег], [#тег2], [описание]'
 
         new_activity = Activity()
 
         # user
         if self.user is None:
-            return fact, False, 'нет пользователя с таким токеном'
+            return False, 'нет пользователя с таким токеном'
         new_activity.user_id = self.user.id
 
         # task_id
         external_task_id = fact.get_task_id()
         if external_task_id is None:
-            return fact, False, 'не указан номер задачи'
+            return False, 'не указан номер задачи'
         task = self.__get_task_by_external_id(external_task_id)
         if task is None:
             if fact.category is None:
-                return fact, False, 'не указан проект для новой задачи'
+                return False, 'не указан проект для новой задачи'
             project = self.__get_project_by_name(fact.category)
             if project is None:
                 project = self.__get_project_by_code(fact.category)
             if project is None:
-                return fact, False, 'среди ваших проектов нет проекта ' + fact.category
+                return False, 'среди ваших проектов нет проекта ' + fact.category
             task = Task(external_task_id=external_task_id, project_id=project.id)
             db.session.add(task)
             db.session.commit()
@@ -130,7 +117,7 @@ class Engine(object):
         new_activity.update_hashtags(fact.tags)
 
         db.session.add(new_activity)
-        return fact, True, None
+        return True, None
 
     def get_current(self):
         current = db.session.query(Activity) \
@@ -139,9 +126,7 @@ class Engine(object):
             .filter(Activity.time_end.is_(None)) \
             .order_by(desc(Activity.time_start)) \
             .first()
-        if current is None:
-            return None
-        return FormattedFact(current)
+        return current
 
     def get_facts(self, dateFrom, dateTo):
         facts = db.session.query(Activity) \
@@ -149,7 +134,7 @@ class Engine(object):
             .filter(cast(Activity.time_start, Date) >= dateFrom) \
             .filter(cast(Activity.time_start, Date) <= dateTo) \
             .all()
-        return [FormattedFact(fact) for fact in facts]
+        return facts
 
     def delete_fact(self, id: int):
         if id < 1:
@@ -180,21 +165,21 @@ class Engine(object):
     def edit_fact(self, id, fact: Fact):
         db_fact = self.__get_fact_by_id(int(id))  # type:Activity
         if db_fact is None:
-            return fact, False, 'Такой активности не существует'
+            return False, 'Такой активности не существует'
         if fact.start_time is None:
-            return fact, False, 'Не заполнено время начала активности'
+            return False, 'Не заполнено время начала активности'
         external_task_id = fact.get_task_id()
         if external_task_id is None:
-            return fact, False, 'не указан номер задачи'
+            return False, 'не указан номер задачи'
         task = self.__get_task_by_external_id(external_task_id)
         if task is None:
             if fact.category is None:
-                return fact, False, 'не указан проект для новой задачи'
+                return False, 'не указан проект для новой задачи'
             project = self.__get_project_by_name(fact.category)
             if project is None:
                 project = self.__get_project_by_code(fact.category)
             if project is None:
-                return fact, False, 'среди ваших проектов нет проекта ' + fact.category
+                return False, 'среди ваших проектов нет проекта ' + fact.category
             task = Task(external_task_id=external_task_id, project_id=project.id)
             db.session.add(task)
             db.session.commit()
@@ -205,4 +190,4 @@ class Engine(object):
         db_fact.comment = fact.description
         db_fact.update_hashtags(fact.tags)
         db.session.add(db_fact)
-        return fact, True, None
+        return True, None

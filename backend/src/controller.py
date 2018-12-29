@@ -1,4 +1,5 @@
-from backend.src.model.hamster import Fact
+from backend.src.model.hamster import Fact, FormattedFact
+from backend.src.model.mysql import Activity
 from backend.src.engine import Engine
 from flask import jsonify
 from functools import wraps
@@ -33,30 +34,34 @@ class ApiController(object):
 
     @send_response
     def add_activity(self, text):
-        self.response.fact, self.response.status, self.response.message = self.engine.add_fact(text)
-        self.response.fact = self.response.fact.__dict__
+        fact = Fact(text)
+        self.response.fact = fact.__dict__
+        self.response.status, self.response.message = self.engine.add_fact(fact)
 
     @send_response
     def get_autocomlete(self, text):
-        self.response.values = self.engine.get_autocomplete(text)
-        self.response.status = self.response.values is not None
+        result = []
+        for db_fact in self.engine.get_autocomplete(text):  # type: Activity
+            result.append(Fact(db_fact).as_text())
+        self.response.values = result
+        self.response.status = len(self.response.values) > 0
 
     @send_response
     def get_current(self):
         current = self.engine.get_current()
         self.response.status = current is not None
         if self.response.status:
-            for k, v in current.__dict__.items():
+            for k, v in FormattedFact(current).__dict__.items():
                 self.response.__dict__[k] = v
 
     @send_response
     def get_tasks(self, dateFrom, dateTo):
         facts = self.engine.get_facts(dateFrom, dateTo)
-        self.response.tasks = []
         self.response.status = facts is not None
+        self.response.tasks = []
         if self.response.status:
             for fact in facts:
-                self.response.tasks.append(fact.__dict__)
+                self.response.tasks.append(FormattedFact(fact).__dict__)
 
     @send_response
     def delete_task(self, id):
@@ -72,5 +77,5 @@ class ApiController(object):
 
     @send_response
     def edit_task(self, id, fact):
-        self.response.fact, self.response.status, self.response.message = self.engine.edit_fact(id, fact)
-        self.response.fact = self.response.fact.__dict__
+        self.response.fact = fact.__dict__
+        self.response.status, self.response.message = self.engine.edit_fact(id, fact)
