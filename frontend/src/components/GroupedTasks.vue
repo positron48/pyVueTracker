@@ -66,6 +66,7 @@ export default {
         if (groupedTasks[task['date']] === undefined) {
           groupedTasks[task['date']] = {duration: 0, tasks: [], date: task['date']}
         }
+        task['delta'] = parseFloat(task['delta'])
         groupedTasks[task['date']]['tasks'].push(task)
         groupedTasks[task['date']]['duration'] += task['delta']
 
