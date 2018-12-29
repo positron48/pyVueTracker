@@ -4,7 +4,7 @@ from sqlalchemy import desc, cast, Date
 
 from backend.src.auth import Auth
 from backend.src.model.hamster import Fact
-from backend.src.model.mysql import db, User, Activity, Task, HashTag, Project
+from backend.src.model.mysql import db, User, Activity, Task, HashTag, Project, Tracker, TrackerUserLink
 
 
 class Engine(object):
@@ -115,6 +115,14 @@ class Engine(object):
             .filter(cast(Activity.time_start, Date) <= dateTo) \
             .all()
         return facts
+
+    def get_trackers(self):
+        trackers = db.session.query(Tracker, TrackerUserLink) \
+            .join(TrackerUserLink) \
+            .filter(Tracker.id == TrackerUserLink.tracker_id) \
+            .filter(TrackerUserLink.user_id == self.user.id) \
+            .all()
+        return trackers
 
     def delete_fact(self, id: int):
         if id < 1:

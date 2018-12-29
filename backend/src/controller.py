@@ -106,3 +106,21 @@ class ApiController(object):
             result.append(task)
         self.response.status = len(result) > 0
         self.response.tasks = result
+
+    @send_response
+    def get_trackers(self):
+        result = []
+        for tracker in self.engine.get_trackers():
+            print(tracker)
+            element = {
+                'id': tracker[0].id,
+                'title': tracker[0].title,
+                'type': tracker[0].type,
+                'api_url': tracker[0].api_url,
+                'external_api_key': tracker[1].external_api_key,
+                'external_user_id': tracker[1].external_user_id,
+            }
+            result.append(element)
+
+        self.response.status = len(result) > 0
+        self.response.trackers = result

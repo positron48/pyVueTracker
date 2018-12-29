@@ -71,6 +71,11 @@ export var API = {
     }
   },
 
+  // список трекеров пользователя
+  getTrackers () {
+    return HTTP.get('/api/trackers')
+  },
+
   // добавления задания
   addTask (taskName) {
     return HTTP.post('/api/task', urlEncode({name: taskName}))

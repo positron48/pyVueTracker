@@ -180,6 +180,12 @@ def get_tasks():
     api = ApiController()
     return api.get_tasks(dateFrom, dateTo)
 
+@app.route('/api/trackers')
+@Auth.check_api_request
+def get_trackers():
+    api = ApiController()
+    return api.get_trackers()
+
 
 @app.route('/api/current')
 @Auth.check_api_request
