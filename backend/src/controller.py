@@ -64,7 +64,9 @@ class ApiController(object):
         self.response.tasks = []
         if self.response.status:
             for fact in facts:
-                self.response.tasks.append(FormattedFact(fact).__dict__)
+                task = FormattedFact(fact).__dict__
+                task['task_id'] = task['activity_id']
+                self.response.tasks.append(task)
 
     @send_response
     def delete_task(self, id):
