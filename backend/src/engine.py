@@ -1,5 +1,4 @@
 import datetime as dt
-import re
 
 from sqlalchemy import desc, cast, Date
 
@@ -15,33 +14,34 @@ class Engine(object):
     def __get_task_by_external_id(self, external_task_id=None, project_name=None):
         if external_task_id is None:
             return None
-        project = None
-        if project_name is not None:
-            project = self.__get_project_by_name(project_name) or self.__get_project_by_code(project_name)
-            if project is None:
-                project = Project(title=project_name)
-                project.users.append(self.user)
-
-        task = db.session.query(Task.id).filter(Task.external_task_id == external_task_id).first()  # type:Task
+        task = db.session.query(Task).filter(Task.external_task_id == external_task_id).first()  # type:Task
         if task is None:
+            if project_name is not None:
+                project = self.__get_project_by_name(project_name) or self.__get_project_by_code(project_name)
+                if project is None:
+                    project = Project(title=project_name)
+                    project.users.append(self.user)
             task = Task(external_task_id=external_task_id)
-            task.project = project
+            if project is not None:
+                task.project = project
             db.session.add(task)
             db.session.commit()
 
         return task
 
     def __get_project_by_name(self, project_name):
-        return db.session.query(Project.id) \
+        return db.session.query(Project) \
             .join(User.projects) \
             .filter(Project.title == project_name) \
-            .filter(User.id == self.user.id).first()
+            .filter(User.id == self.user.id) \
+            .first()
 
     def __get_project_by_code(self, project_code):
-        return db.session.query(Project.id) \
+        return db.session.query(Project) \
             .join(User.projects) \
             .filter(Project.code == project_code) \
-            .filter(User.id == self.user.id).first()
+            .filter(User.id == self.user.id) \
+            .first()
 
     def __get_hashtags(self, tag_names):
         result = db.session.query(HashTag).filter(HashTag.name.in_(tag_names)).all()
