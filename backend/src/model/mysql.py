@@ -108,8 +108,8 @@ class Activity(db.Model):
         update = {self.hashtags.append(tag) for tag in upd_tags}
         remove = {self.hashtags.remove(tag) for tag in self.hashtags if tag.name in del_tags}
 
-    def stop(self):
-        self.time_end = dt.datetime.now()
+    def stop(self, time_end=dt.datetime.now()):
+        self.time_end = time_end
         # если закрыть активность в течении минуты - она считается ошибочной, и удаляется
         if self.time_end - self.time_start < dt.timedelta(minutes=1):
             db.session.delete(self)

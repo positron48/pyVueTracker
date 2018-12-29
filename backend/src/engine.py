@@ -110,11 +110,13 @@ class Engine(object):
         # tags
         new_activity.update_hashtags(fact.tags)
 
-        db.session.add(new_activity)
         # закрываем текущую активность, если есть
+        # время завершения = время начала новой
         current = self.get_current()  # type:Activity
         if current is not None:
-            current.stop()
+            current.stop(new_activity.time_start)
+
+        db.session.add(new_activity)
         return True, None
 
     def get_current(self):
