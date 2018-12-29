@@ -12,12 +12,6 @@ class Engine(object):
     def __init__(self):
         self.user = Auth.get_request_user()
 
-    def __clone_object(self, obj):
-        db.session.expunge(obj)
-        make_transient(obj)
-        obj.id = None
-        return obj
-
     @staticmethod
     def __get_task_by_external_id(external_task_id):
         return db.session.query(Task.id).filter(Task.external_task_id == external_task_id).first()
