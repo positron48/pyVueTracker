@@ -237,9 +237,8 @@ def get_grouped_tasks():
         # jsonify always encode unicode
         return app.response_class(json.dumps({"tasks": tasks}, ensure_ascii=False), mimetype='application/json')
 
-    return 'asdasd'
     api = ApiController()
-    return api.get_grouped_tasks()
+    return api.get_tasks(dateFrom, dateTo)
 
 
 @app.route('/api/task', methods=['POST'])

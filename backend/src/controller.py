@@ -79,3 +79,22 @@ class ApiController(object):
     def edit_task(self, id, fact):
         self.response.fact = fact.__dict__
         self.response.status, self.response.message = self.engine.edit_fact(id, fact)
+
+    @send_response
+    def get_grouped_tasks(self, dateFrom, dateTo):
+        result = []
+        for db_fact in self.engine.get_facts(dateFrom, dateTo):
+            fact = FormattedFact(db_fact)
+            task = {
+                'id': fact.id,
+                'start': fact.start_time,
+                # 'end': fact.end_time,
+                'hours': fact.delta,
+                'description': fact.description or '',
+                'name': fact.activity,
+                'cat': fact.category,
+                'tag': fact.tags
+            }
+            result.append(task)
+        self.response.status = len(result) > 0
+        self.response.tasks = result

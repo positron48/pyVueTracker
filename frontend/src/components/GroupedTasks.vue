@@ -80,7 +80,9 @@ export default {
     getTasks () {
       API.getGroupedTasks(this.selectedDate.start, this.selectedDate.end)
         .then(response => {
-          this.tasks = response.data.tasks
+          if (('status' in response.data && response.data.status) || !('status' in response.data)) {
+            this.tasks = response.data.tasks
+          }
         })
         .catch(error => {
           console.log(['getTasks error', error])
