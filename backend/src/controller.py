@@ -36,7 +36,10 @@ class ApiController(object):
     def add_activity(self, text):
         fact = Fact(text)
         self.response.fact = fact.__dict__
-        self.response.status, self.response.message = self.engine.add_fact(fact)
+        result = self.engine.add_fact(fact)
+        self.response.status = isinstance(result, bool)
+        if isinstance(result, str):
+            self.response.message = result
 
     @send_response
     def get_autocomlete(self, text):
@@ -78,7 +81,10 @@ class ApiController(object):
     @send_response
     def edit_task(self, id, fact):
         self.response.fact = fact.__dict__
-        self.response.status, self.response.message = self.engine.edit_fact(id, fact)
+        result = self.engine.edit_fact(id, fact)
+        self.response.status = isinstance(result, bool)
+        if isinstance(result, str):
+            self.response.message = result
 
     @send_response
     def get_grouped_tasks(self, dateFrom, dateTo):

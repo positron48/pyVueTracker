@@ -87,6 +87,7 @@ class Activity(db.Model):
     deleted = db.Column(db.Boolean, default=False)
     last_updated = db.Column(db.DateTime)
 
+    user = db.relationship(lambda: User)
     task = db.relationship(lambda: Task)
     hashtags = db.relationship(lambda: HashTag, secondary='activity_hashtags')
     category = db.relationship(lambda: Category)
@@ -98,6 +99,8 @@ class Activity(db.Model):
         return db.session.query(HashTag).filter(HashTag.name.in_(tag_names)).all()
 
     def update_hashtags(self, tag_names):
+        if tag_names is None:
+            return
         tags = set(tag_names)
         db_tags = self.get_hashtags(tag_names)
         old_tags = {tag.name for tag in self.hashtags}

@@ -238,6 +238,7 @@ def get_grouped_tasks():
         return app.response_class(json.dumps({"tasks": tasks}, ensure_ascii=False), mimetype='application/json')
 
     api = ApiController()
+    # return api.get_grouped_tasks(dateFrom, dateTo) # неправильный формат
     return api.get_tasks(dateFrom, dateTo)
 
 
