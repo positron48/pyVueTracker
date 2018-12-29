@@ -16,6 +16,7 @@ class Engine(object):
             return None
         task = db.session.query(Task).filter(Task.external_task_id == external_task_id).first()  # type:Task
         if task is None:
+            project = None
             if project_name is not None:
                 project = self.__get_project_by_name(project_name) or self.__get_project_by_code(project_name)
                 if project is None:
