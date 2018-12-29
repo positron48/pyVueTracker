@@ -144,15 +144,6 @@ class HashTag(db.Model):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 
-class Error(db.Model):
-    __tablename__ = 'errors'
-    id = db.Column(db.Integer, primary_key=True)
-    time = db.Column(db.DateTime)
-    type = db.Column(db.String(255))
-    target = db.Column(db.String(255))
-    data = db.Column(db.Text)
-
-
 ########################################### MTM: #######################################################################
 '''sqlalchemy требует объявлять все таблицы явно, даже связи'''
 
