@@ -1,8 +1,14 @@
 export function urlEncode (obj) {
-  return Object.keys(obj).reduce(function (a, k) { a.push(k + '=' + encodeURIComponent(obj[k])); return a }, []).join('&')
+  return Object.keys(obj).reduce(function (a, k) {
+    a.push(k + '=' + encodeURIComponent(obj[k]))
+    return a
+  }, []).join('&')
 }
 
 export function formatLabel (str, maxwidth) {
+  if (str === null || str === '') {
+    return []
+  }
   var sections = []
   var words = str.split(' ')
   var temp = ' '
