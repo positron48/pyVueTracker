@@ -101,6 +101,7 @@ class Activity(db.Model):
     def update_hashtags(self, tag_names):
         if tag_names is None:
             return
+        tag_names = {tag.strip() for tag in tag_names if tag.strip()}
         tags = set(tag_names)
         db_tags = self.get_hashtags(tag_names)
         old_tags = {tag.name for tag in self.hashtags}
