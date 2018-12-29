@@ -12,6 +12,7 @@
           lang="ru"
           range
           format="DD.MM.YYYY"
+          :shortcuts="shortcuts"
         >
         </date-picker>
       </div>
@@ -34,6 +35,38 @@ export default {
       time: [
         new Date(),
         new Date()
+      ],
+      shortcuts: [
+        {
+          text: 'сегодня',
+          start: new Date(),
+          end: new Date()
+        },
+        {
+          text: 'вчера',
+          start: new Date(new Date().setDate(new Date().getDate() - 1)),
+          end: new Date(new Date().setDate(new Date().getDate() - 1))
+        },
+        {
+          text: 'эта неделя',
+          start: new Date(new Date().setDate(new Date().getDate() - (new Date().getDay() || 7) + 1)),
+          end: new Date()
+        },
+        {
+          text: 'прошлая',
+          start: new Date(new Date().setDate(new Date().getDate() - (new Date().getDay() || 7) - 6)),
+          end: new Date(new Date().setDate(new Date().getDate() - (new Date().getDay() || 7)))
+        },
+        {
+          text: 'месяц',
+          start: new Date(new Date().setDate(1)),
+          end: new Date()
+        },
+        {
+          text: 'прошлый',
+          start: new Date(new Date(new Date().setDate(1)).setMonth(new Date().getMonth() - 1)),
+          end: new Date(new Date(new Date().setDate(1)).setDate(-1))
+        }
       ]
     }
   },
