@@ -30,6 +30,30 @@ class Engine(object):
 
         return task
 
+    def __get_task_by_name(self, external_task_id, task_name, project_name=None):
+        if task_name is None:
+            return None
+
+        project = None
+        if project_name is not None:
+            project = self.__get_project_by_name(project_name) or self.__get_project_by_code(project_name)
+            if project is None:
+                project = Project(title=project_name)
+                project.users.append(self.user)
+
+        task = db.session.query(Task).filter(Task.title == task_name) \
+            .filter(Task.project_id == project.id).first()  # type:Task
+
+        if task is None:
+
+            task = Task(external_task_id=external_task_id, title=task_name)
+            if project is not None:
+                task.project = project
+            db.session.add(task)
+            db.session.commit()
+
+        return task
+
     def __get_project_by_name(self, project_name):
         return db.session.query(Project) \
             .join(User.projects) \
@@ -87,8 +111,8 @@ class Engine(object):
         new_activity.update_hashtags(fact.tags)
         new_activity.comment = fact.description
         new_activity.user = self.user
-        new_activity.task = self.__get_task_by_external_id(fact.get_task_id(), fact.category)
-        new_activity.task = self.__get_task_by_external_id(fact.get_task_id(), fact.category)
+        # new_activity.task = self.__get_task_by_external_id(fact.get_task_id(), fact.category)
+        new_activity.task = self.__get_task_by_name(fact.get_task_id(), fact.get_task_name(), fact.category)
         new_activity.last_updated = dt.datetime.now()
 
         # закрываем текущую активность, если есть

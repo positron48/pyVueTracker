@@ -6,6 +6,9 @@ from backend.src.model.mysql import Activity
 class Fact(object):
     def __init__(self, text=None, start_time=None, end_time=None, activity=None, category=None, description=None,
                  tags=None):
+
+        if category is None:
+            category = 'untitled'
         self.start_time = start_time
         self.end_time = end_time
         self.activity = activity  # задача и имя активности
@@ -27,9 +30,8 @@ class Fact(object):
                 self.end_time = text.time_end
                 self.activity = text.name
                 if text.task is not None:
-                    self.activity = str(text.task.external_task_id)
                     if text.name is not None:
-                        self.activity += ' ' + text.name
+                        self.activity = text.name
                     if text.task.project is not None:
                         self.category = text.task.project.code or text.task.project.title
                 self.description = text.comment
@@ -76,10 +78,7 @@ class Fact(object):
                 return None
             value = self.activity
 
-        name = re.findall('^\d*\s*(.*)', value)
-        if name[0] == '':
-            return None
-        name = name.pop().strip()
+        name = value
 
         if text is None:
             self.__task_name = name
