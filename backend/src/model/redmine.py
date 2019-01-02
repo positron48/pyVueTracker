@@ -7,7 +7,7 @@ class Redmine(object):
                  password=None):
         self.api = None  # type: RedmineLib
         if token is None:
-            self.api = RedmineLib(url, username=login, password=password)
+            self.api = RedmineLib(url, username=login.encode('utf-8'), password=password.encode('utf-8'))
         else:
             self.api = RedmineLib(url, key=token)
         self.auth = self.__is_auth()

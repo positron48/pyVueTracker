@@ -5,9 +5,14 @@ import json
 
 class Evolution:
 
-    def __init__(self, url, token=False):
+    def __init__(self, url, token=False, login=None, password=None):
         self.url = url
         self.token = token
+        self.login = login
+        self.password = password
+
+        if token is None and login is not None and password is not None:
+            self.get_token(login, password)
 
     def is_auth(self):
         if self.get_employers():
@@ -23,6 +28,9 @@ class Evolution:
             return self.token
         else:
             return False
+
+    def get_api_key(self):
+        return self.token
 
     def get_employers(self, name=False):
         params = {"token": self.token}

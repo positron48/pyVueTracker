@@ -1,4 +1,4 @@
-from backend.src.model.mysql import db, User
+from backend.src.model.mysql import db, User, Tracker, TrackerUserLink
 from backend.src.helpers import StringHelper
 from flask import request, Response
 from functools import wraps
@@ -14,6 +14,15 @@ class Auth(object):
             return None
         token_len = User.token.property.columns[0].type.length >> 3
         user = User(login=login, hash=hash, token=StringHelper.get_random_ascii_string(token_len))
+
+        tracker_redmine = db.session.query(Tracker).filter(Tracker.title == 'redmine',).first()
+        tracker_evo = db.session.query(Tracker).filter(Tracker.title == 'evolution',).first()
+
+        tracker_link = TrackerUserLink(tracker=tracker_redmine, user=user)
+        tracker_link2 = TrackerUserLink(tracker=tracker_evo, user=user)
+
+        db.session.add(tracker_link)
+        db.session.add(tracker_link2)
         db.session.add(user)
         db.session.commit()
         return user

@@ -9,16 +9,17 @@ import requests
 class Sheduler(object):
     user = ...  # type: User
 
-    def __init__(self, user):
-        self.user = user
-        self.tracker_links = db.session.query(TrackerUserLink).filter(TrackerUserLink.user_id == self.user.id).all()
+    def __init__(self, user=None):
+        if user is not None:
+            self.user = user
+            self.tracker_links = db.session.query(TrackerUserLink).filter(TrackerUserLink.user_id == self.user.id).all()
 
     @staticmethod
-    def __get_engine(type, url, api_key):
+    def __get_engine(type, url, api_key=None, login=None, password=None):
         if type == 'redmine':
-            return Redmine(url, api_key)
+            return Redmine(url, api_key, login, password)
         elif type == 'evo':
-            return Evolution(url, api_key)
+            return Evolution(url, api_key, login, password)
 
         return None
 
@@ -119,3 +120,9 @@ class Sheduler(object):
         self.__fetch_redmine_projects()
         self.__fetch_tasks()
         return 'done!'
+
+    def get_token(self, type, url, login, password):
+        print([type, url, login, password])
+        api = self.__get_engine(type, url, login=login, password=password)
+        if api.is_auth():
+            return api.get_api_key()

@@ -33,14 +33,15 @@ def fill():
 @app.route('/debug/add_user')
 def add_users():
     from backend.src.model.mysql import Tracker, User, TrackerUserLink
-    trackerRedmine = Tracker(title='intaro redmine', code='redmine', api_url=app.config.get('REDMINE_URL'), type='redmine')
     trackerEvo = Tracker(title='evolution', code='evo', api_url=app.config.get('EVO_URL'), type='evo')
+    trackerRedmine = Tracker(title='redmine', code='redmine', api_url=app.config.get('REDMINE_URL'), type='redmine')
     user = User(login='login', hash=Auth.get_hash('login', 'password', app.config.get('SALT')), token='MQinK4')
     user2 = User(login='login2', hash=Auth.get_hash('login2', 'password2', app.config.get('SALT')), token='MQinK42')
 
-    tracker_link = TrackerUserLink(tracker=trackerRedmine, user=user, external_api_key=app.config.get('REDMINE_KEY'))
-    tracker_link2 = TrackerUserLink(tracker=trackerEvo, user=user, external_api_key=app.config.get('EVO_KEY'))
+    tracker_link = TrackerUserLink(tracker=trackerEvo, user=user, external_api_key=app.config.get('REDMINE_KEY'))
+    tracker_link2 = TrackerUserLink(tracker=trackerRedmine, user=user, external_api_key=app.config.get('EVO_KEY'))
     tracker_link3 = TrackerUserLink(tracker=trackerRedmine, user=user2)
+
     db.session.add(tracker_link)
     db.session.add(tracker_link2)
     db.session.add(tracker_link3)
@@ -259,6 +260,16 @@ def add_entry():
     name = request.values.get('name').strip()
     api = ApiController()
     return api.add_activity(name)
+
+
+@app.route('/api/getToken', methods=['POST'])
+@Auth.check_api_request
+def get_token():
+    tracker_id = request.values.get('id')
+    login = request.values.get('login').strip()
+    password = request.values.get('password')
+    api = ApiController()
+    return api.get_token(tracker_id, login, password)
 
 
 @app.route('/api/task/edit', methods=['POST'])

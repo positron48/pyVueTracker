@@ -3,6 +3,7 @@ from backend.src.model.mysql import Activity
 from backend.src.engine import Engine
 from flask import jsonify
 from functools import wraps
+from backend.src.sheduler import Sheduler
 
 
 class Response(object):
@@ -108,10 +109,25 @@ class ApiController(object):
         self.response.tasks = result
 
     @send_response
+    def get_token(self, tracker_id, login, password):
+        tracker = self.engine.get_tracker(tracker_id)
+        s = Sheduler()
+
+        token = s.get_token(tracker.type, tracker.api_url, login, password)
+        print(token)
+
+        self.response.status = token is not None
+
+        if self.response.status:
+            self.response.external_token = token
+
+            #редактируем связь пользователя с токеном, добавляя апи ключ
+            self.engine.set_api_key(tracker_id, token)
+
+    @send_response
     def get_trackers(self):
         result = []
         for tracker in self.engine.get_trackers():
-            print(tracker)
             element = {
                 'id': tracker[0].id,
                 'title': tracker[0].title,

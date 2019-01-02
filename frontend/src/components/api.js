@@ -81,6 +81,11 @@ export var API = {
     return HTTP.post('/api/task', urlEncode({name: taskName}))
   },
 
+  // получение токена для трекера
+  getToken (id, login, password) {
+    return HTTP.post('/api/getToken', urlEncode({id: id, login: login, password: password}))
+  },
+
   // остановка задания
   stopTask (id) {
     return HTTP.post('/api/task/stop',

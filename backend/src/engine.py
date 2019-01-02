@@ -1,6 +1,6 @@
 import datetime as dt
 
-from sqlalchemy import desc, cast, Date
+from sqlalchemy import desc, cast, Date, update
 
 from backend.src.auth import Auth
 from backend.src.model.hamster import Fact
@@ -88,6 +88,7 @@ class Engine(object):
         new_activity.comment = fact.description
         new_activity.user = self.user
         new_activity.task = self.__get_task_by_external_id(fact.get_task_id(), fact.category)
+        new_activity.task = self.__get_task_by_external_id(fact.get_task_id(), fact.category)
         new_activity.last_updated = dt.datetime.now()
 
         # закрываем текущую активность, если есть
@@ -172,3 +173,23 @@ class Engine(object):
         db_fact.update_hashtags(fact.tags)
         db.session.add(db_fact)
         return True
+
+    def get_tracker(self, tracker_id):
+        tracker = db.session.query(Tracker) \
+            .filter(Tracker.id == tracker_id) \
+            .first()
+
+        return tracker
+
+    def set_api_key(self, tracker_id, token):
+        tracker_link = db.session.query(TrackerUserLink) \
+            .filter(TrackerUserLink.tracker_id == tracker_id) \
+            .filter(TrackerUserLink.user_id == self.user.id) \
+            .first()
+
+        if tracker_link is not None:
+            tracker_link.external_api_key = token
+            db.session.commit()
+            return True
+
+        return False
