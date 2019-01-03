@@ -262,6 +262,29 @@ def add_entry():
     return api.add_activity(name)
 
 
+@app.route('/api/tracker', methods=['POST'])
+@Auth.check_api_request
+def save_tracker():
+    # todo: валидация
+    id = request.values.get('id')
+    type = request.values.get('type')
+    title = request.values.get('title').strip()
+    api_url = request.values.get('api_url').strip()
+
+    api = ApiController()
+    return api.save_tracker(id, type, title, api_url)
+
+
+@app.route('/api/tracker/delete', methods=['POST'])
+@Auth.check_api_request
+def delete_tracker():
+    # todo: валидация
+    id = request.values.get('id')
+
+    api = ApiController()
+    return api.delete_tracker(id)
+
+
 @app.route('/api/getToken', methods=['POST'])
 @Auth.check_api_request
 def get_token():

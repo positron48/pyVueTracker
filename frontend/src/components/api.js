@@ -110,6 +110,25 @@ export var API = {
       }))
   },
 
+  // добавление/привязка трекера пользователю
+  saveTracker (tracker) {
+    return HTTP.post('/api/tracker',
+      urlEncode({
+        id: tracker.id,
+        title: tracker.title,
+        type: tracker.type,
+        api_url: tracker.api_url
+      }))
+  },
+
+  // удаление/отвязка трекера пользователя
+  deleteTracker (tracker) {
+    return HTTP.post('/api/tracker/delete',
+      urlEncode({
+        id: tracker.id
+      }))
+  },
+
   // обновление задания
   updateTask (task) {
     return HTTP.post('/api/task/edit',

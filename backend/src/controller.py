@@ -66,7 +66,6 @@ class ApiController(object):
         if self.response.status:
             for fact in facts:
                 task = FormattedFact(fact).__dict__
-                task['task_id'] = task['activity_id']
                 self.response.tasks.append(task)
 
     @send_response
@@ -114,14 +113,13 @@ class ApiController(object):
         s = Sheduler()
 
         token = s.get_token(tracker.type, tracker.api_url, login, password)
-        print(token)
 
         self.response.status = token is not None
 
         if self.response.status:
             self.response.external_token = token
 
-            #редактируем связь пользователя с токеном, добавляя апи ключ
+            # редактируем связь пользователя с токеном, добавляя апи ключ
             self.engine.set_api_key(tracker_id, token)
 
     @send_response
@@ -139,4 +137,18 @@ class ApiController(object):
             result.append(element)
 
         self.response.status = len(result) > 0
+        self.response.trackers = result
+
+    @send_response
+    def save_tracker(self, id, type, title, api_url):
+        result = []
+
+        self.response.status = self.engine.save_tracker(id, type, title, api_url)
+        self.response.trackers = result
+
+    @send_response
+    def delete_tracker(self, id):
+        result = []
+
+        self.response.status = self.engine.delete_tracker(id)
         self.response.trackers = result

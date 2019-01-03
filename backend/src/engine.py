@@ -149,6 +149,52 @@ class Engine(object):
             .all()
         return trackers
 
+    def save_tracker(self, id, type, title, api_url):
+        # если трекер привязан только к текущему пользователю, разрешаем его изменять
+        tracker = None
+        if id is not None and int(id) > 0:
+            tracker = db.session.query(Tracker).filter(Tracker.id == id).first()
+
+        if tracker is None:
+            tracker = db.session.query(Tracker).filter(Tracker.api_url == api_url).first()
+
+        if tracker is None:
+            tracker = Tracker(type=type, title=title, api_url=api_url)
+            db.session.add(tracker)
+        else:
+            if len(tracker.users) == 1 and self.user in tracker.users:
+                tracker.title = title
+                tracker.api_url = api_url
+
+        if self.user not in tracker.users:
+            tracker_link = TrackerUserLink(tracker=tracker, user=self.user)
+            db.session.add(tracker_link)
+
+        db.session.commit()
+
+        return True
+
+    def delete_tracker(self, id):
+        # если трекер привязан только к текущему пользователю, удаляем кго полностью
+        # если трекер привязан к нескольким пользователям, удаляем привязку к текущему пользователю
+        tracker = None
+        if id is not None and int(id) > 0:
+            tracker = db.session.query(Tracker).filter(Tracker.id == id).first()
+
+        if tracker is not None and self.user in tracker.users:
+            tracker_link = db.session.query(TrackerUserLink) \
+                .filter(TrackerUserLink.user_id == self.user.id) \
+                .filter(TrackerUserLink.tracker_id == tracker.id) \
+                .first()
+            db.session.delete(tracker_link)
+
+        if len(tracker.users) == 1 and self.user in tracker.users:
+            db.session.delete(tracker)
+
+        db.session.commit()
+
+        return True
+
     def delete_fact(self, id: int):
         if id < 1:
             return False

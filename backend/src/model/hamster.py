@@ -110,8 +110,9 @@ class FormattedFact(Fact):
 
         if isinstance(text, Activity):
             self.id = text.id
+            self.activity_id = text.task_id
             if text.task is not None:
-                self.activity_id = text.task.external_task_id
+                self.task_id = text.task.external_task_id
 
     def __delta(self):
         if self.start_time is None:
