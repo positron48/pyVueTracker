@@ -4,6 +4,8 @@ from backend.src.engine import Engine
 from flask import jsonify
 from functools import wraps
 from backend.src.sheduler import Sheduler
+from math import ceil
+import copy
 
 
 class Response(object):
@@ -90,22 +92,70 @@ class ApiController(object):
 
     @send_response
     def get_grouped_tasks(self, dateFrom, dateTo):
-        result = []
+        tasks = []
         for db_fact in self.engine.get_facts(dateFrom, dateTo):
             fact = FormattedFact(db_fact)
             task = {
                 'id': fact.id,
-                'start': fact.start_time,
+                'date': fact.date,
                 # 'end': fact.end_time,
                 'hours': fact.delta,
                 'description': fact.description or '',
                 'name': fact.activity,
                 'cat': fact.category,
-                'tag': fact.tags
+                'tag': fact.tags,
+                'task_id': fact.task_id
             }
-            result.append(task)
-        self.response.status = len(result) > 0
-        self.response.tasks = result
+            tasks.append(task)
+
+        # format data: group by date, task_id
+        formated_tasks = {}
+        for task in tasks:
+            taskDate = task['date']
+            if not taskDate in formated_tasks:
+                formated_tasks[taskDate] = {}
+            if task['task_id'] == '' or task['task_id'] is None:
+                task['task_id'] = 'empty_' + task['cat']
+
+            if not task['task_id'] in formated_tasks[taskDate]:
+                formated_tasks[taskDate][task['task_id']] = copy.copy(task)
+                formated_tasks[taskDate][task['task_id']]['description'] = []
+            else:
+                formated_tasks[taskDate][task['task_id']]['hours'] += task['hours']
+
+            description = copy.copy(task['description'])
+            if description is not '':
+                formated_tasks[taskDate][task['task_id']]['description'].append(description)
+        print(formated_tasks)
+
+        tasks = []
+        i = 0
+        for formated_tasks in formated_tasks.values():
+            for task in formated_tasks.values():
+                description = ', '.join(list(set(task['description'])))
+                if task['task_id'] is not None:
+                    try:
+                        task_id = int(task['task_id'])
+                    except ValueError:
+                        task_id = ""
+                else:
+                    task_id = ""
+
+                new_task = {
+                    'id': task['id'],
+                    'date': task['date'],
+                    'delta': ceil(task['hours'] * 10) / 10,
+                    'description': description,
+                    'name': task['name'],
+                    'category': task['cat'],
+                    'tag': task['tag'],
+                    'task_id': task_id
+                }
+                i += 1
+                tasks.append(new_task)
+
+        self.response.status = True
+        self.response.tasks = tasks
 
     @send_response
     def get_token(self, tracker_id, login, password):
@@ -121,6 +171,22 @@ class ApiController(object):
 
             # редактируем связь пользователя с токеном, добавляя апи ключ
             self.engine.set_api_key(tracker_id, token)
+
+    @send_response
+    def get_evo_users(self):
+        tracker = self.engine.get_evo_tracker()
+        s = Sheduler()
+
+        users = s.get_evo_users(tracker[0].api_url, tracker[1].external_api_key)
+
+        evo_users = []
+        for user in users:
+            evo_users.append(user['title'])
+
+        self.response.status = evo_users is not None
+
+        if self.response.status:
+            self.response.users = evo_users
 
     @send_response
     def get_trackers(self):
@@ -145,6 +211,19 @@ class ApiController(object):
 
         self.response.status = self.engine.save_tracker(id, type, title, api_url)
         self.response.trackers = result
+
+    @send_response
+    def save_evo_user(self, username):
+        tracker = self.engine.get_evo_tracker()
+        s = Sheduler()
+
+        evo_users = s.get_evo_users(tracker[0].api_url, tracker[1].external_api_key, username)
+
+        if len(evo_users) == 1:
+            self.response.status = True
+            self.engine.save_user_id(tracker[0].id, evo_users[0]['id'])
+        else:
+            self.response.status = False
 
     @send_response
     def delete_tracker(self, id):

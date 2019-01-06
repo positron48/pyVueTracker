@@ -122,7 +122,11 @@ class Sheduler(object):
         return 'done!'
 
     def get_token(self, type, url, login, password):
-        print([type, url, login, password])
         api = self.__get_engine(type, url, login=login, password=password)
         if api.is_auth():
             return api.get_api_key()
+
+    def get_evo_users(self, url, token, name=False):
+        api = self.__get_engine('evo', url, api_key=token)
+        if api.is_auth():
+            return api.get_employers(name)

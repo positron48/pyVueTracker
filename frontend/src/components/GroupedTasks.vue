@@ -2,7 +2,7 @@
 <template>
   <div>
     <div class="md-layout md-gutter md-alignment-top-center">
-      <div class="md-layout-item  md-large-size-70 md-xlarge-size-60 md-medium-size-90 md-small-size-100 taskItems minimal-input" v-if="tasks.length">
+      <div class="md-layout-item  md-medium-size-90 md-small-size-100 taskItems minimal-input" v-if="tasks.length">
         <template
             v-for="taskGroup in groupedTasks"
           >
@@ -13,6 +13,7 @@
                 <md-table>
                   <md-table-row>
                     <md-table-head>Дата</md-table-head>
+                    <md-table-head>Задача</md-table-head>
                     <md-table-head>Номер задачи</md-table-head>
                     <md-table-head>Комментарий</md-table-head>
                     <md-table-head>Проект</md-table-head>

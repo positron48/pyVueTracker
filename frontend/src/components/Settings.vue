@@ -15,6 +15,7 @@
               <md-table-head>Url</md-table-head>
               <md-table-head>Тип</md-table-head>
               <md-table-head>Токен</md-table-head>
+              <md-table-head>Пользователь</md-table-head>
             </md-table-row>
             <md-table-row v-bind:key="tracker.id" v-for="tracker in trackers">
               <md-table-head>
@@ -28,6 +29,11 @@
               <md-table-head>
                 <span v-if="tracker.external_api_key">{{tracker.external_api_key}}</span>
                 <a class="simple-link" v-if="!tracker.external_api_key" @click="showTokenModal(tracker)">Получить токен</a>
+              </md-table-head>
+              <md-table-head>
+                <span v-if="tracker.external_user_id">{{tracker.external_user_id}}</span>
+                <a class="simple-link" v-if="!tracker.external_user_id && tracker.external_api_key && tracker.type == 'evo'"
+                 @click="showUserModal(tracker)">Указать пользователя</a>
               </md-table-head>
             </md-table-row>
           </md-table>
@@ -118,6 +124,21 @@
         <md-button class="md-accent" @click="getToken">получить</md-button>
       </div>
     </modal>
+
+    <modal :show="showUser">
+      <div class="modal-header">
+        <h2>Выберите пользователя в {{currentTracker.title}}</h2>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" v-model="currentTracker.id" name=id>
+        <md-autocomplete v-model="evoUser" :md-options="evoUsers" md-dense>
+        </md-autocomplete>
+      </div>
+      <div class="modal-footer text-right">
+        <md-button class="md-primary" @click="closeUserModal">отмена</md-button>
+        <md-button class="md-accent" @click="saveEvoUser">сохранить</md-button>
+      </div>
+    </modal>
   </div>
 </template>
 
@@ -129,6 +150,8 @@ export default {
   data () {
     return {
       trackers: [],
+      evoUsers: [],
+      evoUser: '',
       projects: null,
       loginToken: '',
       passwordToken: '',
@@ -139,6 +162,7 @@ export default {
         type: 'redmine'
       },
       showTracker: false,
+      showUser: false,
       showToken: false
     }
   },
@@ -153,6 +177,16 @@ export default {
           console.log(['getTasks error', error])
         })
     },
+    getEvoUsers () {
+      API.getEvoUsers()
+        .then(response => {
+          console.log(response)
+          this.evoUsers = response.data.users
+        })
+        .catch(error => {
+          console.log(['getEvoUsers error', error])
+        })
+    },
     showTrackerModal () {
       this.showTracker = true
     },
@@ -161,7 +195,7 @@ export default {
     },
     deleteTracker (id) {
       if (confirm('вы действительно хотите удалить трекер из списка?')) {
-         API.deleteTracker(this.currentTracker)
+        API.deleteTracker(this.currentTracker)
           .then(response => {
             console.log(response)
             this.getTrackers()
@@ -184,6 +218,17 @@ export default {
           console.log(['getToken error', error])
         })
     },
+    saveEvoUser () {
+      API.saveEvoUser(this.evoUser)
+        .then(response => {
+          console.log(response)
+          this.getTrackers()
+          this.showUser = false
+        })
+        .catch(error => {
+          console.log(['saveTrackerUser error', error])
+        })
+    },
     addTracker () {
       this.currentTracker = {
         id: 0,
@@ -203,8 +248,15 @@ export default {
       this.currentTracker = tracker
       this.showToken = true
     },
+    showUserModal (tracker) {
+      this.currentTracker = tracker
+      this.showUser = true
+    },
     closeTokenModal () {
       this.showToken = false
+    },
+    closeUserModal () {
+      this.showUser = false
     },
     getToken () {
       API.getToken(this.currentTracker.id, this.loginToken, this.passwordToken)
@@ -227,6 +279,7 @@ export default {
   },
   mounted () {
     this.getTrackers()
+    this.getEvoUsers()
   }
 }
 </script>

@@ -149,6 +149,14 @@ class Engine(object):
             .all()
         return trackers
 
+    def get_evo_tracker(self):
+        tracker = db.session.query(Tracker, TrackerUserLink) \
+            .join(TrackerUserLink) \
+            .filter(Tracker.type == 'evo') \
+            .filter(TrackerUserLink.user_id == self.user.id) \
+            .first()
+        return tracker
+
     def save_tracker(self, id, type, title, api_url):
         # если трекер привязан только к текущему пользователю, разрешаем его изменять
         tracker = None
@@ -171,6 +179,19 @@ class Engine(object):
             db.session.add(tracker_link)
 
         db.session.commit()
+
+        return True
+
+    def save_user_id(self, tracker_id, user_id):
+        tracker_link = db.session.query(TrackerUserLink) \
+            .filter(TrackerUserLink.tracker_id == tracker_id) \
+            .filter(TrackerUserLink.user_id == self.user.id).first()
+
+        if tracker_link is not None:
+            tracker_link.external_user_id = user_id
+            db.session.commit()
+        else:
+            return False
 
         return True
 
@@ -232,9 +253,8 @@ class Engine(object):
         if fact.start_time is None:
             return 'Не заполнено время начала активности'
         external_task_id = fact.get_task_id()
-        if external_task_id is None:
-            return 'не указан номер задачи'
-        task = self.__get_task_by_external_id(external_task_id)
+
+        task = self.__get_task_by_name(external_task_id, fact.get_task_name(), fact.category)
         db_fact.time_start = fact.start_time
         db_fact.time_end = fact.end_time
         db_fact.name = fact.get_task_name()

@@ -8,6 +8,9 @@
       </md-field>
     </md-table-cell>
     <md-table-cell>
+      <div>{{task.name}}</div>
+    </md-table-cell>
+    <md-table-cell>
       <md-field>
         <label></label>
         <md-input v-model="task.task_id" type="number" min="1"></md-input>

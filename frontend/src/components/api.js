@@ -76,6 +76,11 @@ export var API = {
     return HTTP.get('/api/trackers')
   },
 
+  // список трекеров пользователя
+  getEvoUsers () {
+    return HTTP.get('/api/evoUsers')
+  },
+
   // добавления задания
   addTask (taskName) {
     return HTTP.post('/api/task', urlEncode({name: taskName}))
@@ -118,6 +123,14 @@ export var API = {
         title: tracker.title,
         type: tracker.type,
         api_url: tracker.api_url
+      }))
+  },
+
+  // добавление/привязка трекера пользователю
+  saveEvoUser (username) {
+    return HTTP.post('/api/evoUser',
+      urlEncode({
+        name: username
       }))
   },
 

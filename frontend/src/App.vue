@@ -18,6 +18,11 @@ export default {
   color: #2c3e50;
 }
 
+.md-menu-content-bottom-start{
+  z-index: 10000 !important;
+  width: auto !important;
+  max-width: fit-content !important;
+}
 .center{
   text-align: center;
 }

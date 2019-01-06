@@ -181,11 +181,19 @@ def get_tasks():
     api = ApiController()
     return api.get_tasks(dateFrom, dateTo)
 
+
 @app.route('/api/trackers')
 @Auth.check_api_request
 def get_trackers():
     api = ApiController()
     return api.get_trackers()
+
+
+@app.route('/api/evoUsers')
+@Auth.check_api_request
+def get_evo_users():
+    api = ApiController()
+    return api.get_evo_users()
 
 
 @app.route('/api/current')
@@ -245,8 +253,8 @@ def get_grouped_tasks():
         return app.response_class(json.dumps({"tasks": tasks}, ensure_ascii=False), mimetype='application/json')
 
     api = ApiController()
-    # return api.get_grouped_tasks(dateFrom, dateTo) # неправильный формат
-    return api.get_tasks(dateFrom, dateTo)
+    return api.get_grouped_tasks(dateFrom, dateTo)
+    # return api.get_tasks(dateFrom, dateTo)
 
 
 @app.route('/api/task', methods=['POST'])
@@ -273,6 +281,16 @@ def save_tracker():
 
     api = ApiController()
     return api.save_tracker(id, type, title, api_url)
+
+
+@app.route('/api/evoUser', methods=['POST'])
+@Auth.check_api_request
+def save_evo_user():
+    # todo: валидация
+    name = request.values.get('name').strip()
+
+    api = ApiController()
+    return api.save_evo_user(name)
 
 
 @app.route('/api/tracker/delete', methods=['POST'])
