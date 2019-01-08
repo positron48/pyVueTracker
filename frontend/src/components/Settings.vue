@@ -27,13 +27,17 @@
               <md-table-head>{{tracker.api_url}}</md-table-head>
               <md-table-head>{{tracker.type}}</md-table-head>
               <md-table-head>
-                <span v-if="tracker.external_api_key">{{tracker.external_api_key}}</span>
-                <a class="simple-link" v-if="!tracker.external_api_key" @click="showTokenModal(tracker)">Получить токен</a>
+                <a class="simple-link" @click="showTokenModal(tracker)">
+                  <span v-if="tracker.external_api_key">{{tracker.external_api_key}}</span>
+                  <span v-if="!tracker.external_api_key">Получить токен</span>
+                </a>
               </md-table-head>
               <md-table-head>
-                <span v-if="tracker.external_user_id">{{tracker.external_user_id}}</span>
-                <a class="simple-link" v-if="!tracker.external_user_id && tracker.external_api_key && tracker.type == 'evo'"
-                 @click="showUserModal(tracker)">Указать пользователя</a>
+                <a class="simple-link" v-if="tracker.external_api_key && tracker.type == 'evo'"
+                 @click="showUserModal(tracker)">
+                  <span v-if="!tracker.external_user_id">Указать пользователя</span>
+                  <span v-if="tracker.external_user_id">{{tracker.external_user_id}}</span>
+                </a>
               </md-table-head>
             </md-table-row>
           </md-table>
@@ -264,6 +268,11 @@ export default {
           console.log(response)
           if (response.data.external_token !== undefined && response.data.external_token !== '') {
             this.getTrackers()
+
+            if (this.currentTracker.type === 'evo') {
+              this.getEvoUsers()
+            }
+
             this.showToken = false
           } else {
             alert('Токен не получен')

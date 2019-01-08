@@ -180,13 +180,13 @@ class ApiController(object):
         users = s.get_evo_users(tracker[0].api_url, tracker[1].external_api_key)
 
         evo_users = []
-        for user in users:
-            evo_users.append(user['title'])
+        if users is None:
+            self.response.status = False
+        else:
+            for user in users:
+                evo_users.append(user['title'])
 
-        self.response.status = evo_users is not None
-
-        if self.response.status:
-            self.response.users = evo_users
+        self.response.users = evo_users
 
     @send_response
     def get_trackers(self):
