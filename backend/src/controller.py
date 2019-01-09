@@ -186,7 +186,10 @@ class ApiController(object):
             self.response.status = False
         else:
             for user in users:
-                evo_users.append(user['title'])
+                evo_users.append({
+                    'label': user['title'],
+                    'value': user['id']
+                })
 
         self.response.users = evo_users
 
@@ -200,7 +203,7 @@ class ApiController(object):
                 'type': tracker[0].type,
                 'api_url': tracker[0].api_url,
                 'external_api_key': tracker[1].external_api_key,
-                'external_user_id': tracker[1].external_user_id,
+                'external_user_id': tracker[1].external_user_id
             }
             result.append(element)
 
@@ -243,17 +246,10 @@ class ApiController(object):
         self.response.trackers = result
 
     @send_response
-    def save_evo_user(self, username):
+    def save_evo_user(self, user_id):
         tracker = self.engine.get_evo_tracker()
-        s = Sheduler()
-
-        evo_users = s.get_evo_users(tracker[0].api_url, tracker[1].external_api_key, username)
-
-        if len(evo_users) == 1:
-            self.response.status = True
-            self.engine.save_user_id(tracker[0].id, evo_users[0]['id'])
-        else:
-            self.response.status = False
+        self.response.status = True
+        self.engine.save_user_id(tracker[0].id, user_id)
 
     @send_response
     def delete_tracker(self, id):

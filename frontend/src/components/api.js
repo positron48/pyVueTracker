@@ -136,10 +136,10 @@ export var API = {
   },
 
   // добавление/привязка трекера пользователю
-  saveEvoUser (username) {
+  saveEvoUser (evoUser) {
     return HTTP.post('/api/evoUser',
       urlEncode({
-        name: username
+        id: evoUser['value']
       }))
   },
 
