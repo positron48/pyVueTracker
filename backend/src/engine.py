@@ -115,10 +115,14 @@ class Engine(object):
         new_activity.task = self.__get_task_by_name(fact.get_task_id(), fact.get_task_name(), fact.category)
         new_activity.last_updated = dt.datetime.now()
 
-        # закрываем текущую активность, если есть
-        # время завершения = время начала новой
         current = self.get_current()  # type:Activity
         if current is not None:
+            # проверяем, чтобы время начала новой активности было не раньше времени начала текущей активности
+            if current.time_start > new_activity.time_start:
+                return 'Новая активность начинается раньше текущей.\n' \
+                       'Исправьте время начала новой активности,\n' \
+                       'или удалите/отредактируйте текущую активность.'
+            # закрываем текущую активность, время завершения = время начала новой
             current.stop(new_activity.time_start)
 
         db.session.add(new_activity)
