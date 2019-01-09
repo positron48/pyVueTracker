@@ -76,6 +76,15 @@ export var API = {
     return HTTP.get('/api/trackers')
   },
 
+  // список проектов
+  getProjects (ids) {
+    return HTTP.get('/api/projects', {
+      params: {
+        projects: ids
+      }
+    })
+  },
+
   // список трекеров пользователя
   getEvoUsers () {
     return HTTP.get('/api/evoUsers')

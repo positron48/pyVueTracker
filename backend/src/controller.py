@@ -104,7 +104,8 @@ class ApiController(object):
                 'name': fact.activity,
                 'cat': fact.category,
                 'tag': fact.tags,
-                'task_id': fact.task_id
+                'task_id': fact.task_id,
+                'project_id': db_fact.task.project.id
             }
             tasks.append(task)
 
@@ -149,7 +150,8 @@ class ApiController(object):
                     'name': task['name'],
                     'category': task['cat'],
                     'tag': task['tag'],
-                    'task_id': task_id
+                    'task_id': task_id,
+                    'project_id': task['project_id']
                 }
                 i += 1
                 tasks.append(new_task)
@@ -204,6 +206,34 @@ class ApiController(object):
 
         self.response.status = len(result) > 0
         self.response.trackers = result
+
+    @send_response
+    def get_projects(self, project_ids=None):
+        result = {}
+
+        user_trackers = self.engine.get_trackers()
+        tracker_ids = {tracker[0].id for tracker in user_trackers}
+
+        for project in self.engine.get_projects(project_ids):
+            element = {
+                'id': project.id,
+                'title': project.title,
+                'code': project.code,
+                'tracker_projects': {}
+            }
+
+            for tracker_prop in project.tracker_properties:
+                if tracker_prop.tracker_id in tracker_ids:
+                    element['tracker_projects'][tracker_prop.tracker_id] = {
+                        'tracker_id': tracker_prop.tracker_id,
+                        'external_project_id': tracker_prop.external_project_id,
+                        'external_project_title': tracker_prop.external_project_title
+                    }
+
+            result[project.id] = element
+
+        self.response.status = len(result) > 0
+        self.response.projects = result
 
     @send_response
     def save_tracker(self, id, type, title, api_url):

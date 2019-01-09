@@ -254,7 +254,16 @@ def get_grouped_tasks():
 
     api = ApiController()
     return api.get_grouped_tasks(dateFrom, dateTo)
-    # return api.get_tasks(dateFrom, dateTo)
+
+
+@app.route('/api/projects')
+@Auth.check_api_request
+def get_projects():
+    project_ids = request.args.getlist('projects[]')
+    project_ids = list(map(int, project_ids))
+
+    api = ApiController()
+    return api.get_projects(project_ids)
 
 
 @app.route('/api/task', methods=['POST'])

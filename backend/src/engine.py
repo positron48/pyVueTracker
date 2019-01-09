@@ -271,6 +271,16 @@ class Engine(object):
 
         return tracker
 
+    def get_projects(self, project_ids=None):
+        if project_ids is None:
+            return []
+
+        projects = db.session.query(Project) \
+            .filter(Project.id.in_(project_ids)) \
+            .all()
+
+        return projects
+
     def set_api_key(self, tracker_id, token):
         tracker_link = db.session.query(TrackerUserLink) \
             .filter(TrackerUserLink.tracker_id == tracker_id) \

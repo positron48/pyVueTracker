@@ -24,6 +24,7 @@
                     v-for="task in taskGroup.tasks"
                     :key="task.id"
                     :task="task"
+                    @linkProject="linkProject(arguments[0], arguments[1])"
                   />
 
                 </md-table>
@@ -46,6 +47,8 @@ export default {
   data () {
     return {
       tasks: [],
+      projects: [],
+      trackers: [],
       selectedDate: {
         start: new Date(),
         end: new Date()
@@ -62,20 +65,44 @@ export default {
   computed: {
     groupedTasks: function () {
       var groupedTasks = {}
-      this.tasks.forEach(function (task, i) {
+      for (var i = 0; i < this.tasks.length; i++) {
+        var task = this.tasks[i]
+
         // дни
         if (groupedTasks[task['date']] === undefined) {
           groupedTasks[task['date']] = {duration: 0, tasks: [], date: task['date']}
         }
         task['delta'] = parseFloat(task['delta'])
+
+        task['trackers'] = []
+        for (var j = 0; j < this.trackers.length; j++) {
+          var tracker = this.trackers[j]
+          task['trackers'].push({
+            id: tracker['id'],
+            type: tracker['type'],
+            title: tracker['title'],
+            status: (this.projects[task['project_id']] !== undefined &&
+              this.projects[task['project_id']]['tracker_projects'][tracker['id']] !== undefined) ? 'linked' : ''
+          })
+        }
+
         groupedTasks[task['date']]['tasks'].push(task)
         groupedTasks[task['date']]['duration'] += task['delta']
 
         // со сложением вместе округление работать не хочет
         groupedTasks[task['date']]['duration'] = Math.round(groupedTasks[task['date']]['duration'] * 100) / 100
-      })
+      }
       console.log(groupedTasks)
       return groupedTasks
+    },
+    projectIds: function () {
+      var projectIds = []
+      this.tasks.forEach(function (task, i) {
+        projectIds.push(task['project_id'])
+      })
+      return projectIds.filter(function (el, index, arr) {
+        return index === arr.indexOf(el)
+      })
     }
   },
   methods: {
@@ -84,10 +111,34 @@ export default {
         .then(response => {
           if (('status' in response.data && response.data.status) || !('status' in response.data)) {
             this.tasks = response.data.tasks
+            this.getProjects()
           }
         })
         .catch(error => {
           console.log(['getTasks error', error])
+        })
+    },
+    getProjects () {
+      API.getProjects(this.projectIds)
+        .then(response => {
+          if (('status' in response.data && response.data.status) || !('status' in response.data)) {
+            this.projects = response.data.projects
+            this.$forceUpdate()
+          }
+        })
+        .catch(error => {
+          console.log(['getProjects error', error])
+        })
+    },
+    getTrackers () {
+      API.getTrackers()
+        .then(response => {
+          if (('status' in response.data && response.data.status) || !('status' in response.data)) {
+            this.trackers = response.data.trackers
+          }
+        })
+        .catch(error => {
+          console.log(['getTrackers error', error])
         })
     },
     convertToHours: function (timeString) {
@@ -98,6 +149,9 @@ export default {
         var times = timeString.split(':')
         return parseInt(times[0]) + parseInt(times[1]) / 60
       }
+    },
+    linkProject: function (trackerId, projectId) {
+      alert(trackerId + ' ' + projectId)
     }
   },
   components: {
@@ -108,6 +162,7 @@ export default {
       this.selectedDate = this.initialDate
     }
     this.getTasks()
+    this.getTrackers()
   }
 }
 </script>
