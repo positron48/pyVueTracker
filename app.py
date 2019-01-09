@@ -189,6 +189,15 @@ def get_trackers():
     return api.get_trackers()
 
 
+@app.route('/api/trackerProjects')
+@Auth.check_api_request
+def get_tracker_projects():
+    id = request.args.get('id')
+
+    api = ApiController()
+    return api.get_tracker_projects(id)
+
+
 @app.route('/api/evoUsers')
 @Auth.check_api_request
 def get_evo_users():

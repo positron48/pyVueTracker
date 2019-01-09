@@ -130,3 +130,8 @@ class Sheduler(object):
         api = self.__get_engine('evo', url, api_key=token)
         if api.is_auth():
             return api.get_employers(name)
+
+    def get_projects(self, type, url, token):
+        api = self.__get_engine(type, url, api_key=token)
+        if api.is_auth():
+            return api.get_all_projects()

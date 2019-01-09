@@ -36,12 +36,28 @@
         </template>
       </div>
     </div>
+
+    <modal :show="showLink">
+      <div class="modal-header">
+        <h2>Укажите проект в {{currentTracker.title}}</h2>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" v-model="currentTracker.id" name="trackerId">
+        <input type="hidden" v-model="currentProject" name="projectId">
+        <v-select v-model="linkToProject" :options="trackerProjects[currentTracker.id]"/>
+      </div>
+      <div class="modal-footer text-right">
+        <md-button class="md-primary" @click="closeLinkModal">отмена</md-button>
+        <md-button class="md-accent" @click="saveLinkProject">сохранить</md-button>
+      </div>
+    </modal>
   </div>
 </template>
 
 <script>
 import GroupedTaskItem from './GroupedTaskItem.vue'
 import API from './api.js'
+import Modal from './Modal.vue'
 
 export default {
   data () {
@@ -54,7 +70,13 @@ export default {
         end: new Date()
       },
       show: false,
-      labelWidth: 200
+      labelWidth: 200,
+
+      currentTracker: [],
+      currentProject: null,
+      showLink: false,
+      linkToProject: null,
+      trackerProjects: {}
     }
   },
   props: {
@@ -151,11 +173,43 @@ export default {
       }
     },
     linkProject: function (trackerId, projectId) {
-      alert(trackerId + ' ' + projectId)
+      console.log([trackerId, this.trackers[trackerId]])
+      for (var i = 0; i < this.trackers.length; i++) {
+        if (trackerId === this.trackers[i]['id']) {
+          this.currentTracker = this.trackers[i]
+          break
+        }
+      }
+      this.currentProject = projectId
+      this.getTrackerProjects(trackerId)
+
+      this.showLinkModal()
+    },
+    closeLinkModal: function () {
+      this.showLink = false
+    },
+    showLinkModal: function () {
+      this.showLink = true
+    },
+    saveLinkProject: function () {
+
+    },
+    getTrackerProjects: function (trackerId) {
+      if (this.trackerProjects[trackerId] === undefined) {
+        API.getTrackerProjects(trackerId)
+        .then(response => {
+          if (('status' in response.data && response.data.status) || !('status' in response.data)) {
+            this.trackerProjects[trackerId] = response.data.projects
+          }
+        })
+        .catch(error => {
+          console.log(['getTrackerProjects error', error])
+        })
+      }
     }
   },
   components: {
-    GroupedTaskItem
+    GroupedTaskItem, Modal
   },
   created () {
     if (this.initialDate !== undefined) {

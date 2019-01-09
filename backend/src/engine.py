@@ -265,11 +265,23 @@ class Engine(object):
         return True
 
     def get_tracker(self, tracker_id):
-        tracker = db.session.query(Tracker) \
+        tracker = db.session.query(Tracker, TrackerUserLink) \
+            .join(TrackerUserLink) \
             .filter(Tracker.id == tracker_id) \
+            .filter(TrackerUserLink.user_id == self.user.id) \
             .first()
 
-        return tracker
+        result = {
+            'id': tracker[0].id,
+            'title': tracker[0].title,
+            'type': tracker[0].type,
+            'code': tracker[0].code,
+            'api_url': tracker[0].api_url,
+            'ui_url': tracker[0].ui_url,
+            'external_api_key': tracker[1].external_api_key,
+        }
+
+        return result
 
     def get_projects(self, project_ids=None):
         if project_ids is None:

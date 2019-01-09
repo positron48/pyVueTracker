@@ -239,6 +239,15 @@ class ApiController(object):
         self.response.projects = result
 
     @send_response
+    def get_tracker_projects(self, tracker_id):
+        tracker = self.engine.get_tracker(tracker_id)
+        s = Sheduler()
+        projects = s.get_projects(tracker['type'], tracker['api_url'], tracker['external_api_key'])
+
+        self.response.status = len(projects) > 0
+        self.response.projects = projects
+
+    @send_response
     def save_tracker(self, id, type, title, api_url):
         result = []
 
