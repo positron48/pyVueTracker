@@ -66,7 +66,7 @@ class Sheduler:
                 continue
 
             api = self.__get_engine(link.tracker.type, link.tracker.api_url, link.external_api_key)
-            auth = self.__check_auth(link.tracker.type, link.tracker.api_url, api)
+            auth = api.is_auth()
             if not auth:
                 continue
             projects = api.get_all_projects()
@@ -117,7 +117,7 @@ class Sheduler:
     def fetch_external_data(self):
         self.__fetch_evo_projects()
         self.__fetch_redmine_projects()
-        self.__fetch_tasks()
+        # self.__fetch_tasks()
         return 'done!'
 
     def get_token(self, type, url, login, password):
@@ -129,3 +129,8 @@ class Sheduler:
         api = self.__get_engine('evo', url, api_key=token)
         if api.is_auth():
             return api.get_employers(name)
+
+    def get_projects(self, type, url, token):
+        api = self.__get_engine(type, url, api_key=token)
+        if api.is_auth():
+            return api.get_all_projects()

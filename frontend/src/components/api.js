@@ -76,6 +76,24 @@ export var API = {
     return HTTP.get('/api/trackers')
   },
 
+  // список проектов
+  getProjects (ids) {
+    return HTTP.get('/api/projects', {
+      params: {
+        projects: ids
+      }
+    })
+  },
+
+  // список проектов на трекере
+  getTrackerProjects (trackerId) {
+    return HTTP.get('/api/trackerProjects', {
+      params: {
+        id: trackerId
+      }
+    })
+  },
+
   // список трекеров пользователя
   getEvoUsers () {
     return HTTP.get('/api/evoUsers')
@@ -127,10 +145,10 @@ export var API = {
   },
 
   // добавление/привязка трекера пользователю
-  saveEvoUser (username) {
+  saveEvoUser (evoUser) {
     return HTTP.post('/api/evoUser',
       urlEncode({
-        name: username
+        id: evoUser['value']
       }))
   },
 

@@ -135,8 +135,7 @@
       </div>
       <div class="modal-body">
         <input type="hidden" v-model="currentTracker.id" name=id>
-        <md-autocomplete v-model="evoUser" :md-options="evoUsers" md-dense>
-        </md-autocomplete>
+        <v-select v-model="evoUser" :options="evoUsers"/>
       </div>
       <div class="modal-footer text-right">
         <md-button class="md-primary" @click="closeUserModal">отмена</md-button>

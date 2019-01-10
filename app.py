@@ -189,6 +189,15 @@ def get_trackers():
     return api.get_trackers()
 
 
+@app.route('/api/trackerProjects')
+@Auth.check_api_request
+def get_tracker_projects():
+    id = request.args.get('id')
+
+    api = ApiController()
+    return api.get_tracker_projects(id)
+
+
 @app.route('/api/evoUsers')
 @Auth.check_api_request
 def get_evo_users():
@@ -254,7 +263,16 @@ def get_grouped_tasks():
 
     api = ApiController()
     return api.get_grouped_tasks(dateFrom, dateTo)
-    # return api.get_tasks(dateFrom, dateTo)
+
+
+@app.route('/api/projects')
+@Auth.check_api_request
+def get_projects():
+    project_ids = request.args.getlist('projects[]')
+    project_ids = list(map(int, project_ids))
+
+    api = ApiController()
+    return api.get_projects(project_ids)
 
 
 @app.route('/api/task', methods=['POST'])
@@ -286,11 +304,10 @@ def save_tracker():
 @app.route('/api/evoUser', methods=['POST'])
 @Auth.check_api_request
 def save_evo_user():
-    # todo: валидация
-    name = request.values.get('name').strip()
+    id = request.values.get('id')
 
     api = ApiController()
-    return api.save_evo_user(name)
+    return api.save_evo_user(id)
 
 
 @app.route('/api/tracker/delete', methods=['POST'])
