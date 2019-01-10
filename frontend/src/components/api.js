@@ -145,13 +145,13 @@ export var API = {
   },
 
   // привязка проекта к проекту на трекере
-  linkProject (projectId, trackerId, trackerProjectId, trackerProjectTitle) {
+  linkProject (projectId, trackerId, trackerProject) {
     return HTTP.post('/api/linkProject',
       urlEncode({
         projectId: projectId,
         trackerId: trackerId,
-        trackerProjectId: trackerProjectId,
-        trackerProjectTitle: trackerProjectTitle
+        trackerProjectId: trackerProject !== null ? trackerProject.value : 0,
+        trackerProjectTitle: trackerProject !== null ? trackerProject.label : 0
       }))
   },
 

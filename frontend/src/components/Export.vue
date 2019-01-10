@@ -17,13 +17,13 @@
         </date-picker>
       </div>
     </div>
-    <GroupedTasks :initialDate="selectedDate" ref="grouped_tasks" @update="refreshData()"/>
+    <ExportTasks :initialDate="selectedDate" ref="grouped_tasks" @update="refreshData()"/>
   </div>
 </template>
-
+uni
 <script>
 import DatePicker from 'vue2-datepicker'
-import GroupedTasks from './GroupedTasks.vue'
+import ExportTasks from './ExportTasks.vue'
 
 export default {
   data () {
@@ -82,7 +82,7 @@ export default {
     }
   },
   components: {
-    DatePicker, GroupedTasks
+    DatePicker, ExportTasks
   },
   mounted () {
     this.$refs.rangeDatePicker.dateRange = this.selectedDate

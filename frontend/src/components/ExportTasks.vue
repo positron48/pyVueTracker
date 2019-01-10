@@ -20,12 +20,49 @@
                     <md-table-head>Время</md-table-head>
                   </md-table-row>
 
-                  <GroupedTaskItem
-                    v-for="task in taskGroup.tasks"
-                    :key="task.id"
-                    :task="task"
-                    @linkProject="linkProject(arguments[0], arguments[1])"
-                  />
+                  <template v-for="task in taskGroup.tasks">
+                    <md-table-row :key="task.id">
+                      <md-table-cell>
+                        <md-field>
+                          <label></label>
+                          <md-input v-model="task.date"></md-input>
+                        </md-field>
+                      </md-table-cell>
+                      <md-table-cell>
+                        <div>{{task.name}}</div>
+                      </md-table-cell>
+                      <md-table-cell>
+                        <md-field>
+                          <label></label>
+                          <md-input v-model="task.task_id" type="number" min="1"></md-input>
+                        </md-field>
+                      </md-table-cell>
+                      <md-table-cell>
+                        <md-field>
+                          <label></label>
+                          <md-textarea v-model="task.description" md-autogrow></md-textarea>
+                        </md-field>
+                      </md-table-cell>
+                      <md-table-cell>
+                          <div>{{task.category}}</div>
+                      </md-table-cell>
+                      <md-table-cell>
+                        <md-field>
+                          <label></label>
+                          <md-input v-model="task.delta" type="number" min="0" step="0.05"></md-input>
+                        </md-field>
+                      </md-table-cell>
+                      <md-table-cell>
+                        <template v-for="tracker in task.trackers">
+                          <span v-bind:key="tracker.id + '_' + task.id" :class="tracker.status">
+                            <a class="tracker-badge" @click="linkProject(tracker.id, task.project_id)">
+                              {{tracker.title}}
+                            </a>
+                          </span>
+                        </template>
+                      </md-table-cell>
+                    </md-table-row>
+                  </template>
 
                 </md-table>
               <md-list-item class="task-duration-list-item">
@@ -55,7 +92,6 @@
 </template>
 
 <script>
-import GroupedTaskItem from './GroupedTaskItem.vue'
 import API from './api.js'
 import Modal from './Modal.vue'
 
@@ -85,7 +121,7 @@ export default {
       type: Object
     }
   },
-  computed: {
+  recomputed: {
     groupedTasks: function () {
       var groupedTasks = {}
       for (var i = 0; i < this.tasks.length; i++) {
@@ -117,7 +153,9 @@ export default {
       }
       console.log(groupedTasks)
       return groupedTasks
-    },
+    }
+  },
+  computed: {
     projectIds: function () {
       var projectIds = []
       this.tasks.forEach(function (task, i) {
@@ -135,6 +173,7 @@ export default {
           if (('status' in response.data && response.data.status) || !('status' in response.data)) {
             this.tasks = response.data.tasks
             this.getProjects()
+            console.log('getTasks')
           }
         })
         .catch(error => {
@@ -146,6 +185,7 @@ export default {
         .then(response => {
           if (('status' in response.data && response.data.status) || !('status' in response.data)) {
             this.projects = response.data.projects
+            this.$recompute('groupedTasks')
           }
         })
         .catch(error => {
@@ -157,6 +197,7 @@ export default {
         .then(response => {
           if (('status' in response.data && response.data.status) || !('status' in response.data)) {
             this.trackers = response.data.trackers
+            this.$recompute('groupedTasks')
           }
         })
         .catch(error => {
@@ -199,8 +240,7 @@ export default {
       this.showLink = true
     },
     saveLinkProject: function () {
-      console.log([this.currentProject, this.currentTracker.id, this.linkToProject.value])
-      API.linkProject(this.currentProject, this.currentTracker.id, this.linkToProject.value, this.linkToProject.label)
+      API.linkProject(this.currentProject, this.currentTracker.id, this.linkToProject)
         .then(response => {
           if (('status' in response.data && response.data.status) || !('status' in response.data)) {
             this.getProjects()
@@ -229,7 +269,7 @@ export default {
     }
   },
   components: {
-    GroupedTaskItem, Modal
+    Modal
   },
   created () {
     if (this.initialDate !== undefined) {
@@ -253,5 +293,27 @@ export default {
   }
   .md-list-item{
     z-index: 0;
+  }
+  .minimal-input input, .minimal-input textarea{
+    font-size: 14px !important;
+  }
+  .minimal-input .md-field{
+    margin: 0;
+    padding: 0;
+    min-height: 25px;
+  }
+  .tracker-badge{
+    margin: 3px;
+    display: flex;
+    justify-content: center;
+    background-color: lightgrey;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  .tracker-badge:hover{
+    text-decoration: none;
+  }
+  .linked .tracker-badge{
+    background-color: lime;
   }
 </style>
