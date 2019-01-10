@@ -1,6 +1,7 @@
 from backend.src.model.hamster import Fact, FormattedFact
 from backend.src.model.mysql import Activity
 from backend.src.engine import Engine
+from backend.src.auth import Auth
 from flask import jsonify
 from functools import wraps
 from backend.src.sheduler import Sheduler
@@ -24,6 +25,7 @@ class ApiController:
         # для объектов это obj.__dict__
         self.response = Response()
         self.engine = Engine()
+        self.user = Auth.get_request_user()
 
     # декоратор, возвращающий self.response, сериализованный в json, после отработки декорированной функции
     # декорированные функции во время работы должны изменить self.response
@@ -226,6 +228,8 @@ class ApiController:
             }
 
             for tracker_prop in project.tracker_properties:
+                # сопоставления по приоритету - сначала привязанные к текущему пользователю,
+                # затем не привязанные ни к кому
                 if tracker_prop.tracker_id in tracker_ids and tracker_prop.external_project_id > 0:
                     element['tracker_projects'][tracker_prop.tracker_id] = {
                         'tracker_id': tracker_prop.tracker_id,

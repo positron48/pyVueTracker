@@ -14,10 +14,20 @@
                   <md-table-row>
                     <md-table-head>Дата</md-table-head>
                     <md-table-head>Задача</md-table-head>
-                    <md-table-head>Номер задачи</md-table-head>
+                    <md-table-head>
+                      Номер задачи
+                      <md-tooltip md-direction="top">Номер задачи из редмайна</md-tooltip>
+                    </md-table-head>
                     <md-table-head>Комментарий</md-table-head>
-                    <md-table-head>Проект</md-table-head>
+                    <md-table-head>
+                      Проект
+                      <md-tooltip md-direction="top">Название проекта в таймтрекере</md-tooltip>
+                    </md-table-head>
                     <md-table-head>Время</md-table-head>
+                    <md-table-head>
+                      Трекеры
+                      <md-tooltip md-direction="top">Список трекеров, привязанных к проекту</md-tooltip>
+                    </md-table-head>
                   </md-table-row>
 
                   <template v-for="task in taskGroup.tasks">
