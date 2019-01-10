@@ -4,7 +4,8 @@ from sqlalchemy import desc, cast, Date, update
 
 from backend.src.auth import Auth
 from backend.src.model.hamster import Fact
-from backend.src.model.mysql import db, User, Activity, Task, HashTag, Project, Tracker, TrackerUserLink, TrackerProjectLink
+from backend.src.model.mysql import db, User, Activity, Task, HashTag, Project, Tracker, TrackerUserLink, \
+    TrackerProjectLink
 
 
 class Engine:
@@ -249,10 +250,12 @@ class Engine:
         fact = db.session.query(Activity) \
             .filter(Activity.user_id == self.user.id) \
             .filter(Activity.id == id) \
-            .first()
+            .first()  # type: Activity
         if fact is None:
             return False
-        db.session.delete(fact)
+        # не разрешаем удалять выгруженные активности
+        if not fact.external_id:
+            db.session.delete(fact)
         return True
 
     def stop_fact(self, id):
@@ -277,6 +280,9 @@ class Engine:
         db_fact = self.__get_fact_by_id(int(id))  # type:Activity
         if db_fact is None:
             return 'Такой активности не существует'
+        # не даем редактировать выгруженные активности, пока не допилим корректное обновление активностей на трекерах
+        if db_fact.external_id is not None:
+            return 'Активность уже выгружена на внешний трекер'
         if fact.start_time is None:
             return 'Не заполнено время начала активности'
         external_task_id = fact.get_task_id()
