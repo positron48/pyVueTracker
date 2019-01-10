@@ -23,10 +23,7 @@
       </md-field>
     </md-table-cell>
     <md-table-cell>
-      <md-field>
-        <label></label>
-        <md-input v-model="task.category"></md-input>
-      </md-field>
+        <div>{{task.category}}</div>
     </md-table-cell>
     <md-table-cell>
       <md-field>

@@ -4,7 +4,7 @@ from sqlalchemy import desc, cast, Date, update
 
 from backend.src.auth import Auth
 from backend.src.model.hamster import Fact
-from backend.src.model.mysql import db, User, Activity, Task, HashTag, Project, Tracker, TrackerUserLink
+from backend.src.model.mysql import db, User, Activity, Task, HashTag, Project, Tracker, TrackerUserLink, TrackerProjectLink
 
 
 class Engine(object):
@@ -211,6 +211,29 @@ class Engine(object):
 
         if len(tracker.users) == 1 and self.user in tracker.users:
             db.session.delete(tracker)
+
+        db.session.commit()
+
+        return True
+
+    def link_project(self, project_id, tracker_id, tracker_project_id, tracker_project_title):
+        tracker_project = db.session.query(TrackerProjectLink) \
+            .filter(TrackerProjectLink.tracker_id == tracker_id) \
+            .filter(TrackerProjectLink.project_id == project_id).first()
+
+        if tracker_project is not None:
+            tracker_project.external_project_id = tracker_project_id
+            tracker_project.external_project_title = tracker_project_title
+            tracker_project.last_updated = dt.datetime.now()
+        else:
+            tracker_project = TrackerProjectLink(
+                project_id=project_id,
+                tracker_id=tracker_id,
+                external_project_id=tracker_project_id,
+                external_project_title=tracker_project_title,
+                last_updated=dt.datetime.now()
+            )
+            db.session.add(tracker_project)
 
         db.session.commit()
 

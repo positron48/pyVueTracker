@@ -44,7 +44,7 @@
       <div class="modal-body">
         <input type="hidden" v-model="currentTracker.id" name="trackerId">
         <input type="hidden" v-model="currentProject" name="projectId">
-        <v-select v-model="linkToProject" :options="trackerProjects[currentTracker.id]"/>
+        <v-select v-model="linkToProject" :options="currentTrackerProjects"/>
       </div>
       <div class="modal-footer text-right">
         <md-button class="md-primary" @click="closeLinkModal">отмена</md-button>
@@ -76,7 +76,8 @@ export default {
       currentProject: null,
       showLink: false,
       linkToProject: null,
-      trackerProjects: {}
+      trackerProjects: {},
+      currentTrackerProjects: []
     }
   },
   props: {
@@ -145,7 +146,6 @@ export default {
         .then(response => {
           if (('status' in response.data && response.data.status) || !('status' in response.data)) {
             this.projects = response.data.projects
-            this.$forceUpdate()
           }
         })
         .catch(error => {
@@ -173,7 +173,6 @@ export default {
       }
     },
     linkProject: function (trackerId, projectId) {
-      console.log([trackerId, this.trackers[trackerId]])
       for (var i = 0; i < this.trackers.length; i++) {
         if (trackerId === this.trackers[i]['id']) {
           this.currentTracker = this.trackers[i]
@@ -181,6 +180,14 @@ export default {
         }
       }
       this.currentProject = projectId
+      if (this.projects[projectId]['tracker_projects'][trackerId] !== undefined) {
+        this.linkToProject = {
+          value: this.projects[projectId]['tracker_projects'][trackerId]['external_project_id'],
+          label: this.projects[projectId]['tracker_projects'][trackerId]['external_project_title']
+        }
+      } else {
+        this.linkToProject = null
+      }
       this.getTrackerProjects(trackerId)
 
       this.showLinkModal()
@@ -192,19 +199,32 @@ export default {
       this.showLink = true
     },
     saveLinkProject: function () {
-
+      console.log([this.currentProject, this.currentTracker.id, this.linkToProject.value])
+      API.linkProject(this.currentProject, this.currentTracker.id, this.linkToProject.value, this.linkToProject.label)
+        .then(response => {
+          if (('status' in response.data && response.data.status) || !('status' in response.data)) {
+            this.getProjects()
+            this.closeLinkModal()
+          }
+        })
+        .catch(error => {
+          console.log(['linkProject error', error])
+        })
     },
     getTrackerProjects: function (trackerId) {
       if (this.trackerProjects[trackerId] === undefined) {
         API.getTrackerProjects(trackerId)
-        .then(response => {
-          if (('status' in response.data && response.data.status) || !('status' in response.data)) {
-            this.trackerProjects[trackerId] = response.data.projects
-          }
-        })
-        .catch(error => {
-          console.log(['getTrackerProjects error', error])
-        })
+          .then(response => {
+            if (('status' in response.data && response.data.status) || !('status' in response.data)) {
+              this.trackerProjects[trackerId] = response.data.projects
+              this.currentTrackerProjects = this.trackerProjects[trackerId]
+            }
+          })
+          .catch(error => {
+            console.log(['getTrackerProjects error', error])
+          })
+      } else {
+        this.currentTrackerProjects = this.trackerProjects[trackerId]
       }
     }
   },
