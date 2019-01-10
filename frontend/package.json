@@ -23,6 +23,7 @@
     "vue-cookie": "^1.1.4",
     "vue-material": "^1.0.0-beta-10.2",
     "vue-rangedate-picker": "^0.3.4",
+    "vue-recomputed": "0.0.1",
     "vue-router": "^3.0.1",
     "vue-select": "^2.5.1",
     "vue2-datepicker": "^2.6.3",
