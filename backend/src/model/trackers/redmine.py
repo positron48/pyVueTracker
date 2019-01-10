@@ -1,8 +1,9 @@
+from ..tracker import Tracker
 from redminelib import Redmine as RedmineLib
 from redminelib.exceptions import AuthError
 
 
-class Redmine(object):
+class Redmine(Tracker):
     def __init__(self, url, token=None, login=None,
                  password=None):
         self.api = None  # type: RedmineLib

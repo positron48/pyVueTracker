@@ -80,6 +80,7 @@ class Activity(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey(User.id))
     task_id = db.Column(db.Integer, db.ForeignKey(Task.id))
     category_id = db.Column(db.Integer, db.ForeignKey(Category.id))
+    external_id = db.Column(db.Integer)
     name = db.Column(db.String(255))
     comment = db.Column(db.String(255))
     time_start = db.Column(db.DateTime)
@@ -205,10 +206,10 @@ db.Index('hashtag_name', HashTag.name, mysql_prefix='FULLTEXT')
 
 
 class ProjectSchema(ModelSchema):
-    class Meta(object):
+    class Meta:
         model = Project
 
 
 class HashTagSchema(ModelSchema):
-    class Meta(object):
+    class Meta:
         model = HashTag

@@ -4,10 +4,11 @@ from sqlalchemy import desc, cast, Date, update
 
 from backend.src.auth import Auth
 from backend.src.model.hamster import Fact
-from backend.src.model.mysql import db, User, Activity, Task, HashTag, Project, Tracker, TrackerUserLink, TrackerProjectLink
+from backend.src.model.mysql import db, User, Activity, Task, HashTag, Project, Tracker, TrackerUserLink, \
+    TrackerProjectLink
 
 
-class Engine(object):
+class Engine:
     def __init__(self):
         self.user = Auth.get_request_user()
 
@@ -115,10 +116,14 @@ class Engine(object):
         new_activity.task = self.__get_task_by_name(fact.get_task_id(), fact.get_task_name(), fact.category)
         new_activity.last_updated = dt.datetime.now()
 
-        # закрываем текущую активность, если есть
-        # время завершения = время начала новой
         current = self.get_current()  # type:Activity
         if current is not None:
+            # проверяем, чтобы время начала новой активности было не раньше времени начала текущей активности
+            if current.time_start > new_activity.time_start:
+                return 'Новая активность начинается раньше текущей.\n' \
+                       'Исправьте время начала новой активности,\n' \
+                       'или удалите/отредактируйте текущую активность.'
+            # закрываем текущую активность, время завершения = время начала новой
             current.stop(new_activity.time_start)
 
         db.session.add(new_activity)
@@ -245,10 +250,12 @@ class Engine(object):
         fact = db.session.query(Activity) \
             .filter(Activity.user_id == self.user.id) \
             .filter(Activity.id == id) \
-            .first()
+            .first()  # type: Activity
         if fact is None:
             return False
-        db.session.delete(fact)
+        # не разрешаем удалять выгруженные активности
+        if not fact.external_id:
+            db.session.delete(fact)
         return True
 
     def stop_fact(self, id):
@@ -273,6 +280,9 @@ class Engine(object):
         db_fact = self.__get_fact_by_id(int(id))  # type:Activity
         if db_fact is None:
             return 'Такой активности не существует'
+        # не даем редактировать выгруженные активности, пока не допилим корректное обновление активностей на трекерах
+        if db_fact.external_id is not None:
+            return 'Активность уже выгружена на внешний трекер'
         if fact.start_time is None:
             return 'Не заполнено время начала активности'
         external_task_id = fact.get_task_id()

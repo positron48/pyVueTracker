@@ -6,7 +6,7 @@ import datetime
 from hashlib import md5, sha256
 
 
-class Auth(object):
+class Auth:
     @classmethod
     def add_new_user(cls, login, hash):
         user = cls.get_user_by_login(login)
