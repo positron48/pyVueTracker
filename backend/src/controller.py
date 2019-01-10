@@ -164,7 +164,7 @@ class ApiController:
         tracker = self.engine.get_tracker(tracker_id)
         s = Sheduler()
 
-        token = s.get_token(tracker.type, tracker.api_url, login, password)
+        token = s.get_token(tracker['type'], tracker['api_url'], login, password)
 
         self.response.status = token is not None
 
@@ -226,7 +226,7 @@ class ApiController:
             }
 
             for tracker_prop in project.tracker_properties:
-                if tracker_prop.tracker_id in tracker_ids:
+                if tracker_prop.tracker_id in tracker_ids and tracker_prop.external_project_id > 0:
                     element['tracker_projects'][tracker_prop.tracker_id] = {
                         'tracker_id': tracker_prop.tracker_id,
                         'external_project_id': tracker_prop.external_project_id,

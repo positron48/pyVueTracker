@@ -1,4 +1,4 @@
-from backend.src.model.mysql import db, User, TrackerUserLink, Project, TrackerProjectLink, UserProjectLink, \
+from backend.src.model.mysql import db, User, TrackerUserLink, Project, TrackerProjectLink, \
     Task
 from backend.src.model.trackers.redmine import Redmine
 from backend.src.model.trackers.evolution import Evolution
@@ -55,9 +55,7 @@ class Sheduler:
                                                       external_project_id=project['id'],
                                                       tracker=link.tracker,
                                                       project=db_project)
-                    user_link = UserProjectLink(project=db_project, user=self.user)
                     db.session.add(project_link)
-                    db.session.add(user_link)
         db.session.commit()
 
     def __fetch_evo_projects(self):

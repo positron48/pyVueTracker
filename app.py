@@ -58,7 +58,7 @@ def regen():
 
 
     # todo тест каскадных удалений
-    from backend.src.model.mysql import User, Project, TrackerUserLink, Tracker, UserProjectLink
+    from backend.src.model.mysql import User, Project, TrackerUserLink, Tracker
 
     user1 = User(login='first', hash='hash', token='asdasdasd')
     user2 = User(login='two', hash='hash', token='asdasd')
@@ -73,9 +73,7 @@ def regen():
 
     tracker = Tracker(title='title', code='code', ui_url='url', api_url='base')
     link = TrackerUserLink(tracker=tracker, user=user1, external_user_id=1234)
-    alias = UserProjectLink(user=user1, project=proj1, aliases='alias1, alias2, alias3')
     db.session.add(link)
-    db.session.add(alias)
 
     db.session.commit()
     result = '<p>add</p>'

@@ -151,7 +151,6 @@ export default {
         // со сложением вместе округление работать не хочет
         groupedTasks[task['date']]['duration'] = Math.round(groupedTasks[task['date']]['duration'] * 100) / 100
       }
-      console.log(groupedTasks)
       return groupedTasks
     }
   },
@@ -173,7 +172,6 @@ export default {
           if (('status' in response.data && response.data.status) || !('status' in response.data)) {
             this.tasks = response.data.tasks
             this.getProjects()
-            console.log('getTasks')
           }
         })
         .catch(error => {

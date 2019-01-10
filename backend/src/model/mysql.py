@@ -17,8 +17,8 @@ class User(db.Model):
     token = db.Column(db.String(255), unique=True, nullable=False)
     last_login = db.Column(db.DateTime)
 
-    projects = db.relationship(lambda: Project, secondary='user_projects')
     trackers = db.relationship(lambda: Tracker, secondary='tracker_users')
+    projects = db.relationship(lambda: TrackerProjectLink)
 
     def __repr__(self):
         return 'User: %r' % self.login
@@ -30,9 +30,7 @@ class Project(db.Model):
     title = db.Column(db.String(255))
     code = db.Column(db.String(255))
 
-    users = db.relationship(User, secondary='user_projects')
     tracker_properties = db.relationship(lambda: TrackerProjectLink)
-    sqlite_aliases = db.relationship(lambda: UserProjectLink)
     categories = db.relationship(lambda: Category)
 
     def __repr__(self):
@@ -175,6 +173,8 @@ class TrackerProjectLink(db.Model):
     __tablename__ = 'tracker_projects'
     tracker_id = db.Column(db.Integer, db.ForeignKey(Tracker.id), primary_key=True)
     project_id = db.Column(db.Integer, db.ForeignKey(Project.id), primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey(User.id), primary_key=True)
+
     # автозаполняемые справочники
     external_project_id = db.Column(db.Integer)
     external_project_title = db.Column(db.String(255))
@@ -182,16 +182,7 @@ class TrackerProjectLink(db.Model):
 
     tracker = db.relationship(Tracker)
     project = db.relationship(Project)
-
-
-class UserProjectLink(db.Model):
-    __tablename__ = 'user_projects'
-    user_id = db.Column(db.Integer, db.ForeignKey(User.id), primary_key=True)
-    project_id = db.Column(db.Integer, db.ForeignKey(Project.id), primary_key=True)
-    aliases = db.Column(db.Text)  # список алиасов, для импорта из sqlite
-
     user = db.relationship(User)
-    project = db.relationship(Project)
 
 
 ########################################### fulltext index: ############################################################
