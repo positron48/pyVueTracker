@@ -22,7 +22,7 @@ class Engine:
                 project = self.__get_project_by_name(project_name) or self.__get_project_by_code(project_name)
                 if project is None:
                     project = Project(title=project_name)
-                    project.users.append(self.user)
+
             task = Task(external_task_id=external_task_id)
             if project is not None:
                 task.project = project
@@ -40,7 +40,6 @@ class Engine:
             project = self.__get_project_by_name(project_name) or self.__get_project_by_code(project_name)
             if project is None:
                 project = Project(title=project_name)
-                project.users.append(self.user)
 
         task = db.session.query(Task).filter(Task.title == task_name) \
             .filter(Task.project_id == project.id).first()  # type:Task
@@ -229,6 +228,7 @@ class Engine:
         if tracker_project is not None:
             tracker_project.external_project_id = tracker_project_id
             tracker_project.external_project_title = tracker_project_title
+            tracker_project.user_id = self.user.id
             tracker_project.last_updated = dt.datetime.now()
         else:
             tracker_project = TrackerProjectLink(

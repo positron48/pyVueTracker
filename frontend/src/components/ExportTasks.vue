@@ -58,6 +58,7 @@
                             <a class="tracker-badge" @click="linkProject(tracker.id, task.project_id)">
                               {{tracker.title}}
                             </a>
+                            <md-tooltip md-direction="left">{{tracker.message}}</md-tooltip>
                           </span>
                         </template>
                       </md-table-cell>
@@ -135,14 +136,25 @@ export default {
 
         task['trackers'] = []
         for (var j = 0; j < this.trackers.length; j++) {
-          var tracker = this.trackers[j]
-          task['trackers'].push({
-            id: tracker['id'],
-            type: tracker['type'],
-            title: tracker['title'],
+          var tracker = {
+            id: this.trackers[j]['id'],
+            type: this.trackers[j]['type'],
+            title: this.trackers[j]['title'],
             status: (this.projects[task['project_id']] !== undefined &&
-              this.projects[task['project_id']]['tracker_projects'][tracker['id']] !== undefined) ? 'linked' : ''
-          })
+              this.projects[task['project_id']]['tracker_projects'][this.trackers[j]['id']] !== undefined) ? 'linked' : ''
+          }
+
+          // todo: status: warning проект отличается от проекта из задачи (редмайн)
+          // todo: status: ?warning? часы за этот день по проекту уже выгружались
+          if (tracker['status'] === 'linked' && tracker['type'] === 'redmine' && !task['task_id']) {
+            tracker['status'] = 'error'
+            tracker['message'] = 'не указан номер задачи'
+          } else {
+            tracker['message'] = tracker['status'] === 'linked'
+              ? this.projects[task['project_id']]['tracker_projects'][this.trackers[j]['id']]['external_project_title']
+              : 'проект не сопоставлен'
+          }
+          task['trackers'].push(tracker)
         }
 
         groupedTasks[task['date']]['tasks'].push(task)
@@ -151,6 +163,7 @@ export default {
         // со сложением вместе округление работать не хочет
         groupedTasks[task['date']]['duration'] = Math.round(groupedTasks[task['date']]['duration'] * 100) / 100
       }
+      console.log(groupedTasks)
       return groupedTasks
     }
   },
@@ -313,5 +326,8 @@ export default {
   }
   .linked .tracker-badge{
     background-color: lime;
+  }
+  .error .tracker-badge{
+    background-color: tomato;
   }
 </style>
