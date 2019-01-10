@@ -245,7 +245,7 @@ export default {
     },
     saveLinkProject: function () {
       console.log([this.currentProject, this.currentTracker.id, this.linkToProject.value])
-      API.linkProject(this.currentProject, this.currentTracker.id, this.linkToProject.value, this.linkToProject.label)
+      API.linkProject(this.currentProject, this.currentTracker.id, this.linkToProject)
         .then(response => {
           if (('status' in response.data && response.data.status) || !('status' in response.data)) {
             this.getProjects()

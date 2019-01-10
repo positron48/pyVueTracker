@@ -38,8 +38,8 @@ def add_users():
     user = User(login='login', hash=Auth.get_hash('login', 'password', app.config.get('SALT')), token='MQinK4')
     user2 = User(login='login2', hash=Auth.get_hash('login2', 'password2', app.config.get('SALT')), token='MQinK42')
 
-    tracker_link = TrackerUserLink(tracker=trackerEvo, user=user, external_api_key=app.config.get('REDMINE_KEY'))
-    tracker_link2 = TrackerUserLink(tracker=trackerRedmine, user=user, external_api_key=app.config.get('EVO_KEY'))
+    tracker_link = TrackerUserLink(tracker=trackerEvo, user=user, external_api_key=app.config.get('EVO_KEY'))
+    tracker_link2 = TrackerUserLink(tracker=trackerRedmine, user=user, external_api_key=app.config.get('REDMINE_KEY'))
     tracker_link3 = TrackerUserLink(tracker=trackerRedmine, user=user2)
 
     db.session.add(tracker_link)
