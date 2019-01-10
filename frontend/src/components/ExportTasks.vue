@@ -186,9 +186,6 @@ export default {
           if (('status' in response.data && response.data.status) || !('status' in response.data)) {
             this.projects = response.data.projects
             this.$recompute('groupedTasks')
-            this.$forceUpdate()
-            console.log('getProjects')
-            this.$refs.groupItem.refresh()
           }
         })
         .catch(error => {
@@ -201,7 +198,6 @@ export default {
           if (('status' in response.data && response.data.status) || !('status' in response.data)) {
             this.trackers = response.data.trackers
             this.$recompute('groupedTasks')
-            console.log('getTrackers')
           }
         })
         .catch(error => {
@@ -244,7 +240,6 @@ export default {
       this.showLink = true
     },
     saveLinkProject: function () {
-      console.log([this.currentProject, this.currentTracker.id, this.linkToProject.value])
       API.linkProject(this.currentProject, this.currentTracker.id, this.linkToProject)
         .then(response => {
           if (('status' in response.data && response.data.status) || !('status' in response.data)) {
