@@ -1,9 +1,10 @@
+from ..tracker import Tracker
 import requests
 import datetime
 import sys
 import json
 
-class Evolution:
+class Evolution(Tracker):
 
     def __init__(self, url, token=False, login=None, password=None):
         self.url = url

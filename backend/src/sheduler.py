@@ -1,8 +1,7 @@
-from backend.src.model.mysql import db, User, TrackerUserLink, Tracker, Project, TrackerProjectLink, UserProjectLink, \
+from backend.src.model.mysql import db, User, TrackerUserLink, Project, TrackerProjectLink, UserProjectLink, \
     Task
-from backend.src.model.redmine import Redmine
-from backend.src.model.evolution import Evolution
-from backend.src.auth import Auth
+from backend.src.model.trackers.redmine import Redmine
+from backend.src.model.trackers.evolution import Evolution
 import requests
 
 
