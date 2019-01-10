@@ -144,6 +144,17 @@ export var API = {
       }))
   },
 
+  // привязка проекта к проекту на трекере
+  linkProject (projectId, trackerId, trackerProjectId, trackerProjectTitle) {
+    return HTTP.post('/api/linkProject',
+      urlEncode({
+        projectId: projectId,
+        trackerId: trackerId,
+        trackerProjectId: trackerProjectId,
+        trackerProjectTitle: trackerProjectTitle
+      }))
+  },
+
   // добавление/привязка трекера пользователю
   saveEvoUser (evoUser) {
     return HTTP.post('/api/evoUser',

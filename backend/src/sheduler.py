@@ -71,15 +71,15 @@ class Sheduler:
                 continue
             projects = api.get_all_projects()
 
-            codes = {pr['id'] for pr in projects}
+            codes = {pr['identifier'] for pr in projects}
             db_projects = db.session.query(Project).filter(Project.code.in_(codes)).all()
             exist = {db_pr.code for db_pr in db_projects}
             new = codes - exist
             for project in projects:
-                if project['id'] in new:
-                    db_project = Project(code=project['id'], title=project['name'])
+                if project['identifier'] in new:
+                    db_project = Project(code=project['identifier'], title=project['name'])
                     project_link = TrackerProjectLink(external_project_title=project['name'],
-                                                      external_project_id=project['id'],
+                                                      external_project_id=project['identifier'],
                                                       tracker=link.tracker,
                                                       project=db_project)
                     db.session.add(project_link)
@@ -133,4 +133,13 @@ class Sheduler:
     def get_projects(self, type, url, token):
         api = self.__get_engine(type, url, api_key=token)
         if api.is_auth():
-            return api.get_all_projects()
+            projects = api.get_all_projects()
+
+            result = []
+            for project in projects:
+                result.append({
+                    'label': project['name'],
+                    'value': project['id']
+                })
+
+            return result

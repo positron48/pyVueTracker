@@ -392,6 +392,18 @@ def stop_task():
     return api.stop_task(id)
 
 
+@app.route('/api/linkProject', methods=['POST'])
+@Auth.check_api_request
+def link_project():
+    project_id = int(request.values['projectId'])
+    tracker_id = int(request.values['trackerId'])
+    tracker_project_id = int(request.values['trackerProjectId'])
+    tracker_project_title = request.values['trackerProjectTitle'].strip()
+
+    api = ApiController()
+    return api.link_project(project_id, tracker_id, tracker_project_id, tracker_project_title)
+
+
 @app.route('/api/task/resume', methods=['POST'])
 @Auth.check_api_request
 def resume_task():

@@ -63,6 +63,7 @@ class Evolution(Tracker):
         if "data" in response and len(response['data']) > 0:
             for project in response['data']:
                 project['name'] = project['title']
+                project['identifier'] = project['title']
 
             return response['data']
         else:
