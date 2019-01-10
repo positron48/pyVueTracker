@@ -6,7 +6,7 @@ from backend.src.auth import Auth
 import requests
 
 
-class Sheduler(object):
+class Sheduler:
     user = ...  # type: User
 
     def __init__(self, user=None):

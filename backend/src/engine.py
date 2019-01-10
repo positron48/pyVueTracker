@@ -7,7 +7,7 @@ from backend.src.model.hamster import Fact
 from backend.src.model.mysql import db, User, Activity, Task, HashTag, Project, Tracker, TrackerUserLink
 
 
-class Engine(object):
+class Engine:
     def __init__(self):
         self.user = Auth.get_request_user()
 

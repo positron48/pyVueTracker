@@ -3,7 +3,7 @@ import re
 from backend.src.model.mysql import Activity
 
 
-class Fact(object):
+class Fact:
     def __init__(self, text=None, start_time=None, end_time=None, activity=None, category=None, description=None,
                  tags=None):
 
@@ -122,7 +122,7 @@ class FormattedFact(Fact):
         return round(delta.total_seconds() / 3600, 2)
 
 
-class Hamster(object):
+class Hamster:
     @staticmethod
     def __looks_like_time(fragment):
         _time_fragment_re = [

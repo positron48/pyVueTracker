@@ -8,7 +8,7 @@ from math import ceil
 import copy
 
 
-class Response(object):
+class Response:
     def __init__(self):
         self.status = True
         self.message = None
@@ -18,7 +18,7 @@ class Response(object):
 
 
 # noinspection PyArgumentList
-class ApiController(object):
+class ApiController:
     def __init__(self):
         # сюда складывать данные для json-ответа. Допустимый формат - все, что поддается сериализации в json
         # для объектов это obj.__dict__
