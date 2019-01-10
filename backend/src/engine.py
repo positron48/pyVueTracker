@@ -254,7 +254,7 @@ class Engine:
         if fact is None:
             return False
         # не разрешаем удалять выгруженные активности
-        if not fact.external_id:
+        if not fact.uploaded:
             db.session.delete(fact)
         return True
 
@@ -280,8 +280,8 @@ class Engine:
         db_fact = self.__get_fact_by_id(int(id))  # type:Activity
         if db_fact is None:
             return 'Такой активности не существует'
-        # не даем редактировать выгруженные активности, пока не допилим корректное обновление активностей на трекерах
-        if db_fact.external_id is not None:
+        # не даем редактировать выгруженные активности
+        if db_fact.uploaded:
             return 'Активность уже выгружена на внешний трекер'
         if fact.start_time is None:
             return 'Не заполнено время начала активности'

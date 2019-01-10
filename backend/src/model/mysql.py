@@ -80,7 +80,7 @@ class Activity(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey(User.id))
     task_id = db.Column(db.Integer, db.ForeignKey(Task.id))
     category_id = db.Column(db.Integer, db.ForeignKey(Category.id))
-    external_id = db.Column(db.Integer)
+    uploaded = db.Column(db.Boolean, default=False)
     name = db.Column(db.String(255))
     comment = db.Column(db.String(255))
     time_start = db.Column(db.DateTime)
