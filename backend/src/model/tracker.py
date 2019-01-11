@@ -3,40 +3,43 @@ import datetime as dt
 
 
 class User:
-    def __init__(self, id: int):
+    def __init__(self, id: int, name: str = None):
         self.id = id
+        self.name = name
 
 
 class Project:
-    def __init__(self, id: int, code: Optional[str], name: Optional[str]):
+    def __init__(self, id: int, code: str = None, name: str = None):
         self.id = id
         self.code = code
         self.name = name
 
 
 class Task:
-    def __init__(self, id: int, name: str, project: Project):
+    def __init__(self, id: int, name: str, project_id: int, status: str = None):
         self.id = id
         self.name = name
-        self.project = project
+        self.project_id = project_id
+        self.status = status
 
 
 class Category:
-    def __init__(self, id: int, name: str):
+    def __init__(self, id: int, name: str, default: bool = False):
         self.id = id
         self.name = name
+        self.default = default
 
 
 class Activity:
-    def __init__(self, id: int, user: User, date: dt.date, time: float, task: Optional[Task], comment: Optional[str],
-                 title: Optional[str]):
+    def __init__(self, id: int, user_id: int, date: dt.date, time: float, task_id: int = None, comment: str = None,
+                 title: str = None):
         self.id = id
-        self.user = user
+        self.user_id = user_id
         self.date = date
         self.time = time
-        self.task = task
+        self.task_id = task_id
         self.comment = comment
-        self.title = title
+        self.title = title  # формулировка для эво
 
 
 class Tracker:
@@ -106,27 +109,12 @@ class Tracker:
         """
         return None
 
-    def get_task_by_name(self, task_name: str) -> Optional[Task]:
-        """
-        Запрашивает у трекера задачу по имени, если задачи поддерживаются трекером
-        :param task_name: name запрашиваемой задачи
-        :return: возвращает Task или None
-        """
-        return None
-
-    def list_tasks_in_project(self, project_id: int) -> Optional[List[Task]]:
+    def list_tasks_in_project(self, project_id: int, all: bool = False) -> Optional[List[Task]]:
         """
         Запрашивает у трекера список задач по id проекта, если задачи поддерживаются трекером
         :param project_id: id проекта
+        :param all: возвращать все задачи. По-умолчанию возвращает только открытые
         :return: возвращает список задач или None
-        """
-        return None
-
-    def get_activity_by_id(self, activity_id: int) -> Optional[Activity]:
-        """
-        Запрашивает у трекера активность по id
-        :param activity_id: id запрошиваемой активности
-        :return: возвращает Activity или None
         """
         return None
 
