@@ -44,7 +44,8 @@
                       <md-table-cell>
                         <md-field>
                           <label></label>
-                          <md-input v-model="task.task_id" type="number" min="1"></md-input>
+                          <md-input v-model="task.task_id" type="number" min="1" :class="task.external_status"></md-input>
+                          <md-tooltip md-direction="top" v-if="task.external_message">{{task.external_message}}</md-tooltip>
                         </md-field>
                       </md-table-cell>
                       <md-table-cell>
@@ -110,6 +111,7 @@ export default {
   data () {
     return {
       tasks: [],
+      trackerTasks: {},
       projects: [],
       trackers: [],
       selectedDate: {
@@ -154,11 +156,51 @@ export default {
               this.projects[task['project_id']]['tracker_projects'][this.trackers[j]['id']] !== undefined) ? 'linked' : ''
           }
 
+          // если задача сопоставлена с редмайном, получаем ее номер
+          var externalTask = this.trackerTasks[tracker.id][task['task_id']]
+          if (
+            task['task_id'] > 0 &&
+            tracker.type === 'redmine' && tracker.status === 'linked'
+          ) {
+            if (externalTask === undefined) {
+              this.trackerTasks[tracker.id][task['task_id']] = {}
+              this.getTrackerTask(tracker.id, task['task_id'])
+            } else if (externalTask['name'] !== undefined) {
+              task['external_status'] = 'linked'
+              task['external_message'] = '[' + externalTask['project'] + '] ' + externalTask['tracker'] +
+                ' #' + externalTask['id'] + ': ' + externalTask['name']
+            }
+          }
+
           // todo: status: warning проект отличается от проекта из задачи (редмайн)
           // todo: status: ?warning? часы за этот день по проекту уже выгружались
-          if (tracker['status'] === 'linked' && tracker['type'] === 'redmine' && !task['task_id']) {
+          if (
+            tracker['status'] === 'linked' &&
+            tracker['type'] === 'redmine' &&
+            !task['task_id']
+          ) {
             tracker['status'] = 'error'
             tracker['message'] = 'не указан номер задачи'
+          } else if (
+            tracker['status'] === 'linked' &&
+            tracker['type'] === 'redmine' &&
+            task['task_id'] > 0 &&
+            externalTask === false
+          ) {
+            tracker['status'] = 'error'
+            tracker['message'] = 'не получены данные по задаче'
+            task['external_status'] = 'error'
+            task['external_message'] = 'не получены данные по задаче'
+          } else if (
+            tracker['status'] === 'linked' &&
+            tracker['type'] === 'redmine' &&
+            task['task_id'] > 0 &&
+            typeof externalTask === 'object' && externalTask !== null &&
+            this.projects[task['project_id']]['tracker_projects'][this.trackers[j]['id']] !== undefined &&
+            externalTask['project_id'] !== this.projects[task['project_id']]['tracker_projects'][this.trackers[j]['id']]['external_project_id']
+          ) {
+            tracker['status'] = 'warning'
+            tracker['message'] = 'проект в редмайне отличается от указанного'
           } else {
             tracker['message'] = tracker['status'] === 'linked'
               ? this.projects[task['project_id']]['tracker_projects'][this.trackers[j]['id']]['external_project_title']
@@ -218,6 +260,9 @@ export default {
         .then(response => {
           if (('status' in response.data && response.data.status) || !('status' in response.data)) {
             this.trackers = response.data.trackers
+            for (var j = 0; j < this.trackers.length; j++) {
+              this.trackerTasks[this.trackers[j]['id']] = {}
+            }
             this.$recompute('groupedTasks')
           }
         })
@@ -287,6 +332,22 @@ export default {
       } else {
         this.currentTrackerProjects = this.trackerProjects[trackerId]
       }
+    },
+    getTrackerTask: function (trackerId, externalTaskId) {
+      API.getTrackerTask(trackerId, externalTaskId)
+        .then(response => {
+          if (response !== undefined && (('status' in response.data && response.data.status) || !('status' in response.data))) {
+            this.trackerTasks[trackerId][externalTaskId] = response.data.task
+          } else {
+            this.trackerTasks[trackerId][externalTaskId] = false
+          }
+          this.$recompute('groupedTasks')
+        })
+        .catch(error => {
+          console.log(['getTrackerProjects error', error])
+          this.trackerTasks[trackerId][externalTaskId] = false
+          this.$recompute('groupedTasks')
+        })
     }
   },
   components: {
@@ -339,5 +400,16 @@ export default {
   }
   .error .tracker-badge{
     background-color: tomato;
+  }
+  .warning .tracker-badge{
+    background-color: orange;
+  }
+  .md-input.linked{
+    color: green;
+    -webkit-text-fill-color: green !important;
+  }
+  .md-input.error{
+    color: red;
+    -webkit-text-fill-color: red !important;
   }
 </style>

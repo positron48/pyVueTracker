@@ -171,6 +171,16 @@ export var API = {
       }))
   },
 
+  // получение данных о задаче с трекера
+  getTrackerTask (trackerId, externalTaskId) {
+    return HTTP.get('/api/trackerTask', {
+      params: {
+        trackerId: trackerId,
+        taskId: externalTaskId
+      }
+    })
+  },
+
   // обновление задания
   updateTask (task) {
     return HTTP.post('/api/task/edit',

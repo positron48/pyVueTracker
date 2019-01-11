@@ -25,7 +25,6 @@ class ApiController:
         # для объектов это obj.__dict__
         self.response = Response()
         self.engine = Engine()
-        self.user = Auth.get_request_user()
 
     # декоратор, возвращающий self.response, сериализованный в json, после отработки декорированной функции
     # декорированные функции во время работы должны изменить self.response
@@ -216,6 +215,8 @@ class ApiController:
     def get_projects(self, project_ids=None):
         result = {}
 
+        user = Auth.get_request_user()
+
         user_trackers = self.engine.get_trackers()
         tracker_ids = {tracker[0].id for tracker in user_trackers}
 
@@ -231,7 +232,7 @@ class ApiController:
                 # сопоставления по приоритету - сначала привязанные к текущему пользователю,
                 # затем не привязанные ни к кому
                 if tracker_prop.tracker_id in tracker_ids and tracker_prop.external_project_id > 0 and \
-                        tracker_prop.user_id is None or tracker_prop.user_id == self.user.id:
+                        tracker_prop.user_id is None or tracker_prop.user_id == user.id:
 
                     if tracker_prop.tracker_id not in element['tracker_projects'] or tracker_prop.user_id is not None:
                         element['tracker_projects'][tracker_prop.tracker_id] = {
@@ -269,14 +270,13 @@ class ApiController:
 
     @send_response
     def delete_tracker(self, id):
-        result = []
-
         self.response.status = self.engine.delete_tracker(id)
-        self.response.trackers = result
 
     @send_response
-    def link_project(self, project_id, tracker_id, tracker_project_id, tracker_project_title):
-        result = []
+    def get_tracker_task(self, tracker_id, task_id):
+        tracker = self.engine.get_tracker(tracker_id)
+        s = Sheduler()
+        task = s.get_task(tracker['type'], tracker['api_url'], tracker['external_api_key'], task_id)
 
-        self.response.status = self.engine.link_project(project_id, tracker_id, tracker_project_id, tracker_project_title)
-        self.response.trackers = result
+        self.response.status = task is not None
+        self.response.task = task

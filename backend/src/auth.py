@@ -65,7 +65,7 @@ class Auth:
             if user is None:
                 return Response(status=401)
             user.last_login = datetime.datetime.now()
-            db.session.add(user)
+            # db.session.add(user)
             result = func(*args, **kwargs)
             # sqlalchemy при старте открывает транзакцию с БД
             # этот коммит её закрывает - внутри ядра коммиты можно не ставить(если айдишники изменений не нужны),
@@ -73,6 +73,22 @@ class Auth:
             # !!! работает только для методов, обернутых декоратором @Auth.check_api_request
             # здесь же пилить функционал глобального rollback, только в result пробросить error, и тут отловить
             db.session.commit()
+            return result
+
+        return argument_router
+
+    @classmethod
+    def check_api_request_readonly(cls, func):
+        @wraps(func)
+        def argument_router(*args, **kwargs):
+            token = cls.get_request_token()
+            user = None  # type:User
+            if token is not None:
+                user = cls.get_user_by_token(token)
+            if user is None:
+                return Response(status=401)
+
+            result = func(*args, **kwargs)
             return result
 
         return argument_router

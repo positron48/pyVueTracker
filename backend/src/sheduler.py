@@ -141,3 +141,20 @@ class Sheduler:
                 })
 
             return result
+
+    def get_task(self, type, url, token, task_id):
+        api = self.__get_engine(type, url, api_key=token)
+        if api.is_auth():
+            external_task = api.get_task(task_id)
+
+            # print(external_task.__dict__)
+            result = {
+                'id': external_task.id,
+                'tracker': external_task.tracker.name,
+                'project': external_task.project.name,
+                'project_id': external_task.project.id,
+                'status': external_task.status.name,
+                'name': external_task.subject
+            }
+
+            return result

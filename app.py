@@ -429,6 +429,16 @@ def delete_task():
     return api.delete_task(id)
 
 
+@app.route('/api/trackerTask', methods=['GET'])
+@Auth.check_api_request_readonly
+def tracker_task():
+    tracker_id = int(request.values['trackerId'])
+    task_id = int(request.values['taskId'])
+
+    api = ApiController()
+    return api.get_tracker_task(tracker_id, task_id)
+
+
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def catch_all(path):
