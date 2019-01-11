@@ -36,18 +36,6 @@ class Project(db.Model):
         return 'Project: %r' % self.title
 
 
-class Task(db.Model):
-    __tablename__ = 'tasks'
-    id = db.Column(db.Integer, primary_key=True)
-    project_id = db.Column(db.Integer, db.ForeignKey(Project.id))
-    title = db.Column(db.String(255))
-    # автозаполняемые справочники
-    external_task_id = db.Column(
-        db.Integer)  # redmine_task_id. evo не имеет сущностей task, а redmine пока один - храним id в сущности
-
-    project = db.relationship(lambda: Project)
-
-
 class Tracker(db.Model):
     __tablename__ = 'trackers'
     id = db.Column(db.Integer, primary_key=True)
@@ -61,6 +49,18 @@ class Tracker(db.Model):
     users = db.relationship(User, secondary='tracker_users')
     properties = db.relationship(lambda: TrackerUserLink)
     categories = db.relationship(lambda: Category)
+
+
+class Task(db.Model):
+    __tablename__ = 'tasks'
+    id = db.Column(db.Integer, primary_key=True)
+    project_id = db.Column(db.Integer, db.ForeignKey(Project.id))
+    tracker_id = db.Column(db.Integer, db.ForeignKey(Tracker.id))
+    title = db.Column(db.String(255))
+    external_task_id = db.Column(db.Integer)
+
+    project = db.relationship(lambda: Project)
+    tracker = db.relationship(lambda: Tracker)
 
 
 class Category(db.Model):
