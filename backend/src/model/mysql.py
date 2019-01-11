@@ -83,8 +83,6 @@ class Activity(db.Model):
     comment = db.Column(db.String(255))
     time_start = db.Column(db.DateTime)
     time_end = db.Column(db.DateTime)
-    deleted = db.Column(db.Boolean, default=False)
-    last_updated = db.Column(db.DateTime)
 
     user = db.relationship(lambda: User)
     task = db.relationship(lambda: Task)
@@ -178,7 +176,6 @@ class TrackerProjectLink(db.Model):
     # автозаполняемые справочники
     external_project_id = db.Column(db.Integer)
     external_project_title = db.Column(db.String(255))
-    last_updated = db.Column(db.DateTime)
 
     tracker = db.relationship(Tracker)
     project = db.relationship(Project)

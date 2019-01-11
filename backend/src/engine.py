@@ -113,7 +113,6 @@ class Engine:
         new_activity.user = self.user
         # new_activity.task = self.__get_task_by_external_id(fact.get_task_id(), fact.category)
         new_activity.task = self.__get_task_by_name(fact.get_task_id(), fact.get_task_name(), fact.category)
-        new_activity.last_updated = dt.datetime.now()
 
         current = self.get_current()  # type:Activity
         if current is not None:
