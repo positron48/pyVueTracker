@@ -170,11 +170,3 @@ class Tracker:
         :return: возвращает activity_id созданной активности, или None, в случае неудачи
         """
         return None
-
-    def update_activity(self, activity: Activity) -> bool:
-        """
-        Обновляет активность на трекере, если это поддерживается трекером
-        :param activity: активность
-        :return: возвращает True, или False, в случае неудачи
-        """
-        return False
