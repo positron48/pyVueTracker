@@ -71,6 +71,7 @@ class Category(db.Model):
     external_id = db.Column(db.Integer)
 
     tracker = db.relationship(lambda: Tracker)
+    activities = db.relationship(lambda: Activity, secondary='activity_categories')
 
 
 class Activity(db.Model):
@@ -78,7 +79,6 @@ class Activity(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey(User.id))
     task_id = db.Column(db.Integer, db.ForeignKey(Task.id))
-    category_id = db.Column(db.Integer, db.ForeignKey(Category.id))
     uploaded = db.Column(db.Boolean, default=False)
     name = db.Column(db.String(255))
     comment = db.Column(db.String(255))
@@ -88,7 +88,7 @@ class Activity(db.Model):
     user = db.relationship(lambda: User)
     task = db.relationship(lambda: Task)
     hashtags = db.relationship(lambda: HashTag, secondary='activity_hashtags')
-    category = db.relationship(lambda: Category)
+    categories = db.relationship(lambda: Category, secondary='activity_categories')
 
     @staticmethod
     def get_hashtags(tag_names):
@@ -150,6 +150,11 @@ activity_hashtags_table = db.Table('activity_hashtags', db.metadata,
                                    db.Column('activity_id', db.Integer, db.ForeignKey(Activity.id), primary_key=True),
                                    db.Column('hashtag_id', db.Integer, db.ForeignKey(HashTag.id), primary_key=True)
                                    )
+
+activity_categories_table = db.Table('activity_categories', db.metadata,
+                                     db.Column('activity_id', db.Integer, db.ForeignKey(Activity.id), primary_key=True),
+                                     db.Column('category_id', db.Integer, db.ForeignKey(Category.id), primary_key=True)
+                                     )
 
 ########################################### MTM extra fields: ##########################################################
 '''как пользоваться extra fields: https://www.pythoncentral.io/sqlalchemy-association-tables/'''
