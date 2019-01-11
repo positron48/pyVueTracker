@@ -56,6 +56,7 @@ class Tracker(db.Model):
     type = db.Column(db.String(255))
     ui_url = db.Column(db.String(255))  # для генерации ссылок вида https://redmine.skillum.ru/issues/55597
     api_url = db.Column(db.String(255), nullable=False)
+    last_sync = db.Column(db.DateTime)  # по этой метке раз в сутки синхронизируем словари категорий и проектов
 
     users = db.relationship(User, secondary='tracker_users')
     properties = db.relationship(lambda: TrackerUserLink)
