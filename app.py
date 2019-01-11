@@ -439,6 +439,20 @@ def tracker_task():
     return api.get_tracker_task(tracker_id, task_id)
 
 
+@app.route('/api/task/export', methods=['POST'])
+@Auth.check_api_request_readonly
+def export_task():
+    api = ApiController()
+    return api.export({
+        'tracker_id': request.values['tracker_id'],
+        'date': request.values['date'],
+        'hours': request.values['hours'],
+        'comment': request.values['comment'],
+        'external_id': request.values['external_id'],
+        'external_name': request.values['external_name']
+    })
+
+
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def catch_all(path):

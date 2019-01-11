@@ -36,3 +36,6 @@ class Redmine(Tracker):
     def get_task(self, task_id):
         if self.auth:
             return self.api.issue.get(task_id)
+
+    def export(self, task):
+        return True

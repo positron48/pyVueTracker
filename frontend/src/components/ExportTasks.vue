@@ -86,6 +86,12 @@
       </div>
     </div>
 
+    <div class="md-layout md-gutter md-alignment-top-center center" v-if="Object.keys(groupedTasks).length">
+      <div class="md-layout-item md-size-50">
+        <md-button class="md-raised md-accent" :disabled="exportDisabled || exportingTaskCount > 0" @click="exportTasks()">Экспортировать</md-button>
+      </div>
+    </div>
+
     <modal :show="showLink">
       <div class="modal-header">
         <h2>Укажите проект в {{currentTracker.title}}</h2>
@@ -120,6 +126,9 @@ export default {
       },
       show: false,
       labelWidth: 200,
+      exportDisabled: false,
+      exportingTaskCount: 0,
+      exportStatus: {},
 
       currentTracker: [],
       currentProject: null,
@@ -167,14 +176,21 @@ export default {
               this.getTrackerTask(tracker.id, task['task_id'])
             } else if (externalTask['name'] !== undefined) {
               task['external_status'] = 'linked'
+              task['external_name'] = externalTask['name']
               task['external_message'] = '[' + externalTask['project'] + '] ' + externalTask['tracker'] +
                 ' #' + externalTask['id'] + ': ' + externalTask['name']
             }
           }
 
-          // todo: status: warning проект отличается от проекта из задачи (редмайн)
           // todo: status: ?warning? часы за этот день по проекту уже выгружались
-          if (
+          var exportStatus = this.getTaskExportStatus(task['date'], groupedTasks[task['date']].tasks.length, tracker.id)
+          if (exportStatus === true) {
+            tracker['status'] = 'exported'
+            tracker['message'] = 'задача выгружена'
+          } else if (exportStatus === false) {
+            tracker['status'] = 'fatal'
+            tracker['message'] = 'при выгрузке произошла ошибка'
+          } else if (
             tracker['status'] === 'linked' &&
             tracker['type'] === 'redmine' &&
             !task['task_id']
@@ -348,6 +364,80 @@ export default {
           this.trackerTasks[trackerId][externalTaskId] = false
           this.$recompute('groupedTasks')
         })
+    },
+    exportTasks: function () {
+      if (!confirm('Вы действительно хотите выгрузить часы?')) {
+        return
+      }
+      this.exportDisabled = true
+
+      var dates = Object.keys(this.groupedTasks)
+      for (var i = 0; i < dates.length; i++) {
+        for (var j = 0; j < this.groupedTasks[dates[i]].tasks.length; j++) {
+          var task = this.groupedTasks[dates[i]].tasks[j]
+
+          var exportTask = {
+            tracker_id: null,
+            date: task['date'],
+            hours: task.delta,
+            comment: task.description,
+            external_id: task.task_id,
+            external_name: task.external_name !== undefined ? task.external_name : ''
+          }
+
+          for (var k = 0; k < task.trackers.length; k++) {
+            if (task.trackers[k].status === 'linked' || task.trackers[k].status === 'warning') {
+              exportTask.tracker_id = task.trackers[k].id
+              console.log(exportTask)
+
+              this.exportingTaskCount++
+
+              // todo: понять ,как передать внутрь .then конкретное текущее начение переменной
+              API.exportTask(exportTask)
+                .then(response => {
+                  if (response !== undefined && ('status' in response.data && response.data.status)) {
+                    this.setTaskExportStatus(exportTask.date, j, exportTask.tracker_id, true)
+                  } else {
+                    this.setTaskExportStatus(exportTask.date, j, exportTask.tracker_id, false)
+                  }
+                  this.exportingTaskCount--
+                  this.$recompute('groupedTasks')
+                })
+                .catch(error => {
+                  console.log(['exportTask error', error])
+                  this.setTaskExportStatus(exportTask.date, j, exportTask.tracker_id, false)
+
+                  this.exportingTaskCount--
+                  this.$recompute('groupedTasks')
+                })
+            }
+          }
+        }
+      }
+      this.exportDisabled = false
+    },
+    setTaskExportStatus: function (date, key, tracker, status) {
+      console.log(date, key, tracker, status)
+      if (this.exportStatus[date] === undefined) {
+        this.exportStatus[date] = {}
+      }
+      if (this.exportStatus[date][key] === undefined) {
+        this.exportStatus[date][key] = {}
+      }
+      this.exportStatus[date][key][tracker] = status
+    },
+    getTaskExportStatus: function (date, key, tracker) {
+      console.log(this.exportStatus)
+      if (this.exportStatus[date] === undefined) {
+        return null
+      }
+      if (this.exportStatus[date][key] === undefined) {
+        return null
+      }
+      if (this.exportStatus[date][key][tracker] === undefined) {
+        return null
+      }
+      return this.exportStatus[date][key][tracker]
     }
   },
   components: {
@@ -400,6 +490,12 @@ export default {
   }
   .error .tracker-badge{
     background-color: tomato;
+  }
+  .exported .tracker-badge{
+    background-color: purple;
+  }
+  .fatal .tracker-badge{
+    background-color: black;
   }
   .warning .tracker-badge{
     background-color: orange;

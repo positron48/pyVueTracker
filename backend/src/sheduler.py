@@ -158,3 +158,10 @@ class Sheduler:
             }
 
             return result
+
+    def export(self, type, url, token, export_task):
+        api = self.__get_engine(type, url, api_key=token)
+        if api.is_auth():
+            result = api.export(export_task)
+
+            return result

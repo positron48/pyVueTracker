@@ -280,3 +280,11 @@ class ApiController:
 
         self.response.status = task is not None
         self.response.task = task
+
+    @send_response
+    def export(self, export_task):
+        tracker = self.engine.get_tracker(export_task['tracker_id'])
+        s = Sheduler()
+        result = s.export(tracker['type'], tracker['api_url'], tracker['external_api_key'], export_task)
+
+        self.response.status = result

@@ -91,3 +91,6 @@ class Evolution(Tracker):
             return response['id']
         else:
             return response['id']
+
+    def export(self, task):
+        return False
