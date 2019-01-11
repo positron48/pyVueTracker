@@ -21,6 +21,12 @@ class Task:
         self.project = project
 
 
+class Category:
+    def __init__(self, id: int, name: str):
+        self.id = id
+        self.name = name
+
+
 class Activity:
     def __init__(self, id: int, user: User, date: dt.date, time: float, task: Optional[Task], comment: Optional[str],
                  title: Optional[str]):
@@ -51,6 +57,13 @@ class Tracker:
         """
         Получает id пользователя на трекере, если он авторизован
         :return: возвращает user_id или None
+        """
+        return None
+
+    def list_categories(self) -> Optional[List[Category]]:
+        """
+        Запрашивает список категорий активностей у трекера
+        :return: возвращает список категорий или None
         """
         return None
 
