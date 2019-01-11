@@ -31,7 +31,6 @@ class Project(db.Model):
     code = db.Column(db.String(255))
 
     tracker_properties = db.relationship(lambda: TrackerProjectLink)
-    categories = db.relationship(lambda: Category)
 
     def __repr__(self):
         return 'Project: %r' % self.title
@@ -60,16 +59,17 @@ class Tracker(db.Model):
 
     users = db.relationship(User, secondary='tracker_users')
     properties = db.relationship(lambda: TrackerUserLink)
+    categories = db.relationship(lambda: Category)
 
 
 class Category(db.Model):
     __tablename__ = 'categories'
     id = db.Column(db.Integer, primary_key=True)
-    project_id = db.Column(db.Integer, db.ForeignKey(Project.id))
+    tracker_id = db.Column(db.Integer, db.ForeignKey(Tracker.id))
     name = db.Column(db.String(255))
     external_id = db.Column(db.Integer)
 
-    project = db.relationship(lambda: Project)
+    tracker = db.relationship(lambda: Tracker)
 
 
 class Activity(db.Model):
