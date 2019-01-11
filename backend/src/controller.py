@@ -232,12 +232,15 @@ class ApiController:
             for tracker_prop in project.tracker_properties:
                 # сопоставления по приоритету - сначала привязанные к текущему пользователю,
                 # затем не привязанные ни к кому
-                if tracker_prop.tracker_id in tracker_ids and tracker_prop.external_project_id > 0:
-                    element['tracker_projects'][tracker_prop.tracker_id] = {
-                        'tracker_id': tracker_prop.tracker_id,
-                        'external_project_id': tracker_prop.external_project_id,
-                        'external_project_title': tracker_prop.external_project_title
-                    }
+                if tracker_prop.tracker_id in tracker_ids and tracker_prop.external_project_id > 0 and \
+                        tracker_prop.user_id is None or tracker_prop.user_id == self.user.id:
+
+                    if tracker_prop.tracker_id not in element['tracker_projects'] or tracker_prop.user_id is not None:
+                        element['tracker_projects'][tracker_prop.tracker_id] = {
+                            'tracker_id': tracker_prop.tracker_id,
+                            'external_project_id': tracker_prop.external_project_id,
+                            'external_project_title': tracker_prop.external_project_title
+                        }
 
             result[project.id] = element
 
