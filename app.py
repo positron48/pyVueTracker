@@ -331,6 +331,10 @@ def get_token():
 @app.route('/api/task/edit', methods=['POST'])
 @Auth.check_api_request
 def edit_task():
+    description = request.values['description']
+    if description == 'null':
+        description = ''
+
     fact = {
         'id': request.values['id'],
         'name': request.values['name'],
@@ -338,7 +342,7 @@ def edit_task():
         'date': request.values['date'],
         'start_time': request.values['start_time'],
         'end_time': request.values['end_time'],
-        'description': request.values['description'],
+        'description': description,
         'tags': [tag.strip() for tag in request.values['tags'].split(',')]
     }
     start_dt = dt.datetime.strptime(fact['date'] + ' ' + fact['start_time'], "%d.%m.%Y %H:%M")
