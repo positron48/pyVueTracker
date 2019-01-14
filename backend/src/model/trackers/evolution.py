@@ -2,6 +2,7 @@ from ..tracker import *
 from typing import Union, Sequence, List, Optional, Any
 import requests
 import datetime as dt
+import dateutil.relativedelta as dtr
 import sys
 import json
 
@@ -28,6 +29,38 @@ class Evolution(Tracker):
             for item in projects:
                 if item[key] == value:
                     return Project(id=item['id'], code=item['identifier'], name=item['title'])
+
+    def __get_activities_by_filter(self, project_id: int = None, user_id: int = None, start: int = None,
+                                   date_start: dt.date = None, date_end: dt.date = None, limit: int = None,
+                                   only_count: bool = False):
+        if not self.auth:
+            return None
+        params = {'token': self.token,
+                  'filter[date][from]': date_start,
+                  'filter[date][to]': date_end,
+                  'limit': limit,
+                  'start': start,
+                  'filter[employer_id]': user_id,
+                  'filter[project_id]': project_id
+                  }
+        if only_count:
+            params['limit'] = 1
+
+        response = requests.get(self.url + "/api/task", params)
+        response = response.json()
+        if only_count:
+            return int(response.get('totalCount', 0))
+        if 'data' not in response or len(response['data']) < 1:
+            return None
+        return [Activity(
+            id=int(item.get('id')),
+            user_id=int(item.get('employer_id')),
+            date=dt.datetime.strptime(item.get('date'), "%d.%m.%Y").date(),
+            time=float(item.get('time')),
+            comment=item.get('comment'),
+            title=item.get('title'),
+            project_id=int(item.get('project_id'))
+        ) for item in response['data']]
 
     ######################################### Tracker interface ########################################################
 
@@ -81,38 +114,32 @@ class Evolution(Tracker):
         """
         return self.__get_project_by_key_value('title', project_name)
 
-    # def list_activities_in_date(self, date: dt.date) -> Optional[List[Activity]]:
-    #     """
-    #     Запрашивает у трекера список активностей по дате
-    #     :param date: дата
-    #     :return: возвращает список активностей или None
-    #     """
-    #     return self.list_activities_in_date_interval(date, date)
-    #
-    # def list_activities_in_date_interval(self, date_start: dt.date, date_end: dt.date) -> Optional[List[Activity]]:
-    #     """
-    #     Запрашивает у трекера список активностей в интервале дат
-    #     :param date_start: начальная дата
-    #     :param date_end: конечная дата
-    #     :return: возвращает список активностей или None
-    #     """
-    #     return self.__filter_activities({'from_date': date_start, 'to_date': date_end})
-    #
-    # def list_activities_in_task(self, task_id: int) -> Optional[List[Activity]]:
-    #     """
-    #     Запрашивает у трекера список активностей по id задачи, если задачи поддерживаются трекером
-    #     :param task_id: id задачи
-    #     :return: возвращает список активностей или None
-    #     """
-    #     return self.__filter_activities({'issue_id': task_id})
-    #
-    # def list_activities_in_project(self, project_id: int) -> Optional[List[Activity]]:
-    #     """
-    #     Запрашивает у трекера список активностей по id проекта
-    #     :param project_id: id проекта
-    #     :return: возвращает список активностей или None
-    #     """
-    #     return self.__filter_activities({'project_id': project_id})
+    def list_activities_in_date(self, date: dt.date, **kwargs) -> Optional[List[Activity]]:
+        """
+        Запрашивает у трекера список активностей по дате
+        :param date: дата
+        :return: возвращает список активностей или None
+        """
+        return self.list_activities_in_date_interval(date, date, **kwargs)
+
+    def list_activities_in_date_interval(self, date_start: dt.date, date_end: dt.date, **kwargs) -> Optional[
+        List[Activity]]:
+        """
+        Запрашивает у трекера список активностей в интервале дат
+        :param date_start: начальная дата
+        :param date_end: конечная дата
+        :return: возвращает список активностей или None
+        """
+        return self.__get_activities_by_filter(date_start=date_start, date_end=date_end, **kwargs)
+
+    def list_activities_in_project(self, project_id: int, **kwargs) -> Optional[
+        List[Activity]]:
+        """
+        Запрашивает у трекера список активностей по id проекта
+        :param project_id: id проекта
+        :return: возвращает список активностей или None
+        """
+        return self.__get_activities_by_filter(project_id=project_id, **kwargs)
 
     def new_activity(self, activity: Activity) -> Optional[int]:
         """
