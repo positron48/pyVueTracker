@@ -50,8 +50,6 @@ def add_users():
 
 @app.route('/debug/regen')
 def regen():
-    # генератор тестовых данных
-    from backend.src.model.mysql import Tracker, User, TrackerUserLink
     db.drop_all()
     db.create_all()
     return 'success!'
