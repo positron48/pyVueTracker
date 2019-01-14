@@ -38,21 +38,18 @@
         <div class="md-layout md-gutter">
           <input type="hidden" v-model="editTask.id" name=id>
           <div class="md-layout-item md-size-40">
-            <md-field>
-              <label>дата</label>
-              <md-input v-model="editTask.date"></md-input>
+            <md-field class="masked-input">
+              <masked-input v-model="editTask.date" mask="11.11.1111" placeholder="дата" />
             </md-field>
           </div>
           <div class="md-layout-item md-size-30">
-            <md-field>
-              <label>время начала</label>
-              <md-input v-model="editTask.start_time"></md-input>
+            <md-field class="masked-input">
+              <masked-input v-model="editTask.start_time" mask="11:11" placeholder="время начала" />
             </md-field>
           </div>
           <div class="md-layout-item md-size-30">
-            <md-field>
-              <label>время окончания</label>
-              <md-input v-model="editTask.end_time"></md-input>
+            <md-field class="masked-input">
+              <masked-input v-model="editTask.end_time" mask="11:11" placeholder="время окончания" />
             </md-field>
           </div>
         </div>
@@ -85,6 +82,7 @@ import Modal from './Modal.vue'
 import {formatLabel, formatDate} from './helpers.js'
 import HorizontalBarChart from './HorizontalBarChart.vue'
 import API from './api.js'
+import MaskedInput from 'vue-masked-input'
 
 export default {
   data () {
@@ -380,7 +378,7 @@ export default {
     }
   },
   components: {
-    HorizontalBarChart, TaskItem, BarChart, Modal
+    HorizontalBarChart, TaskItem, BarChart, Modal, MaskedInput
   },
   created () {
     if (this.initialDate !== undefined) {
@@ -403,5 +401,9 @@ export default {
   }
   .md-list-item{
     z-index: 0;
+  }
+  .masked-input input{
+    width: 100%;
+    background-color: white;
   }
 </style>
