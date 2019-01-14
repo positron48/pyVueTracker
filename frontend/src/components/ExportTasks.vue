@@ -426,7 +426,7 @@ export default {
 
           for (var k = 0; k < task.trackers.length; k++) {
             var needExport = this.getTaskNeedExport(task['date'], j, task.trackers[k].id)
-            if (needExport === true && task.trackers[k].status === 'linked' || task.trackers[k].status === 'warning') {
+            if (needExport === true && (task.trackers[k].status === 'linked' || task.trackers[k].status === 'warning')) {
               exportTask.tracker_id = task.trackers[k].id
               exportTask.project_id = this.projects[task.project_id]['tracker_projects'][exportTask.tracker_id]['external_project_id']
 
