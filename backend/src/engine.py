@@ -12,45 +12,44 @@ class Engine:
     def __init__(self):
         self.user = Auth.get_request_user()
 
-    def __get_task_by_external_id(self, external_task_id=None, project_name=None):
-        if external_task_id is None:
+    @staticmethod
+    def __get_task_by_external_task_id(external_task_id):
+        return db.session.query(Task).filter(Task.external_task_id == external_task_id).first()  # type:Task
+
+    @staticmethod
+    def __get_task_by_title(task_name):
+        return db.session.query(Task).filter(Task.title == task_name).first()  # type:Task
+
+    @staticmethod
+    def __get_task_by_name(task_name):
+        return db.session.query(Task).filter(Task.name == task_name).first()  # type:Task
+
+    def __get_or_create_project_by_fact(self, fact: Fact):
+        project_name = fact.category
+        if project_name is None:
             return None
-        task = db.session.query(Task).filter(Task.external_task_id == external_task_id).first()  # type:Task
-        if task is None:
-            project = None
-            if project_name is not None:
-                project = self.__get_project_by_name(project_name) or self.__get_project_by_code(project_name)
-                if project is None:
-                    project = Project(title=project_name)
+        return self.__get_project_by_name(project_name) or self.__get_project_by_code(project_name) or Project(
+            title=project_name)
 
-            task = Task(external_task_id=external_task_id)
-            if project is not None:
-                task.project = project
-            db.session.add(task)
-            db.session.commit()
+    def __get_or_create_task_by_fact(self, fact: Fact):
+        task_id = fact.get_task_id()
+        task_name = fact.get_task_name()
 
-        return task
-
-    def __get_task_by_name(self, external_task_id, task_name, project_name=None):
-        if task_name is None:
+        if task_id is None and task_name is None:
             return None
 
-        project = None
-        if project_name is not None:
-            project = self.__get_project_by_name(project_name) or self.__get_project_by_code(project_name)
-            if project is None:
-                project = Project(title=project_name)
-
-        task = db.session.query(Task).filter(Task.title == task_name) \
-            .filter(Task.project_id == project.id).first()  # type:Task
-
+        task = None  # type:Task
+        if task_id is not None:
+            task = self.__get_task_by_external_task_id(task_id)
         if task is None:
+            task = self.__get_task_by_name(task_name)
+        if task is None:
+            task = Task(external_task_id=task_id, title=task_name)
 
-            task = Task(external_task_id=external_task_id, title=task_name)
-            if project is not None:
-                task.project = project
-            db.session.add(task)
-            db.session.commit()
+        task.project = self.__get_or_create_project_by_fact(fact)
+
+        db.session.add(task)
+        db.session.commit()
 
         return task
 
@@ -111,9 +110,7 @@ class Engine:
         new_activity.update_hashtags(fact.tags)
         new_activity.comment = fact.description
         new_activity.user = self.user
-        # new_activity.task = self.__get_task_by_external_id(fact.get_task_id(), fact.category)
-        new_activity.task = self.__get_task_by_name(fact.get_task_id(), fact.get_task_name(), fact.category)
-        new_activity.last_updated = dt.datetime.now()
+        new_activity.task = self.__get_or_create_task_by_fact(fact)
 
         current = self.get_current()  # type:Activity
         if current is not None:
@@ -285,13 +282,10 @@ class Engine:
             return 'Активность уже выгружена на внешний трекер'
         if fact.start_time is None:
             return 'Не заполнено время начала активности'
-        external_task_id = fact.get_task_id()
-
-        task = self.__get_task_by_name(external_task_id, fact.get_task_name(), fact.category)
         db_fact.time_start = fact.start_time
         db_fact.time_end = fact.end_time
         db_fact.name = fact.get_task_name()
-        db_fact.task_id = task.id
+        db_fact.task = self.__get_or_create_task_by_fact(fact)
         db_fact.comment = fact.description
         db_fact.update_hashtags(fact.tags)
         db.session.add(db_fact)

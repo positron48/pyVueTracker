@@ -94,7 +94,9 @@ class ApiController:
     @send_response
     def get_grouped_tasks(self, dateFrom, dateTo):
         tasks = []
-        for db_fact in self.engine.get_facts(dateFrom, dateTo):
+        for db_fact in self.engine.get_facts(dateFrom, dateTo):  # type: Activity
+            if db_fact.time_end is None:  # не учитываем открытые активности
+                continue
             fact = FormattedFact(db_fact)
             task = {
                 'id': fact.id,

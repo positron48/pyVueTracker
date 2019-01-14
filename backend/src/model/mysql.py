@@ -31,22 +31,9 @@ class Project(db.Model):
     code = db.Column(db.String(255))
 
     tracker_properties = db.relationship(lambda: TrackerProjectLink)
-    categories = db.relationship(lambda: Category)
 
     def __repr__(self):
         return 'Project: %r' % self.title
-
-
-class Task(db.Model):
-    __tablename__ = 'tasks'
-    id = db.Column(db.Integer, primary_key=True)
-    project_id = db.Column(db.Integer, db.ForeignKey(Project.id))
-    title = db.Column(db.String(255))
-    # автозаполняемые справочники
-    external_task_id = db.Column(
-        db.Integer)  # redmine_task_id. evo не имеет сущностей task, а redmine пока один - храним id в сущности
-
-    project = db.relationship(lambda: Project)
 
 
 class Tracker(db.Model):
@@ -57,19 +44,34 @@ class Tracker(db.Model):
     type = db.Column(db.String(255))
     ui_url = db.Column(db.String(255))  # для генерации ссылок вида https://redmine.skillum.ru/issues/55597
     api_url = db.Column(db.String(255), nullable=False)
+    last_sync = db.Column(db.DateTime)  # по этой метке раз в сутки синхронизируем словари категорий и проектов
 
     users = db.relationship(User, secondary='tracker_users')
     properties = db.relationship(lambda: TrackerUserLink)
+    categories = db.relationship(lambda: Category)
+
+
+class Task(db.Model):
+    __tablename__ = 'tasks'
+    id = db.Column(db.Integer, primary_key=True)
+    project_id = db.Column(db.Integer, db.ForeignKey(Project.id))
+    tracker_id = db.Column(db.Integer, db.ForeignKey(Tracker.id))
+    title = db.Column(db.String(255))
+    external_task_id = db.Column(db.Integer)
+
+    project = db.relationship(lambda: Project)
+    tracker = db.relationship(lambda: Tracker)
 
 
 class Category(db.Model):
     __tablename__ = 'categories'
     id = db.Column(db.Integer, primary_key=True)
-    project_id = db.Column(db.Integer, db.ForeignKey(Project.id))
+    tracker_id = db.Column(db.Integer, db.ForeignKey(Tracker.id))
     name = db.Column(db.String(255))
     external_id = db.Column(db.Integer)
 
-    project = db.relationship(lambda: Project)
+    tracker = db.relationship(lambda: Tracker)
+    activities = db.relationship(lambda: Activity, secondary='activity_categories')
 
 
 class Activity(db.Model):
@@ -77,19 +79,16 @@ class Activity(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey(User.id))
     task_id = db.Column(db.Integer, db.ForeignKey(Task.id))
-    category_id = db.Column(db.Integer, db.ForeignKey(Category.id))
     uploaded = db.Column(db.Boolean, default=False)
     name = db.Column(db.String(255))
     comment = db.Column(db.String(255))
     time_start = db.Column(db.DateTime)
     time_end = db.Column(db.DateTime)
-    deleted = db.Column(db.Boolean, default=False)
-    last_updated = db.Column(db.DateTime)
 
     user = db.relationship(lambda: User)
     task = db.relationship(lambda: Task)
     hashtags = db.relationship(lambda: HashTag, secondary='activity_hashtags')
-    category = db.relationship(lambda: Category)
+    categories = db.relationship(lambda: Category, secondary='activity_categories')
 
     @staticmethod
     def get_hashtags(tag_names):
@@ -152,6 +151,11 @@ activity_hashtags_table = db.Table('activity_hashtags', db.metadata,
                                    db.Column('hashtag_id', db.Integer, db.ForeignKey(HashTag.id), primary_key=True)
                                    )
 
+activity_categories_table = db.Table('activity_categories', db.metadata,
+                                     db.Column('activity_id', db.Integer, db.ForeignKey(Activity.id), primary_key=True),
+                                     db.Column('category_id', db.Integer, db.ForeignKey(Category.id), primary_key=True)
+                                     )
+
 ########################################### MTM extra fields: ##########################################################
 '''как пользоваться extra fields: https://www.pythoncentral.io/sqlalchemy-association-tables/'''
 
@@ -178,7 +182,6 @@ class TrackerProjectLink(db.Model):
     # автозаполняемые справочники
     external_project_id = db.Column(db.Integer)
     external_project_title = db.Column(db.String(255))
-    last_updated = db.Column(db.DateTime)
 
     tracker = db.relationship(Tracker)
     project = db.relationship(Project)
