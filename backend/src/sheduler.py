@@ -145,6 +145,8 @@ class Sheduler:
         api = self.__get_engine(type, url, api_key=token)
         if api.is_auth():
             external_task = api.get_task_by_id(task_id)
+            if external_task is None:
+                return None
 
             # print(external_task.__dict__)
             result = {

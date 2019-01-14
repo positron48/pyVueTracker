@@ -33,7 +33,7 @@ class Category:
 
 
 class Activity:
-    def __init__(self, task_id: int, time: float, date: dt.date, id: int = None, user_id: int = None,
+    def __init__(self, time: float, date: dt.date, task_id: int = None, id: int = None, user_id: int = None,
                  comment: str = None, title: str = None, category_id: int = None, project_id: int = None):
         self.id = id
         self.user_id = user_id

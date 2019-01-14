@@ -129,7 +129,7 @@ class Redmine(Tracker):
         if self.auth:
             try:
                 task = self.api.issue.get(task_id)
-            except ResourceNotFoundError:
+            except (ResourceNotFoundError, ForbiddenError):
                 return None
             return Task(id=task.id, name=task.subject, project_id=task.project.id, project_name=task.project.name,
                         tracker_name=task.tracker.name, status=task.status.name)
