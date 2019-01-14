@@ -199,6 +199,14 @@ export default {
             tracker['message'] = 'не указан номер задачи'
           } else if (
             tracker['status'] === 'linked' &&
+            tracker['type'] === 'evo' &&
+            (externalTask === false || externalTask === undefined) &&
+            task['description'] === ''
+          ) {
+            tracker['status'] = 'error'
+            tracker['message'] = 'не заполнен комментарий'
+          } else if (
+            tracker['status'] === 'linked' &&
             tracker['type'] === 'redmine' &&
             task['task_id'] > 0 &&
             externalTask === false
