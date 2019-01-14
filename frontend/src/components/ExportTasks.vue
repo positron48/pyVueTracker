@@ -231,7 +231,7 @@ export default {
         // со сложением вместе округление работать не хочет
         groupedTasks[task['date']]['duration'] = Math.round(groupedTasks[task['date']]['duration'] * 100) / 100
       }
-      console.log(groupedTasks)
+      // console.log(groupedTasks)
       return groupedTasks
     }
   },
@@ -392,29 +392,31 @@ export default {
 
               this.exportingTaskCount++
 
-              // todo: понять ,как передать внутрь .then конкретное текущее начение переменной
-              API.exportTask(exportTask)
-                .then(response => {
-                  if (response !== undefined && ('status' in response.data && response.data.status)) {
-                    this.setTaskExportStatus(exportTask.date, j, exportTask.tracker_id, true)
-                  } else {
-                    this.setTaskExportStatus(exportTask.date, j, exportTask.tracker_id, false)
-                  }
-                  this.exportingTaskCount--
-                  this.$recompute('groupedTasks')
-                })
-                .catch(error => {
-                  console.log(['exportTask error', error])
-                  this.setTaskExportStatus(exportTask.date, j, exportTask.tracker_id, false)
-
-                  this.exportingTaskCount--
-                  this.$recompute('groupedTasks')
-                })
+              this.exportOneTask(exportTask, j, exportTask.tracker_id)
             }
           }
         }
       }
       this.exportDisabled = false
+    },
+    exportOneTask: function (exportTask, j, trackerId) {
+      API.exportTask(exportTask)
+        .then(response => {
+          if (response !== undefined && ('status' in response.data && response.data.status)) {
+            this.setTaskExportStatus(exportTask.date, j, trackerId, true)
+          } else {
+            this.setTaskExportStatus(exportTask.date, j, trackerId, false)
+          }
+          this.exportingTaskCount--
+          this.$recompute('groupedTasks')
+        })
+        .catch(error => {
+          console.log(['exportTask error', error])
+          this.setTaskExportStatus(exportTask.date, j, trackerId, false)
+
+          this.exportingTaskCount--
+          this.$recompute('groupedTasks')
+        })
     },
     setTaskExportStatus: function (date, key, tracker, status) {
       console.log(date, key, tracker, status)
@@ -427,7 +429,7 @@ export default {
       this.exportStatus[date][key][tracker] = status
     },
     getTaskExportStatus: function (date, key, tracker) {
-      console.log(this.exportStatus)
+      // console.log(this.exportStatus)
       if (this.exportStatus[date] === undefined) {
         return null
       }
@@ -486,16 +488,17 @@ export default {
     text-decoration: none;
   }
   .linked .tracker-badge{
-    background-color: lime;
+    background-color: cornflowerblue;
   }
   .error .tracker-badge{
     background-color: tomato;
   }
   .exported .tracker-badge{
-    background-color: purple;
+    background-color: lime;
   }
   .fatal .tracker-badge{
     background-color: black;
+    color: white !important;
   }
   .warning .tracker-badge{
     background-color: orange;
