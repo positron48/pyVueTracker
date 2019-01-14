@@ -131,7 +131,8 @@ class Redmine(Tracker):
                 task = self.api.issue.get(task_id)
             except ResourceNotFoundError:
                 return None
-            return Task(id=task.id, name=task.subject, project_id=task.project.id, status=task.status.name)
+            return Task(id=task.id, name=task.subject, project_id=task.project.id, project_name=task.project.name,
+                        tracker_name=task.tracker.name, status=task.status.name)
 
     def list_tasks_in_project(self, project_id: int, all: bool = False) -> Optional[List[Task]]:
         """

@@ -1,5 +1,4 @@
-from backend.src.model.mysql import db, User, TrackerUserLink, Project, TrackerProjectLink, \
-    Task
+from backend.src.model.mysql import db, User, TrackerUserLink, Project, TrackerProjectLink, Task
 from backend.src.model.trackers.redmine import Redmine
 from backend.src.model.trackers.evolution import Evolution
 import requests
@@ -145,16 +144,16 @@ class Sheduler:
     def get_task(self, type, url, token, task_id):
         api = self.__get_engine(type, url, api_key=token)
         if api.is_auth():
-            external_task = api.get_task(task_id)
+            external_task = api.get_task_by_id(task_id)
 
             # print(external_task.__dict__)
             result = {
                 'id': external_task.id,
-                'tracker': external_task.tracker.name,
-                'project': external_task.project.name,
-                'project_id': external_task.project.id,
-                'status': external_task.status.name,
-                'name': external_task.subject
+                'tracker': external_task.tracker_name,
+                'project': external_task.project_name,
+                'project_id': external_task.project_id,
+                'status': external_task.status,
+                'name': external_task.name
             }
 
             return result
@@ -162,6 +161,6 @@ class Sheduler:
     def export(self, type, url, token, export_task):
         api = self.__get_engine(type, url, api_key=token)
         if api.is_auth():
-            result = api.export(export_task)
+            result = api.new_activity(export_task)
 
             return result

@@ -306,6 +306,7 @@ class Engine:
             'api_url': tracker[0].api_url,
             'ui_url': tracker[0].ui_url,
             'external_api_key': tracker[1].external_api_key,
+            'external_user_id': tracker[1].external_user_id
         }
 
         return result

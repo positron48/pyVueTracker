@@ -442,13 +442,18 @@ def tracker_task():
 @app.route('/api/task/export', methods=['POST'])
 @Auth.check_api_request_readonly
 def export_task():
+    external_id = request.values['external_id']
+    if external_id == '':
+        external_id = 0
+    else:
+        external_id = int(external_id)
+
     api = ApiController()
-    return api.export({
-        'tracker_id': request.values['tracker_id'],
-        'date': request.values['date'],
-        'hours': request.values['hours'],
+    return api.export(request.values['tracker_id'], {
+        'date': dt.datetime.strptime(request.values['date'], "%d.%m.%Y").date(),
+        'hours': float(request.values['hours']),
         'comment': request.values['comment'],
-        'external_id': request.values['external_id'],
+        'external_id': external_id,
         'external_name': request.values['external_name']
     })
 

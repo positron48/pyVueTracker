@@ -2,6 +2,7 @@ from backend.src.model.hamster import Fact, FormattedFact
 from backend.src.model.mysql import Activity
 from backend.src.engine import Engine
 from backend.src.auth import Auth
+from backend.src.model.tracker import Activity
 from flask import jsonify
 from functools import wraps
 from backend.src.sheduler import Sheduler
@@ -284,9 +285,39 @@ class ApiController:
         self.response.task = task
 
     @send_response
-    def export(self, export_task):
-        tracker = self.engine.get_tracker(export_task['tracker_id'])
+    def export(self, tracker_id, export_task):
+        tracker = self.engine.get_tracker(tracker_id)
         s = Sheduler()
-        result = s.export(tracker['type'], tracker['api_url'], tracker['external_api_key'], export_task)
 
-        self.response.status = result
+        user_id = tracker['external_user_id']
+        comment = ''
+        title = None
+
+        if tracker['type'] == 'evo':
+            if export_task['external_id'] > 0:
+                comment = '#' + str(export_task['external_id'])
+
+            if export_task['external_name'] is not '':
+                title = export_task['external_name']
+                comment += ' ' + export_task['comment']
+            else:
+                title = export_task['comment']
+        else:
+            comment = export_task['comment']
+
+        activity = Activity(
+            task_id=export_task['external_id'],
+            time=export_task['hours'],
+            date=export_task['date'],
+            user_id=user_id,
+            comment=comment,
+            title=title,
+            category_id=9  # разработка
+        )
+
+        print(activity.__dict__)
+
+        result = 1
+        # result = s.export(tracker['type'], tracker['api_url'], tracker['external_api_key'], activity)
+
+        self.response.status = result > 0

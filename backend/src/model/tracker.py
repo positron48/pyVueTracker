@@ -16,10 +16,12 @@ class Project:
 
 
 class Task:
-    def __init__(self, id: int, name: str, project_id: int, status: str = None):
+    def __init__(self, id: int, name: str, project_id: int, project_name: str, tracker_name: str, status: str = None):
         self.id = id
         self.name = name
         self.project_id = project_id
+        self.project_name = project_name
+        self.tracker_name = tracker_name
         self.status = status
 
 
