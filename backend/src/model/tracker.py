@@ -31,8 +31,9 @@ class Category:
 
 
 class Activity:
-    def __init__(self, id: int, user_id: int, date: dt.date, time: float, task_id: int = None, comment: str = None,
-                 title: str = None):
+    def __init__(self, task_id: int, time: float, date: dt.date, id: int = None, user_id: int = None,
+                 comment: str = None,
+                 title: str = None, category_id: int = None):
         self.id = id
         self.user_id = user_id
         self.date = date
@@ -40,6 +41,7 @@ class Activity:
         self.task_id = task_id
         self.comment = comment
         self.title = title  # формулировка для эво
+        self.category_id = category_id
 
 
 class Tracker:

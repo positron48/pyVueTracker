@@ -47,9 +47,9 @@ class Redmine(Tracker):
                 return None
             return [Activity(id=activity.id, user_id=activity.user.id,
                              date=activity.spent_on, time=activity.hours, task_id=activity.issue.id,
-                             comment=activity.comments) for activity in activities]
+                             comment=activity.comments, category_id=activity.activity.id) for activity in activities]
 
-    ######################################### Tracker interface ############################################################
+    ######################################### Tracker interface ########################################################
 
     def is_auth(self) -> bool:
         """
@@ -190,9 +190,16 @@ class Redmine(Tracker):
         :param activity: активность
         :return: возвращает activity_id созданной активности, или None, в случае неудачи
         """
-        return None  # todo допилить выгрузку
+        time_entry = self.api.time_entry.new()
+        time_entry.issue_id = activity.task_id
+        time_entry.spent_on = activity.date
+        time_entry.hours = activity.time
+        time_entry.activity_id = activity.category_id
+        time_entry.comments = activity.comment
+        time_entry.save()
+        return time_entry.id
 
-    ######################################### end Tracker interface ########################################################
+    ######################################### end Tracker interface ####################################################
 
     def get_all_projects(self):
         return self.api.project.all()
