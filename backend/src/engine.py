@@ -22,7 +22,7 @@ class Engine:
 
     @staticmethod
     def __get_task_by_name(task_name):
-        return db.session.query(Task).filter(Task.name == task_name).first()  # type:Task
+        return db.session.query(Task).filter(Task.title == task_name).first()  # type:Task
 
     def __get_or_create_project_by_fact(self, fact: Fact):
         project_name = fact.category
@@ -226,14 +226,12 @@ class Engine:
             tracker_project.external_project_id = tracker_project_id
             tracker_project.external_project_title = tracker_project_title
             tracker_project.user_id = self.user.id
-            tracker_project.last_updated = dt.datetime.now()
         else:
             tracker_project = TrackerProjectLink(
                 project_id=project_id,
                 tracker_id=tracker_id,
                 external_project_id=tracker_project_id,
-                external_project_title=tracker_project_title,
-                last_updated=dt.datetime.now()
+                external_project_title=tracker_project_title
             )
             db.session.add(tracker_project)
 

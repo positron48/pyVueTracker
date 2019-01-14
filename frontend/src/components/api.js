@@ -125,6 +125,21 @@ export var API = {
       }))
   },
 
+  // продолжение работы над заданием
+  updateTask (task) {
+    return HTTP.post('/api/task/edit',
+      urlEncode({
+        'id': task['id'],
+        'name': task['name'],
+        'category': task['category'],
+        'date': task['date'],
+        'start_time': task['start_time'],
+        'end_time': task['end_time'],
+        'description': task['description'],
+        'tags': task['tags']
+      }))
+  },
+
   // удаление задания
   deleteTask (id) {
     return HTTP.post('/api/task/delete',

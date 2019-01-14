@@ -381,6 +381,7 @@ export default {
             date: task['date'],
             hours: task.delta,
             comment: task.description,
+            project_id: 0,
             external_id: task.task_id,
             external_name: task.external_name !== undefined ? task.external_name : ''
           }
@@ -388,7 +389,7 @@ export default {
           for (var k = 0; k < task.trackers.length; k++) {
             if (task.trackers[k].status === 'linked' || task.trackers[k].status === 'warning') {
               exportTask.tracker_id = task.trackers[k].id
-              console.log(exportTask)
+              exportTask.project_id = this.projects[task.project_id]['tracker_projects'][exportTask.tracker_id]['external_project_id']
 
               this.exportingTaskCount++
 
@@ -419,7 +420,6 @@ export default {
         })
     },
     setTaskExportStatus: function (date, key, tracker, status) {
-      console.log(date, key, tracker, status)
       if (this.exportStatus[date] === undefined) {
         this.exportStatus[date] = {}
       }
@@ -429,7 +429,6 @@ export default {
       this.exportStatus[date][key][tracker] = status
     },
     getTaskExportStatus: function (date, key, tracker) {
-      // console.log(this.exportStatus)
       if (this.exportStatus[date] === undefined) {
         return null
       }

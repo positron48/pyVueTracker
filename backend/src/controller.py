@@ -2,7 +2,7 @@ from backend.src.model.hamster import Fact, FormattedFact
 from backend.src.model.mysql import Activity
 from backend.src.engine import Engine
 from backend.src.auth import Auth
-from backend.src.model.tracker import Activity
+from backend.src.model.tracker import Activity as TrackerActivity
 from flask import jsonify
 from functools import wraps
 from backend.src.sheduler import Sheduler
@@ -285,6 +285,13 @@ class ApiController:
         self.response.task = task
 
     @send_response
+    def link_project(self, project_id, tracker_id, tracker_project_id, tracker_project_title):
+        result = []
+
+        self.response.status = self.engine.link_project(project_id, tracker_id, tracker_project_id, tracker_project_title)
+        self.response.trackers = result
+
+    @send_response
     def export(self, tracker_id, export_task):
         tracker = self.engine.get_tracker(tracker_id)
         s = Sheduler()
@@ -305,11 +312,12 @@ class ApiController:
         else:
             comment = export_task['comment']
 
-        activity = Activity(
+        activity = TrackerActivity(
             task_id=export_task['external_id'],
             time=export_task['hours'],
             date=export_task['date'],
             user_id=user_id,
+            project_id=export_task['project_id'],
             comment=comment,
             title=title,
             category_id=9  # разработка
@@ -317,7 +325,7 @@ class ApiController:
 
         print(activity.__dict__)
 
-        result = 1
-        # result = s.export(tracker['type'], tracker['api_url'], tracker['external_api_key'], activity)
+        # result = 1
+        result = s.export(tracker['type'], tracker['api_url'], tracker['external_api_key'], activity)
 
         self.response.status = result > 0

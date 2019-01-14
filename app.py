@@ -454,6 +454,7 @@ def export_task():
         'hours': float(request.values['hours']),
         'comment': request.values['comment'],
         'external_id': external_id,
+        'project_id': int(request.values['project_id']),
         'external_name': request.values['external_name']
     })
 

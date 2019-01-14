@@ -35,6 +35,8 @@ export default {
         .then(response => {
           if (('status' in response.data && response.data.status) || !('status' in response.data)) {
             this.current = response.data
+          } else {
+            this.current = null
           }
         })
         .catch(error => {
