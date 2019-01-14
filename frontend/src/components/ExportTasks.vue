@@ -30,7 +30,7 @@
                     </md-table-head>
                   </md-table-row>
 
-                  <template v-for="task in taskGroup.tasks">
+                  <template v-for="(task, taskKey) in taskGroup.tasks">
                     <md-table-row :key="task.id">
                       <md-table-cell>
                         <md-field>
@@ -66,6 +66,7 @@
                       <md-table-cell>
                         <template v-for="tracker in task.trackers">
                           <span v-bind:key="tracker.id + '_' + task.id" :class="tracker.status">
+                            <md-checkbox @change="groupTasksRecompute()" v-model="taskTrackerData[task.date][taskKey][tracker.id]['needExport']" class="tracker-checkbox" :disabled="tracker.disabled"></md-checkbox>
                             <a class="tracker-badge" @click="linkProject(tracker.id, task.project_id)">
                               {{tracker.title}}
                             </a>
@@ -126,9 +127,10 @@ export default {
       },
       show: false,
       labelWidth: 200,
-      exportDisabled: false,
+      exportDisabled: true,
+      loadingTaskCount: 0,
       exportingTaskCount: 0,
-      exportStatus: {},
+      taskTrackerData: {},
 
       currentTracker: [],
       currentProject: null,
@@ -162,7 +164,8 @@ export default {
             type: this.trackers[j]['type'],
             title: this.trackers[j]['title'],
             status: (this.projects[task['project_id']] !== undefined &&
-              this.projects[task['project_id']]['tracker_projects'][this.trackers[j]['id']] !== undefined) ? 'linked' : ''
+              this.projects[task['project_id']]['tracker_projects'][this.trackers[j]['id']] !== undefined) ? 'linked' : '',
+            available: false
           }
 
           // если задача сопоставлена с редмайном, получаем ее номер
@@ -230,6 +233,24 @@ export default {
               ? this.projects[task['project_id']]['tracker_projects'][this.trackers[j]['id']]['external_project_title']
               : 'проект не сопоставлен'
           }
+
+          var needExport = this.getTaskNeedExport(task['date'], groupedTasks[task['date']].tasks.length, tracker.id)
+          if (tracker['status'] === 'linked' || tracker['status'] === 'warning') {
+            tracker['available'] = needExport
+            if (needExport === null) {
+              tracker['available'] = true
+            }
+            tracker['disabled'] = false
+          } else {
+            tracker['available'] = false
+            tracker['disabled'] = true
+          }
+          if (needExport === null && !this.exportDisabled && tracker['available']) {
+            this.setTaskNeedExport(task['date'], groupedTasks[task['date']].tasks.length, tracker.id, tracker['available'])
+          } else if (needExport === null && tracker['available'] !== true) {
+            this.setTaskNeedExport(task['date'], groupedTasks[task['date']].tasks.length, tracker.id, null)
+          }
+
           task['trackers'].push(tracker)
         }
 
@@ -272,7 +293,7 @@ export default {
         .then(response => {
           if (('status' in response.data && response.data.status) || !('status' in response.data)) {
             this.projects = response.data.projects
-            this.$recompute('groupedTasks')
+            this.groupTasksRecompute()
           }
         })
         .catch(error => {
@@ -287,7 +308,7 @@ export default {
             for (var j = 0; j < this.trackers.length; j++) {
               this.trackerTasks[this.trackers[j]['id']] = {}
             }
-            this.$recompute('groupedTasks')
+            this.groupTasksRecompute()
           }
         })
         .catch(error => {
@@ -358,6 +379,7 @@ export default {
       }
     },
     getTrackerTask: function (trackerId, externalTaskId) {
+      this.loadingTaskCount++
       API.getTrackerTask(trackerId, externalTaskId)
         .then(response => {
           if (response !== undefined && (('status' in response.data && response.data.status) || !('status' in response.data))) {
@@ -365,12 +387,20 @@ export default {
           } else {
             this.trackerTasks[trackerId][externalTaskId] = false
           }
-          this.$recompute('groupedTasks')
+          this.loadingTaskCount--
+          if (this.loadingTaskCount === 0) {
+            this.exportDisabled = false
+          }
+          this.groupTasksRecompute()
         })
         .catch(error => {
           console.log(['getTrackerProjects error', error])
           this.trackerTasks[trackerId][externalTaskId] = false
-          this.$recompute('groupedTasks')
+          this.loadingTaskCount--
+          if (this.loadingTaskCount === 0) {
+            this.exportDisabled = false
+          }
+          this.groupTasksRecompute()
         })
     },
     exportTasks: function () {
@@ -395,7 +425,8 @@ export default {
           }
 
           for (var k = 0; k < task.trackers.length; k++) {
-            if (task.trackers[k].status === 'linked' || task.trackers[k].status === 'warning') {
+            var needExport = this.getTaskNeedExport(task['date'], j, task.trackers[k].id)
+            if (needExport === true && task.trackers[k].status === 'linked' || task.trackers[k].status === 'warning') {
               exportTask.tracker_id = task.trackers[k].id
               exportTask.project_id = this.projects[task.project_id]['tracker_projects'][exportTask.tracker_id]['external_project_id']
 
@@ -417,36 +448,57 @@ export default {
             this.setTaskExportStatus(exportTask.date, j, trackerId, false)
           }
           this.exportingTaskCount--
-          this.$recompute('groupedTasks')
+          this.groupTasksRecompute()
         })
         .catch(error => {
           console.log(['exportTask error', error])
           this.setTaskExportStatus(exportTask.date, j, trackerId, false)
 
           this.exportingTaskCount--
-          this.$recompute('groupedTasks')
+          this.groupTasksRecompute()
         })
     },
     setTaskExportStatus: function (date, key, tracker, status) {
-      if (this.exportStatus[date] === undefined) {
-        this.exportStatus[date] = {}
-      }
-      if (this.exportStatus[date][key] === undefined) {
-        this.exportStatus[date][key] = {}
-      }
-      this.exportStatus[date][key][tracker] = status
+      return this.setTaskTrackerValue(date, key, tracker, 'status', status)
     },
     getTaskExportStatus: function (date, key, tracker) {
-      if (this.exportStatus[date] === undefined) {
+      return this.getTaskTrackerValue(date, key, tracker, 'status')
+    },
+    getTaskNeedExport (date, key, tracker) {
+      return this.getTaskTrackerValue(date, key, tracker, 'needExport')
+    },
+    setTaskNeedExport: function (date, key, tracker, needExport) {
+      return this.setTaskTrackerValue(date, key, tracker, 'needExport', needExport)
+    },
+    getTaskTrackerValue: function (date, key, tracker, codeValue) {
+      if (this.taskTrackerData[date] === undefined) {
         return null
       }
-      if (this.exportStatus[date][key] === undefined) {
+      if (this.taskTrackerData[date][key] === undefined) {
         return null
       }
-      if (this.exportStatus[date][key][tracker] === undefined) {
+      if (this.taskTrackerData[date][key][tracker] === undefined) {
         return null
       }
-      return this.exportStatus[date][key][tracker]
+      if (this.taskTrackerData[date][key][tracker][codeValue] === undefined) {
+        return null
+      }
+      return this.taskTrackerData[date][key][tracker][codeValue]
+    },
+    setTaskTrackerValue: function (date, key, tracker, codeValue, value) {
+      if (this.taskTrackerData[date] === undefined) {
+        this.taskTrackerData[date] = {}
+      }
+      if (this.taskTrackerData[date][key] === undefined) {
+        this.taskTrackerData[date][key] = {}
+      }
+      if (this.taskTrackerData[date][key][tracker] === undefined) {
+        this.taskTrackerData[date][key][tracker] = {}
+      }
+      this.taskTrackerData[date][key][tracker][codeValue] = value
+    },
+    groupTasksRecompute: function () {
+      this.$recompute('groupedTasks')
     }
   },
   components: {
@@ -517,5 +569,19 @@ export default {
   .md-input.error{
     color: red;
     -webkit-text-fill-color: red !important;
+  }
+  .tracker-checkbox {
+    float: right;
+    height: 18px;
+    width: 18px;
+    min-width: 18px;
+    margin: 0 5px;
+  }
+  .tracker-checkbox.md-checkbox .md-checkbox-container:before {
+    height: 18px;
+    width: 18px;
+  }
+  .tracker-checkbox:first {
+    top: 1px;
   }
 </style>

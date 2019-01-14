@@ -325,7 +325,7 @@ class ApiController:
 
         print(activity.__dict__)
 
-        # result = 1
-        result = s.export(tracker['type'], tracker['api_url'], tracker['external_api_key'], activity)
+        result = 1
+        # result = s.export(tracker['type'], tracker['api_url'], tracker['external_api_key'], activity)
 
         self.response.status = result > 0
