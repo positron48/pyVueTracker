@@ -207,3 +207,8 @@ class ProjectSchema(ModelSchema):
 class HashTagSchema(ModelSchema):
     class Meta:
         model = HashTag
+
+
+class ActivitySchema(ModelSchema):
+    class Meta:
+        model = Activity
