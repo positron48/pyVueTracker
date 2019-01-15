@@ -280,6 +280,8 @@ class Engine:
             return 'Активность уже выгружена на внешний трекер'
         if fact.start_time is None:
             return 'Не заполнено время начала активности'
+        if fact.end_time is not None and fact.end_time <= fact.start_time:
+            return 'Время окончания активности меньше, чем время начала'
         db_fact.time_start = fact.start_time
         db_fact.time_end = fact.end_time
         db_fact.name = fact.get_task_name()
