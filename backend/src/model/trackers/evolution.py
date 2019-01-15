@@ -52,15 +52,22 @@ class Evolution(Tracker):
             return int(response.get('totalCount', 0))
         if 'data' not in response or len(response['data']) < 1:
             return None
-        return [Activity(
-            id=int(item.get('id')),
-            user_id=int(item.get('employer_id')),
-            date=dt.datetime.strptime(item.get('date'), "%d.%m.%Y").date(),
-            time=float(item.get('time')),
-            comment=item.get('comment'),
-            title=item.get('title'),
-            project_id=int(item.get('project_id'))
-        ) for item in response['data']]
+        result = []
+        for item in response['data']:
+            comment = item.get('comment') or ''
+            if comment == '':
+                comment = None
+            result.append(
+                Activity(
+                    id=int(item.get('id')),
+                    user_id=int(item.get('employer_id')),
+                    date=dt.datetime.strptime(item.get('date'), "%d.%m.%Y").date(),
+                    time=float(item.get('time')),
+                    comment=comment,
+                    title=item.get('title'),
+                    project_id=int(item.get('project_id'))
+                ))
+        return result
 
     ######################################### Tracker interface ########################################################
 
