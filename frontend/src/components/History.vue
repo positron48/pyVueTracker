@@ -72,10 +72,12 @@ export default {
   },
   methods: {
     onDateSelected: function (daterange) {
-      this.selectedDate.start = daterange[0]
-      this.selectedDate.end = daterange[1]
-      this.$refs.tasks.selectedDate = this.selectedDate
-      this.$refs.tasks.getTasks()
+      if (daterange.length === 2 && daterange[0] !== null && daterange[1] !== null) {
+        this.selectedDate.start = daterange[0]
+        this.selectedDate.end = daterange[1]
+        this.$refs.tasks.selectedDate = this.selectedDate
+        this.$refs.tasks.getTasks()
+      }
     },
     refreshData () {
       this.$refs.tasks.getTasks()

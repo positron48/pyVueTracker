@@ -195,6 +195,7 @@ export default {
               currentTask++
             }
           }
+          values[i] = Math.round(values[i] * 100) / 100
         }
       }
       return {labels: labels, values: values}
@@ -374,6 +375,12 @@ export default {
       } else {
         var times = timeString.split(':')
         return parseInt(times[0]) + parseInt(times[1]) / 60
+      }
+    },
+    refreshDate: function () {
+      this.selectedDate = {
+        start: new Date(),
+        end: new Date()
       }
     }
   },

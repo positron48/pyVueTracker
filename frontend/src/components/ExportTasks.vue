@@ -2,7 +2,7 @@
 <template>
   <div>
     <div class="md-layout md-gutter md-alignment-top-center">
-      <div class="md-layout-item  md-medium-size-90 md-small-size-100 taskItems minimal-input" v-if="tasks.length">
+      <div class="md-layout-item md-large-size-80 md-xlarge-size-90 md-medium-size-90 md-small-size-100 taskItems minimal-input" v-if="tasks.length">
         <template
             v-for="taskGroup in groupedTasks"
           >
@@ -12,9 +12,11 @@
               </md-list-item>
                 <md-table>
                   <md-table-row>
-                    <md-table-head>Дата</md-table-head>
+                    <md-table-head class="column-task-date">
+                      Дата
+                    </md-table-head>
                     <md-table-head>Задача</md-table-head>
-                    <md-table-head>
+                    <md-table-head class="column-task-number">
                       Номер задачи
                       <md-tooltip md-direction="top">Номер задачи из редмайна</md-tooltip>
                     </md-table-head>
@@ -23,7 +25,9 @@
                       Проект
                       <md-tooltip md-direction="top">Название проекта в таймтрекере</md-tooltip>
                     </md-table-head>
-                    <md-table-head>Время</md-table-head>
+                    <md-table-head class="column-task-time">
+                      Время
+                    </md-table-head>
                     <md-table-head>
                       Трекеры
                       <md-tooltip md-direction="top">Список трекеров, привязанных к проекту</md-tooltip>
@@ -32,7 +36,7 @@
 
                   <template v-for="(task, taskKey) in taskGroup.tasks">
                     <md-table-row :key="task.id">
-                      <md-table-cell>
+                      <md-table-cell class="column-task-date">
                         <md-field>
                           <label></label>
                           <md-input v-model="task.date"></md-input>
@@ -41,7 +45,7 @@
                       <md-table-cell>
                         <div>{{task.name}}</div>
                       </md-table-cell>
-                      <md-table-cell>
+                      <md-table-cell class="column-task-number">
                         <md-field>
                           <label></label>
                           <md-input v-model="task.task_id" type="number" min="1" :class="task.external_status"></md-input>
@@ -57,7 +61,7 @@
                       <md-table-cell>
                           <div>{{task.category}}</div>
                       </md-table-cell>
-                      <md-table-cell>
+                      <md-table-cell class="column-task-time">
                         <md-field>
                           <label></label>
                           <md-input v-model="task.delta" type="number" min="0" step="0.05"></md-input>
@@ -583,5 +587,20 @@ export default {
   }
   .tracker-checkbox:first {
     top: 1px;
+  }
+  .column-task-number {
+    max-width: 130px;
+    width: 130px;
+  }
+  .column-task-time {
+    max-width: 110px;
+    width: 110px;
+  }
+  .column-task-time input{
+    width: 100%;
+  }
+  .column-task-date {
+    max-width: 130px;
+    width: 130px;
   }
 </style>

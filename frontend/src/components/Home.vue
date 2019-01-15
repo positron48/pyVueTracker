@@ -27,6 +27,7 @@ export default {
     refreshData () {
       this.$refs.taskStop.getCurrentTask()
       this.$refs.taskAdd.getCompletitions()
+      this.$refs.tasks.refreshDate()
       this.$refs.tasks.getTasks()
     }
   },
