@@ -327,10 +327,16 @@ class Engine:
         tracker_link = db.session.query(TrackerUserLink) \
             .filter(TrackerUserLink.tracker_id == tracker_id) \
             .filter(TrackerUserLink.user_id == self.user.id) \
-            .first()
+            .first()  # type:TrackerUserLink
 
         if tracker_link is not None:
             tracker_link.external_api_key = token
+            # для редмайна обновляем user_id по api, для эво - через фронт
+            if tracker_link.tracker.type == 'redmine' and tracker_link.tracker.api_url is not None and tracker_link.external_user_id is None:
+                from .model.trackers.redmine import Redmine
+                redmine = Redmine(tracker_link.tracker.api_url, token=token)
+                if redmine.is_auth():
+                    tracker_link.external_user_id = redmine.get_user_id()
             db.session.commit()
             return True
 
