@@ -47,6 +47,12 @@ class Activity:
 
 
 class Tracker:
+    def get_tracker_type(self) -> Optional[str]:
+        """
+        Возвращает тип трекера
+        """
+        return None
+
     def is_auth(self) -> bool:
         """
         Проверяет, авторизован ли пользователь на трекере

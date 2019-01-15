@@ -280,6 +280,10 @@ class Engine:
             return 'Активность уже выгружена на внешний трекер'
         if fact.start_time is None:
             return 'Не заполнено время начала активности'
+        if fact.end_time is not None and fact.end_time <= fact.start_time:
+            return 'Время окончания активности меньше, чем время начала'
+        if db_fact.time_end is not None and fact.end_time is None:
+            return 'Не заполнено время окончания активности'
         db_fact.time_start = fact.start_time
         db_fact.time_end = fact.end_time
         db_fact.name = fact.get_task_name()
@@ -323,10 +327,16 @@ class Engine:
         tracker_link = db.session.query(TrackerUserLink) \
             .filter(TrackerUserLink.tracker_id == tracker_id) \
             .filter(TrackerUserLink.user_id == self.user.id) \
-            .first()
+            .first()  # type:TrackerUserLink
 
         if tracker_link is not None:
             tracker_link.external_api_key = token
+            # для редмайна обновляем user_id по api, для эво - через фронт
+            if tracker_link.tracker.type == 'redmine' and tracker_link.tracker.api_url is not None and tracker_link.external_user_id is None:
+                from .model.trackers.redmine import Redmine
+                redmine = Redmine(tracker_link.tracker.api_url, token=token)
+                if redmine.is_auth():
+                    tracker_link.external_user_id = redmine.get_user_id()
             db.session.commit()
             return True
 

@@ -45,11 +45,30 @@ class Redmine(Tracker):
                 activities = self.api.time_entry.filter(**filter)
             except ResourceNotFoundError:
                 return None
-            return [Activity(id=activity.id, user_id=activity.user.id,
-                             date=activity.spent_on, time=activity.hours, task_id=activity.issue.id,
-                             comment=activity.comments, category_id=activity.activity.id) for activity in activities]
+            result = []
+            for item in activities:
+                item = self.as_dict(item)
+                comment = item.get('comments') or ''
+                if comment == '':
+                    comment = None
+                result.append(
+                    Activity(date=dt.datetime.strptime(item.get('spent_on'), '%Y-%m-%d').date(),
+                             time=item.get('hours'),
+                             id=item.get('id'),
+                             user_id=item.get('user').get('id'),
+                             task_id=item.get('issue').get('id'),
+                             category_id=item.get('activity').get('id'),
+                             project_id=item.get('project').get('id'),
+                             comment=comment))
+            return result
 
     ######################################### Tracker interface ########################################################
+
+    def get_tracker_type(self) -> Optional[str]:
+        """
+        Возвращает тип трекера
+        """
+        return 'redmine'
 
     def is_auth(self) -> bool:
         """

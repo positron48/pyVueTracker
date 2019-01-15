@@ -33,9 +33,9 @@
                 </a>
               </md-table-head>
               <md-table-head>
-                <a class="simple-link" v-if="tracker.external_api_key && tracker.type == 'evo'"
+                <a class="simple-link" v-if="tracker.external_api_key"
                  @click="showUserModal(tracker)">
-                  <span v-if="!tracker.external_user_id">Указать пользователя</span>
+                  <span v-if="!tracker.external_user_id && tracker.type === 'evo'">Указать пользователя</span>
                   <span v-if="tracker.external_user_id">{{tracker.external_user_id}}</span>
                 </a>
               </md-table-head>
@@ -252,6 +252,9 @@ export default {
       this.showToken = true
     },
     showUserModal (tracker) {
+      if (tracker.type !== 'evo') {
+        return
+      }
       this.currentTracker = tracker
       this.showUser = true
     },

@@ -198,12 +198,62 @@ db.Index('hashtag_name', HashTag.name, mysql_prefix='FULLTEXT')
 
 ################################################# schema: ##############################################################
 
+# Schema - модуль дампа оъектов моделей, позволяет преобразовать объект модели в словарь, его можно отправить как json
+#
+# Пример использования:
+# from .model.mysql import ActivitySchema
+# schema = ActivitySchema()
+# fact = db.session.query(Activity).filter(Activity.user_id == self.user.id).first()
+# result = schema.dump(fact).data
+# return jsonify(result)
+#
+# Для списков:
+# from .model.mysql import ActivitySchema
+# schema = ActivitySchema(many=True) #флаг many обрабатывает списки объектов
+# facts = db.session.query(Activity).filter(Activity.user_id == self.user.id).all()
+# result = schema.dump(facts).data
+# return jsonify(result)
+
+class UserSchema(ModelSchema):
+    class Meta:
+        model = User
+
 
 class ProjectSchema(ModelSchema):
     class Meta:
         model = Project
 
 
+class TrackerSchema(ModelSchema):
+    class Meta:
+        model = Tracker
+
+
+class TaskSchema(ModelSchema):
+    class Meta:
+        model = Task
+
+
+class CategorySchema(ModelSchema):
+    class Meta:
+        model = Category
+
+
+class ActivitySchema(ModelSchema):
+    class Meta:
+        model = Activity
+
+
 class HashTagSchema(ModelSchema):
     class Meta:
         model = HashTag
+
+
+class TrackerUserLinkSchema(ModelSchema):
+    class Meta:
+        model = TrackerUserLink
+
+
+class TrackerProjectLinkSchema(ModelSchema):
+    class Meta:
+        model = TrackerProjectLink
