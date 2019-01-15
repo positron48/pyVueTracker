@@ -43,10 +43,11 @@ class Sheduler:
                 continue
             projects = api.get_all_projects()
 
-            codes = {pr['identifier'] for pr in projects}
-            db_projects = db.session.query(Project).filter(Project.code.in_(codes)).all()
-            exist = {db_pr.code for db_pr in db_projects}
-            new = codes - exist
+            titles = {pr['name'] for pr in projects}
+
+            db_projects = db.session.query(Project).filter(Project.title.in_(titles)).all()
+            exist = {db_pr.title for db_pr in db_projects}
+            new = titles - exist
             for project in projects:
                 if project['identifier'] in new:
                     db_project = Project(code=project['identifier'], title=project['name'])
@@ -55,6 +56,23 @@ class Sheduler:
                                                       tracker=link.tracker,
                                                       project=db_project)
                     db.session.add(project_link)
+                else:
+                    # найти проект по имени, проверить, стоит ли у него привязка к текущему трекеру,
+                    # если не стоит - добавляем связь.
+                    # Т.о. у одноименных в редмайне и эво проектов сразу будет соответствие в обоих трекерах
+                    db_project = db.session.query(Project).filter(Project.title == project['name']).first()
+                    if db_project is not None:
+                        tracker_link = db.session.query(TrackerProjectLink) \
+                            .filter(TrackerProjectLink.tracker_id == link.tracker.id) \
+                            .filter(TrackerProjectLink.project_id == db_project.id) \
+                            .first()
+                        if tracker_link is None:
+                            project_link = TrackerProjectLink(external_project_title=project['name'],
+                                                              external_project_id=project['id'],
+                                                              tracker=link.tracker,
+                                                              project=db_project)
+                            db.session.add(project_link)
+
         db.session.commit()
 
     def __fetch_evo_projects(self):
@@ -80,6 +98,7 @@ class Sheduler:
                                                       tracker=link.tracker,
                                                       project=db_project)
                     db.session.add(project_link)
+
         db.session.commit()
 
     def __fetch_tasks(self):
@@ -112,7 +131,7 @@ class Sheduler:
         db.session.commit()
 
     def fetch_external_data(self):
-        self.__fetch_evo_projects()
+        # self.__fetch_evo_projects()
         self.__fetch_redmine_projects()
         # self.__fetch_tasks()
         return 'done!'
