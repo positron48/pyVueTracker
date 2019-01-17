@@ -16,7 +16,7 @@ HTTP.interceptors.response.use(function (response) {
   }
   return response
 }, function (error) {
-  if ('status' in error.response && error.response.status === 401 && isLogin()) {
+  if (error.response !== undefined && 'status' in error.response && error.response.status === 401 && isLogin()) {
     logout()
     location.reload()
   }
