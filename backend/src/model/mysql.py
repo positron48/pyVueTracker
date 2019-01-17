@@ -112,6 +112,7 @@ class Activity(db.Model):
 
     def stop(self, time_end=dt.datetime.now()):
         self.time_end = time_end
+        print([self.time_end, self.time_start, self.time_end - self.time_start, dt.timedelta(minutes=1)])
         # если закрыть активность в течении минуты - она считается ошибочной, и удаляется
         if self.time_end - self.time_start < dt.timedelta(minutes=1):
             db.session.delete(self)

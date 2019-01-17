@@ -17,6 +17,8 @@ cd ..
 cp config.py.dist config.py
 edit config.py
 
+flask db upgrade
+
 flask run
 
 developer_mode: sh start_dev.sh

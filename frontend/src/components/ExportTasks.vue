@@ -596,7 +596,7 @@ export default {
     max-width: 110px;
     width: 110px;
   }
-  .column-task-time input{
+  .column-task-time input, .column-task-number input{
     width: 100%;
   }
   .column-task-date {
