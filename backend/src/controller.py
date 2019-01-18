@@ -165,10 +165,13 @@ class ApiController:
 
     @send_response
     def get_token(self, tracker_id, login, password):
-        tracker = self.engine.get_tracker(tracker_id)
+        link = self.engine.get_tracker_link(tracker_id)
+        if link is None:
+            return None
+
         s = Sheduler()
 
-        token = s.get_token(tracker['type'], tracker['api_url'], login, password)
+        token = s.get_token(link.tracker.type, link.tracker.api_url, login, password)
 
         self.response.status = token is not None
 
@@ -251,9 +254,12 @@ class ApiController:
 
     @send_response
     def get_tracker_projects(self, tracker_id):
-        tracker = self.engine.get_tracker(tracker_id)
+        link = self.engine.get_tracker_link(tracker_id)
+        if link is None:
+            return None
+
         s = Sheduler()
-        projects = s.get_projects(tracker['type'], tracker['api_url'], tracker['external_api_key'])
+        projects = s.get_projects(link.tracker.type, link.tracker.api_url, link.external_api_key)
 
         self.response.status = len(projects) > 0
         self.response.projects = projects
@@ -277,9 +283,12 @@ class ApiController:
 
     @send_response
     def get_tracker_task(self, tracker_id, task_id):
-        tracker = self.engine.get_tracker(tracker_id)
+        link = self.engine.get_tracker_link(tracker_id)
+        if link is None:
+            return None
+
         s = Sheduler()
-        task = s.get_task(tracker['type'], tracker['api_url'], tracker['external_api_key'], task_id)
+        task = s.get_task(link.tracker.type, link.tracker.api_url, link.external_api_key, task_id)
 
         self.response.status = task is not None
         self.response.task = task
@@ -288,19 +297,22 @@ class ApiController:
     def link_project(self, project_id, tracker_id, tracker_project_id, tracker_project_title):
         result = []
 
-        self.response.status = self.engine.link_project(project_id, tracker_id, tracker_project_id, tracker_project_title)
+        self.response.status = self.engine.link_project(project_id, tracker_id, tracker_project_id,
+                                                        tracker_project_title)
         self.response.trackers = result
 
     @send_response
     def export(self, tracker_id, export_task):
-        tracker = self.engine.get_tracker(tracker_id)
+        link = self.engine.get_tracker_link(tracker_id)
+        if link is None:
+            return None
+
         s = Sheduler()
 
-        user_id = tracker['external_user_id']
         comment = ''
         title = None
 
-        if tracker['type'] == 'evo':
+        if link.tracker.type == 'evo':
             if export_task['external_id'] > 0:
                 comment = '#' + str(export_task['external_id'])
 
@@ -316,16 +328,13 @@ class ApiController:
             task_id=export_task['external_id'],
             time=export_task['hours'],
             date=export_task['date'],
-            user_id=user_id,
+            user_id=link.external_user_id,
             project_id=export_task['project_id'],
             comment=comment,
             title=title,
             category_id=9  # разработка
         )
 
-        print(activity.__dict__)
-
-        # result = 1
-        result = s.export(tracker['type'], tracker['api_url'], tracker['external_api_key'], activity)
+        result = s.export(link, activity)
 
         self.response.status = result > 0

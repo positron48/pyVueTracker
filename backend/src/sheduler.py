@@ -4,6 +4,7 @@ from backend.src.model.trackers.evolution import Evolution
 import requests
 
 
+
 class Sheduler:
     user = ...  # type: User
 
@@ -179,8 +180,8 @@ class Sheduler:
 
             return result
 
-    def export(self, type, url, token, export_task):
-        api = self.__get_engine(type, url, api_key=token)
+    def export(self, link: TrackerUserLink, export_task):
+        api = self.__get_engine(link.tracker.type, link.tracker.api_url, api_key=link.external_api_key)
         if api.is_auth():
             result = api.new_activity(export_task)
 
