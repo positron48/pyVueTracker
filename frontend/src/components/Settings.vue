@@ -19,8 +19,9 @@
             </md-table-row>
             <md-table-row v-bind:key="tracker.id" v-for="tracker in trackers">
               <md-table-head>
-                <div v-on:click="editTracker(tracker)">
+                <div v-on:click="editTracker(tracker)" class="edit-icon">
                   <font-awesome-icon icon="edit"/>
+                  <md-tooltip md-direction="top">Редактировать</md-tooltip>
                 </div>
               </md-table-head>
               <md-table-head>{{tracker.title}}</md-table-head>
@@ -28,6 +29,7 @@
               <md-table-head>{{tracker.type}}</md-table-head>
               <md-table-head>
                 <a class="simple-link" @click="showTokenModal(tracker)">
+                  <md-tooltip md-direction="top">Авторизация на трекере</md-tooltip>
                   <span v-if="tracker.external_api_key">{{tracker.external_api_key}}</span>
                   <span v-if="!tracker.external_api_key">Получить токен</span>
                 </a>
@@ -296,7 +298,7 @@ export default {
 </script>
 
 <style scoped>
-.simple-link {
+.simple-link, .edit-icon {
   cursor: pointer;
 }
 </style>

@@ -4,7 +4,7 @@
       id="autocompletedIntput"
       type="text"
       autocomplete="off"
-      placeholder="задача@проект #тег, описание"
+      placeholder="задача@проект #тег, комментарий"
       @keydown="this.onKeydown"
       v-model="inputValue"
       @input="$emit('input', $event.target.value)"
@@ -127,6 +127,7 @@ export default {
     top: 100%;
     left: 0;
     right: 0;
+    text-align: left;
   }
   .autocomplete-items div {
     padding: 10px;

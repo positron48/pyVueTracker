@@ -93,6 +93,7 @@
 
     <div class="md-layout md-gutter md-alignment-top-center center" v-if="Object.keys(groupedTasks).length">
       <div class="md-layout-item md-size-50">
+        <md-tooltip md-direction="top">Выгрузить часы в отмеченные трекеры</md-tooltip>
         <md-button class="md-raised md-accent" :disabled="exportDisabled || exportingTaskCount > 0" @click="exportTasks()">Экспортировать</md-button>
       </div>
     </div>

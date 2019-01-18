@@ -2,13 +2,16 @@
 <template>
   <md-list-item>
     <div v-if="edit" class="task-col task-edit" v-on:click="$emit('edit', task)">
+      <md-tooltip md-direction="top">Редактировать</md-tooltip>
       <font-awesome-icon icon="edit"/>
     </div>
     <div v-if="edit && task.end_time" class="task-col task-resume" v-on:click="$emit('resume', task)">
       <font-awesome-icon icon="play-circle"/>
+      <md-tooltip md-direction="top">Продолжить</md-tooltip>
     </div>
     <div v-if="edit && !task.end_time" class="task-col task-stop" v-on:click="$emit('stop', task)">
       <font-awesome-icon icon="stop-circle"/>
+      <md-tooltip md-direction="top">Остановить</md-tooltip>
     </div>
     <div class="task-col task-start-time">{{task.start_time}}</div>
     <div class="task-col task-end-time">{{task.end_time}}</div>
