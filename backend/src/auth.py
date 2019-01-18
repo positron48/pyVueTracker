@@ -1,3 +1,4 @@
+from typing import Union, Sequence, List, Optional
 from backend.src.model.mysql import db, User, Tracker, TrackerUserLink
 from backend.src.helpers import StringHelper
 from flask import request, Response
@@ -15,8 +16,9 @@ class Auth:
         token_len = User.token.property.columns[0].type.length >> 3
         user = User(login=login, hash=hash, token=StringHelper.get_random_ascii_string(token_len))
 
-        tracker_redmine = db.session.query(Tracker).filter(Tracker.title == 'redmine',).first()
-        tracker_evo = db.session.query(Tracker).filter(Tracker.title == 'evolution',).first()
+        # todo привязку стоит оформить явно, через фронт и отдельный метод
+        tracker_redmine = db.session.query(Tracker).filter(Tracker.title == 'redmine').first()
+        tracker_evo = db.session.query(Tracker).filter(Tracker.title == 'evolution').first()
 
         tracker_link = TrackerUserLink(tracker=tracker_redmine, user=user)
         tracker_link2 = TrackerUserLink(tracker=tracker_evo, user=user)
@@ -28,27 +30,27 @@ class Auth:
         return user
 
     @staticmethod
-    def get_user_by_token(token):
+    def get_user_by_token(token) -> Optional[User]:
         return db.session.query(User).filter(User.token == token).first()
 
     @staticmethod
-    def get_user_by_login(login):
+    def get_user_by_login(login) -> Optional[User]:
         return db.session.query(User.id).filter(User.login == login).first()
 
     @staticmethod
-    def get_user_by_login_and_hash(login, hash):
+    def get_user_by_login_and_hash(login, hash) -> Optional[User]:
         return db.session.query(User.id, User.token).filter(User.login == login).filter(User.hash == hash).first()
 
     @classmethod
-    def get_request_token(cls):
+    def get_request_token(cls) -> Optional[str]:
         return request.headers.get('token')
 
     @classmethod
-    def get_request_user(cls):
+    def get_request_user(cls) -> Optional[User]:
         return db.session.query(User).filter(User.token == cls.get_request_token()).first()
 
     @classmethod
-    def get_hash(cls, login, password, salt):
+    def get_hash(cls, login, password, salt) -> Optional[str]:
         return sha256(
             md5(password.encode() + salt).hexdigest().encode() +
             md5(login.encode() + salt).hexdigest().encode()
