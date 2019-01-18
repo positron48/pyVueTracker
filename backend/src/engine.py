@@ -55,16 +55,12 @@ class Engine:
 
     def __get_project_by_name(self, project_name):
         return db.session.query(Project) \
-            .join(User.projects) \
             .filter(Project.title == project_name) \
-            .filter(User.id == self.user.id) \
             .first()
 
     def __get_project_by_code(self, project_code):
         return db.session.query(Project) \
-            .join(User.projects) \
             .filter(Project.code == project_code) \
-            .filter(User.id == self.user.id) \
             .first()
 
     def __get_hashtags(self, tag_names):

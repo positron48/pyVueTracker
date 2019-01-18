@@ -49,7 +49,7 @@ class Sheduler:
             exist = {db_pr.title for db_pr in db_projects}
             new = titles - exist
             for project in projects:
-                if project['identifier'] in new:
+                if project['identifier'].lower() in new:
                     db_project = Project(code=project['identifier'].lower(), title=project['name'].lower())
                     project_link = TrackerProjectLink(external_project_title=project['name'].lower(),
                                                       external_project_id=project['id'],
@@ -86,15 +86,15 @@ class Sheduler:
                 continue
             projects = api.get_all_projects()
 
-            codes = {pr['identifier'] for pr in projects}
+            codes = {pr['identifier'].lower() for pr in projects}
             db_projects = db.session.query(Project).filter(Project.code.in_(codes)).all()
             exist = {db_pr.code for db_pr in db_projects}
             new = codes - exist
             for project in projects:
-                if project['identifier'] in new:
-                    db_project = Project(code=project['identifier'], title=project['name'].lower())
+                if project['identifier'].lower() in new:
+                    db_project = Project(code=project['identifier'].lower(), title=project['name'].lower())
                     project_link = TrackerProjectLink(external_project_title=project['name'].lower(),
-                                                      external_project_id=project['identifier'],
+                                                      external_project_id=project['id'],
                                                       tracker=link.tracker,
                                                       project=db_project)
                     db.session.add(project_link)

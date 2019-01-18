@@ -72,8 +72,7 @@ export default {
       }
     },
     select (index) {
-      this.inputValue = this.suggestions[index]
-
+      this.inputValue = this.suggestions[index].replace(/\s+/g, '')
       this.$emit('input', this.inputValue)
       this.currentFocus = -1
     },

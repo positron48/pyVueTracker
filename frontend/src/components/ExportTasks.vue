@@ -199,6 +199,12 @@ export default {
             tracker['status'] = 'fatal'
             tracker['message'] = 'при выгрузке произошла ошибка'
           } else if (
+            this.trackersById[tracker['id']] !== undefined &&
+            this.trackersById[tracker['id']]['external_user_id'] === null
+          ) {
+            tracker['status'] = 'error'
+            tracker['message'] = 'вы не авторизованы на трекере, зайдите в настройки'
+          } else if (
             tracker['status'] === 'linked' &&
             tracker['type'] === 'redmine' &&
             !task['task_id']
@@ -208,7 +214,7 @@ export default {
           } else if (
             tracker['status'] === 'linked' &&
             tracker['type'] === 'evo' &&
-            (externalTask === false || externalTask === undefined) &&
+            (task['external_name'] === undefined && task['external_name'] === '') &&
             task['description'] === ''
           ) {
             tracker['status'] = 'error'
@@ -270,6 +276,13 @@ export default {
     }
   },
   computed: {
+    trackersById: function () {
+      var result = {}
+      for (var i = 0; i < this.trackers.length; i++) {
+        result[this.trackers[i]['id']] = this.trackers[i]
+      }
+      return result
+    },
     projectIds: function () {
       var projectIds = []
       this.tasks.forEach(function (task, i) {
@@ -368,7 +381,8 @@ export default {
         })
     },
     getTrackerProjects: function (trackerId) {
-      if (this.trackerProjects[trackerId] === undefined) {
+      console.log(this.trackersById[trackerId])
+      if (this.trackerProjects[trackerId] === undefined && this.trackersById[trackerId]['external_user_id'] !== null) {
         API.getTrackerProjects(trackerId)
           .then(response => {
             if (('status' in response.data && response.data.status) || !('status' in response.data)) {
@@ -384,29 +398,33 @@ export default {
       }
     },
     getTrackerTask: function (trackerId, externalTaskId) {
-      this.loadingTaskCount++
-      API.getTrackerTask(trackerId, externalTaskId)
-        .then(response => {
-          if (response !== undefined && (('status' in response.data && response.data.status) || !('status' in response.data))) {
-            this.trackerTasks[trackerId][externalTaskId] = response.data.task
-          } else {
+      if (this.trackersById[trackerId]['external_user_id'] !== null) {
+        this.loadingTaskCount++
+        API.getTrackerTask(trackerId, externalTaskId)
+          .then(response => {
+            if (response !== undefined && (('status' in response.data && response.data.status) || !('status' in response.data))) {
+              this.trackerTasks[trackerId][externalTaskId] = response.data.task
+            } else {
+              this.trackerTasks[trackerId][externalTaskId] = false
+            }
+            this.loadingTaskCount--
+            if (this.loadingTaskCount === 0) {
+              this.exportDisabled = false
+            }
+            this.groupTasksRecompute()
+          })
+          .catch(error => {
+            console.log(['getTrackerProjects error', error])
             this.trackerTasks[trackerId][externalTaskId] = false
-          }
-          this.loadingTaskCount--
-          if (this.loadingTaskCount === 0) {
-            this.exportDisabled = false
-          }
-          this.groupTasksRecompute()
-        })
-        .catch(error => {
-          console.log(['getTrackerProjects error', error])
-          this.trackerTasks[trackerId][externalTaskId] = false
-          this.loadingTaskCount--
-          if (this.loadingTaskCount === 0) {
-            this.exportDisabled = false
-          }
-          this.groupTasksRecompute()
-        })
+            this.loadingTaskCount--
+            if (this.loadingTaskCount === 0) {
+              this.exportDisabled = false
+            }
+            this.groupTasksRecompute()
+          })
+      } else {
+        this.trackerTasks[trackerId][externalTaskId] = false
+      }
     },
     exportTasks: function () {
       if (!confirm('Вы действительно хотите выгрузить часы?')) {
