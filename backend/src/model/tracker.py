@@ -128,17 +128,20 @@ class Tracker:
         """
         return None
 
-    def list_activities_in_date(self, date: dt.date) -> Optional[List[Activity]]:
+    def list_activities_in_date(self, date: dt.date, user_id: int = None) -> Optional[List[Activity]]:
         """
         Запрашивает у трекера список активностей по дате
+        :param user_id:
         :param date: дата
         :return: возвращает список активностей или None
         """
         return None
 
-    def list_activities_in_date_interval(self, date_start: dt.date, date_end: dt.date) -> Optional[List[Activity]]:
+    def list_activities_in_date_interval(self, date_start: dt.date, date_end: dt.date, user_id: int = None) -> Optional[
+        List[Activity]]:
         """
         Запрашивает у трекера список активностей в интервале дат
+        :param user_id:
         :param date_start: начальная дата
         :param date_end: конечная дата
         :return: возвращает список активностей или None

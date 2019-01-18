@@ -171,22 +171,25 @@ class Redmine(Tracker):
             return [Task(id=task.id, name=task.subject, project_id=task.project.id, status=task.status.name) for task in
                     tasks]
 
-    def list_activities_in_date(self, date: dt.date) -> Optional[List[Activity]]:
+    def list_activities_in_date(self, date: dt.date, user_id: int = None) -> Optional[List[Activity]]:
         """
         Запрашивает у трекера список активностей по дате
+        :param user_id:
         :param date: дата
         :return: возвращает список активностей или None
         """
-        return self.list_activities_in_date_interval(date, date)
+        return self.list_activities_in_date_interval(date, date, user_id)
 
-    def list_activities_in_date_interval(self, date_start: dt.date, date_end: dt.date) -> Optional[List[Activity]]:
+    def list_activities_in_date_interval(self, date_start: dt.date, date_end: dt.date, user_id: int = None) -> Optional[
+        List[Activity]]:
         """
         Запрашивает у трекера список активностей в интервале дат
+        :param user_id:
         :param date_start: начальная дата
         :param date_end: конечная дата
         :return: возвращает список активностей или None
         """
-        return self.__filter_activities({'from_date': date_start, 'to_date': date_end})
+        return self.__filter_activities({'from_date': date_start, 'to_date': date_end, 'user_id': user_id})
 
     def list_activities_in_task(self, task_id: int) -> Optional[List[Activity]]:
         """

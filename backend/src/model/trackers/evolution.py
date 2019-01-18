@@ -127,23 +127,26 @@ class Evolution(Tracker):
         """
         return self.__get_project_by_key_value('title', project_name)
 
-    def list_activities_in_date(self, date: dt.date, **kwargs) -> Optional[List[Activity]]:
+    def list_activities_in_date(self, date: dt.date, user_id: int = None, **kwargs) -> Optional[List[Activity]]:
         """
         Запрашивает у трекера список активностей по дате
+        :param user_id:
         :param date: дата
         :return: возвращает список активностей или None
         """
-        return self.list_activities_in_date_interval(date, date, **kwargs)
+        return self.list_activities_in_date_interval(date, date, user_id, **kwargs)
 
-    def list_activities_in_date_interval(self, date_start: dt.date, date_end: dt.date, **kwargs) -> Optional[
+    def list_activities_in_date_interval(self, date_start: dt.date, date_end: dt.date, user_id: int = None, **kwargs) -> \
+    Optional[
         List[Activity]]:
         """
         Запрашивает у трекера список активностей в интервале дат
+        :param user_id:
         :param date_start: начальная дата
         :param date_end: конечная дата
         :return: возвращает список активностей или None
         """
-        return self.__get_activities_by_filter(date_start=date_start, date_end=date_end, **kwargs)
+        return self.__get_activities_by_filter(date_start=date_start, date_end=date_end, user_id=user_id, **kwargs)
 
     def list_activities_in_project(self, project_id: int, **kwargs) -> Optional[
         List[Activity]]:
