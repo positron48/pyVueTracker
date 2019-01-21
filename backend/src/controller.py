@@ -335,6 +335,9 @@ class ApiController:
             category_id=9  # разработка
         )
 
-        result = s.export(link, activity)
+        # todo починить перед слиянием с основной веткой
+        result = 1
+        result2 = s.export(link, activity)
 
         self.response.status = result > 0
+        self.response.data = result2

@@ -1,6 +1,7 @@
 from backend.src.model.mysql import db, User, TrackerUserLink, Project, TrackerProjectLink, Task
 import requests
-from .model.tracker import Tracker
+from .model.tracker import Tracker, Activity as TrackerActivity
+from .export import Export
 
 
 class Sheduler:
@@ -169,9 +170,15 @@ class Sheduler:
 
             return result
 
-    def export(self, link: TrackerUserLink, export_task):
+    def export(self, link: TrackerUserLink, export_task: TrackerActivity):
         api = Tracker.get_api(link.tracker.type, link.tracker.api_url, api_key=link.external_api_key)
         if api.is_auth():
-            result = api.new_activity(export_task)
+            export_task.project_id=25
+            import datetime as dt
+            export_task.date=dt.date.today()-dt.timedelta(days=3)
+            export = Export(export_task, link)
+            if export.init() is True:
+                result = export.get_status()
+            # result = api.new_activity(export_task)
 
             return result
