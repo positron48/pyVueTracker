@@ -1,4 +1,5 @@
 import datetime as dt
+from typing import Union, Sequence, List, Optional
 
 from sqlalchemy import desc, cast, Date, update
 
