@@ -407,7 +407,7 @@ export default {
     font-weight: bold;
   }
   .md-list-item{
-    z-index: 0;
+    z-index: 0 !important;
   }
   .masked-input input{
     width: 100%;
