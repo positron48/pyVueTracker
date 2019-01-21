@@ -8,3 +8,4 @@ REDMINE_URL = ''
 REDMINE_KEY = ''
 EVO_URL = ''
 EVO_KEY = ''
+print('config loaded!')

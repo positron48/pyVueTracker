@@ -1,5 +1,7 @@
 from typing import Union, Sequence, List, Optional
 import datetime as dt
+from backend.src.model.trackers.redmine import Redmine
+from backend.src.model.trackers.evolution import Evolution
 
 
 class User:
@@ -47,6 +49,14 @@ class Activity:
 
 
 class Tracker:
+    @staticmethod
+    def get_api(type, url, api_key=None, login=None, password=None):
+        if type == 'redmine':
+            return Redmine(url, api_key, login, password)
+        elif type == 'evo':
+            return Evolution(url, api_key, login, password)
+        return None
+
     def get_tracker_type(self) -> Optional[str]:
         """
         Возвращает тип трекера

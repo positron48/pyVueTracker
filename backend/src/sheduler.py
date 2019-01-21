@@ -1,8 +1,6 @@
 from backend.src.model.mysql import db, User, TrackerUserLink, Project, TrackerProjectLink, Task
-from backend.src.model.trackers.redmine import Redmine
-from backend.src.model.trackers.evolution import Evolution
 import requests
-
+from .model.tracker import Tracker
 
 
 class Sheduler:
@@ -12,15 +10,6 @@ class Sheduler:
         if user is not None:
             self.user = user
             self.tracker_links = db.session.query(TrackerUserLink).filter(TrackerUserLink.user_id == self.user.id).all()
-
-    @staticmethod
-    def __get_engine(type, url, api_key=None, login=None, password=None):
-        if type == 'redmine':
-            return Redmine(url, api_key, login, password)
-        elif type == 'evo':
-            return Evolution(url, api_key, login, password)
-
-        return None
 
     def __check_auth(self, type, url, api):
         response = requests.options(url)
@@ -38,7 +27,7 @@ class Sheduler:
             if link.tracker.type != 'redmine':
                 continue
 
-            api = self.__get_engine(link.tracker.type, link.tracker.api_url, link.external_api_key)
+            api = Tracker.get_api(link.tracker.type, link.tracker.api_url, link.external_api_key)
             auth = self.__check_auth(link.tracker.type, link.tracker.api_url, api)
             if not auth:
                 continue
@@ -81,7 +70,7 @@ class Sheduler:
             if link.tracker.type != 'evo':
                 continue
 
-            api = self.__get_engine(link.tracker.type, link.tracker.api_url, link.external_api_key)
+            api = Tracker.get_api(link.tracker.type, link.tracker.api_url, link.external_api_key)
             auth = api.is_auth()
             if not auth:
                 continue
@@ -106,7 +95,7 @@ class Sheduler:
         for link in self.tracker_links:  # type: TrackerUserLink
             if link.tracker.type != 'redmine':
                 continue
-            api = self.__get_engine(link.tracker.type, link.tracker.api_url, link.external_api_key)
+            api = Tracker.get_api(link.tracker.type, link.tracker.api_url, link.external_api_key)
             auth = self.__check_auth(link.tracker.type, link.tracker.api_url, api)
             if not auth:
                 continue
@@ -138,17 +127,17 @@ class Sheduler:
         return 'done!'
 
     def get_token(self, type, url, login, password):
-        api = self.__get_engine(type, url, login=login, password=password)
+        api = Tracker.get_api(type, url, login=login, password=password)
         if api.is_auth():
             return api.get_api_key()
 
     def get_evo_users(self, url, token, name=False):
-        api = self.__get_engine('evo', url, api_key=token)
+        api = Tracker.get_api('evo', url, api_key=token)
         if api.is_auth():
             return api.get_employers(name)
 
     def get_projects(self, type, url, token):
-        api = self.__get_engine(type, url, api_key=token)
+        api = Tracker.get_api(type, url, api_key=token)
         if api.is_auth():
             projects = api.get_all_projects()
 
@@ -162,7 +151,7 @@ class Sheduler:
             return result
 
     def get_task(self, type, url, token, task_id):
-        api = self.__get_engine(type, url, api_key=token)
+        api = Tracker.get_api(type, url, api_key=token)
         if api.is_auth():
             external_task = api.get_task_by_id(task_id)
             if external_task is None:
@@ -181,7 +170,7 @@ class Sheduler:
             return result
 
     def export(self, link: TrackerUserLink, export_task):
-        api = self.__get_engine(link.tracker.type, link.tracker.api_url, api_key=link.external_api_key)
+        api = Tracker.get_api(link.tracker.type, link.tracker.api_url, api_key=link.external_api_key)
         if api.is_auth():
             result = api.new_activity(export_task)
 
