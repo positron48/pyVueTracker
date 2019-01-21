@@ -318,8 +318,7 @@ class Engine:
             if tracker_link.tracker.type == 'redmine' and tracker_link.tracker.api_url is not None and tracker_link.external_user_id is None:
                 from .model.trackers.redmine import Redmine
                 redmine = Redmine(tracker_link.tracker.api_url, token=token)
-                if redmine.is_auth():
-                    tracker_link.external_user_id = redmine.get_user_id()
+                tracker_link.external_user_id = redmine.get_user_id()
             db.session.commit()
             return True
 
