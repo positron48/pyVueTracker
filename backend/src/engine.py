@@ -323,3 +323,18 @@ class Engine:
             return True
 
         return False
+
+    def get_closed_facts_by_date(self, date: dt.date) -> Optional[List[Activity]]:
+        return db.session.query(Activity) \
+            .filter(Activity.user_id == self.user.id) \
+            .filter(cast(Activity.time_start, Date) == date) \
+            .filter(Activity.time_end.isnot(None)) \
+            .all()
+
+    def get_closed_facts_by_date_interval(self, date_start: dt.date, date_end: dt.date) -> Optional[List[Activity]]:
+        return db.session.query(Activity) \
+            .filter(Activity.user_id == self.user.id) \
+            .filter(cast(Activity.time_start, Date) >= date_start) \
+            .filter(cast(Activity.time_end, Date) <= date_end) \
+            .filter(Activity.time_end.isnot(None)) \
+            .all()
