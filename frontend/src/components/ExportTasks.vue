@@ -594,18 +594,18 @@ export default {
     -webkit-text-fill-color: red !important;
   }
   .tracker-checkbox {
-    float: right;
-    height: 18px;
-    width: 18px;
-    min-width: 18px;
-    margin: 0 5px;
+    float: right !important;
+    height: 18px !important;
+    width: 18px !important;
+    min-width: 18px !important;
+    margin: 0 5px !important;
   }
   .tracker-checkbox.md-checkbox .md-checkbox-container:before {
-    height: 18px;
-    width: 18px;
+    height: 18px !important;
+    width: 18px !important;
   }
   .tracker-checkbox:first {
-    top: 1px;
+    top: 1px !important;
   }
   .column-task-number {
     max-width: 130px;

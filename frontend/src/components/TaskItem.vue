@@ -67,8 +67,8 @@ export default {
     white-space: normal;
   }
   .md-list-item-content{
-    display: block;
-    padding-top: 15px;
+    display: block !important;
+    padding-top: 15px !important;
   }
   .task-duration-list-item .md-list-item-content{
     width: 90px;

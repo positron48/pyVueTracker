@@ -92,4 +92,7 @@ export default {
     flex: 1;
     text-align: left;
   }
+  .mx-datepicker input{
+    background-color: #ffffff !important;
+  }
 </style>

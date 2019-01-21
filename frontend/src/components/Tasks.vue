@@ -44,7 +44,7 @@
           </div>
           <div class="md-layout-item md-size-30">
             <md-field class="masked-input">
-              <masked-input v-model="editTask.start_time" mask="11:11" placeholder="начало" />
+              <masked-input v-model="editTask.start_time" mask="11:11" placeholder="начало.md-list-item-content" />
             </md-field>
           </div>
           <div class="md-layout-item md-size-30">
