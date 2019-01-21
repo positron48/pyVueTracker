@@ -169,7 +169,9 @@ export default {
             type: this.trackers[j]['type'],
             title: this.trackers[j]['title'],
             status: (this.projects[task['project_id']] !== undefined &&
-              this.projects[task['project_id']]['tracker_projects'][this.trackers[j]['id']] !== undefined) ? 'linked' : '',
+              this.projects[task['project_id']]['tracker_projects'][this.trackers[j]['id']] !== undefined &&
+              this.projects[task['project_id']]['tracker_projects'][this.trackers[j]['id']]['external_project_id'] > 0
+            ) ? 'linked' : '',
             available: false
           }
 
