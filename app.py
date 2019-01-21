@@ -82,31 +82,6 @@ def regen():
     return result
 
 
-@app.route('/regen')
-def regen_old():
-    # генератор тестовых данных
-    from backend.src.model.mysql import Tracker, User, TrackerUserLink
-    db.drop_all()
-    db.create_all()
-    trackerRedmine = Tracker(title='intaro redmine', code='redmine', api_url=app.config.get('REDMINE_URL'), type='redmine')
-    trackerEvo = Tracker(title='evolution', code='evo', api_url=app.config.get('EVO_URL'), type='evo')
-    user = User(login='login', hash=Auth.get_hash('login', 'password', app.config.get('SALT')), token='MQinK4')
-    user2 = User(login='login2', hash=Auth.get_hash('login2', 'password2', app.config.get('SALT')), token='MQinK42')
-    db.session.add(user)
-    db.session.add(user2)
-    db.session.add(trackerRedmine)
-    #подставь ниже api_key - при пересоздании таблиц проекты и задачи подтянутся в БД с редмайна
-    tracker_link = TrackerUserLink(tracker=trackerRedmine, user=user, external_api_key=app.config.get('REDMINE_KEY'))
-    tracker_link2 = TrackerUserLink(tracker=trackerEvo, user=user, external_api_key=app.config.get('EVO_KEY'))
-    tracker_link3 = TrackerUserLink(tracker=trackerRedmine, user=user2)
-    db.session.add(tracker_link)
-    db.session.add(tracker_link2)
-    db.session.add(tracker_link3)
-    db.session.commit()
-
-    return 'success!'
-
-
 @app.route('/test')
 def test():
     token = request.cookies.get('token')

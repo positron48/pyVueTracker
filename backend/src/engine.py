@@ -55,16 +55,12 @@ class Engine:
 
     def __get_project_by_name(self, project_name):
         return db.session.query(Project) \
-            .join(User.projects) \
             .filter(Project.title == project_name) \
-            .filter(User.id == self.user.id) \
             .first()
 
     def __get_project_by_code(self, project_code):
         return db.session.query(Project) \
-            .join(User.projects) \
             .filter(Project.code == project_code) \
-            .filter(User.id == self.user.id) \
             .first()
 
     def __get_hashtags(self, tag_names):
@@ -85,13 +81,13 @@ class Engine:
             .filter(Activity.id == id) \
             .first()  # type:Activity
 
-    def get_autocomplete(self, text):
+    def get_autocomplete(self, text, count=50):
         db_facts = None
         if text is None or True:
             db_facts = db.session.query(Activity) \
                 .filter(Activity.user_id == self.user.id) \
                 .order_by(desc(Activity.time_start)) \
-                .limit(15) \
+                .limit(count) \
                 .all()
         else:
             pass  # todo тут будет парсинг текста для умного автокомплита

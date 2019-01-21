@@ -49,8 +49,12 @@ class ApiController:
     @send_response
     def get_autocomlete(self, text):
         result = []
-        for db_fact in self.engine.get_autocomplete(text):  # type: Activity
+        for db_fact in self.engine.get_autocomplete(text, 50):  # type: Activity
             result.append(Fact(db_fact).as_text())
+
+        result = list(set(result))
+        result = result[0:15]
+
         self.response.values = result
         self.response.status = len(self.response.values) > 0
 
@@ -131,7 +135,6 @@ class ApiController:
             description = copy.copy(task['description'])
             if description is not '':
                 formated_tasks[taskDate][task['task_id']]['description'].append(description)
-        print(formated_tasks)
 
         tasks = []
         i = 0

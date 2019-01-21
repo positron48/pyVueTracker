@@ -44,12 +44,12 @@
           </div>
           <div class="md-layout-item md-size-30">
             <md-field class="masked-input">
-              <masked-input v-model="editTask.start_time" mask="11:11" placeholder="время начала" />
+              <masked-input v-model="editTask.start_time" mask="11:11" placeholder="начало" />
             </md-field>
           </div>
           <div class="md-layout-item md-size-30">
             <md-field class="masked-input">
-              <masked-input v-model="editTask.end_time" mask="11:11" placeholder="время окончания" />
+              <masked-input v-model="editTask.end_time" mask="11:11" placeholder="окончание" />
             </md-field>
           </div>
         </div>
@@ -58,7 +58,7 @@
           <md-input v-model="editTaskActivity"></md-input>
         </md-field>
         <md-field>
-          <label>описание</label>
+          <label>комментарий</label>
           <md-textarea v-model="editTask.description" md-autogrow></md-textarea>
         </md-field>
         <md-field>

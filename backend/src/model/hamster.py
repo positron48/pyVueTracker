@@ -212,8 +212,11 @@ class Hamster:
             return next_phase("", "tags")
 
         if "tags" in phases:
-
-            tags, desc = text.rsplit(",", 1) if "," in text else (text, None)
+            split = text.rsplit(",") if "," in text else [text]
+            tags = split[0]
+            desc = ','.join(split[1:])
+            if desc == '':
+                desc = None
 
             if desc is not None and '#' in desc:
                 tags += ', ' + desc.strip()
