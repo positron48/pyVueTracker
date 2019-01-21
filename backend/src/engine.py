@@ -219,6 +219,13 @@ class Engine:
             .filter(TrackerProjectLink.tracker_id == tracker_id) \
             .filter(TrackerProjectLink.project_id == project_id).first()
 
+        # для id=0 удаляем связь, если она есть
+        if tracker_project_id == 0:
+            if tracker_project is not None:
+                db.session.delete(tracker_project)
+                db.session.commit()
+            return True
+
         if tracker_project is not None:
             tracker_project.external_project_id = tracker_project_id
             tracker_project.external_project_title = tracker_project_title
