@@ -262,6 +262,8 @@ export default {
             this.setTaskNeedExport(task['date'], groupedTasks[task['date']].tasks.length, tracker.id, tracker['available'])
           } else if (needExport === null && tracker['available'] !== true) {
             this.setTaskNeedExport(task['date'], groupedTasks[task['date']].tasks.length, tracker.id, null)
+          } else if (tracker['status'] === '') {
+            this.setTaskNeedExport(task['date'], groupedTasks[task['date']].tasks.length, tracker.id, null)
           }
 
           task['trackers'].push(tracker)
