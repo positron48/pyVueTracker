@@ -52,7 +52,7 @@
 
       <br><br>
 
-      <div class="md-layout-item md-size-80">
+      <div class="md-layout-item md-size-80" v-if="projects">
         <md-list>
           <md-list-item>
             Проекты

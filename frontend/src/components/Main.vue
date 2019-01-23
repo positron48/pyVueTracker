@@ -4,6 +4,9 @@
     <nav>
       <div class="md-toolbar md-accent md-theme-demo-light md-elevation-1">
         <div class="md-title main-title">Time tracker</div>
+        <button v-if="isLogin" type="button" class="md-button md-theme-demo-light short" @click="go('Help')">
+          <font-awesome-icon icon="question-circle"/>
+        </button>
         <button v-if="isLogin" type="button" class="md-button md-theme-demo-light" @click="go('Home')">
           <div class="md-ripple">
               <div class="md-button-content">Главный экран</div>
@@ -44,6 +47,7 @@ import History from './History.vue'
 import Auth from './Auth.vue'
 import Export from './Export.vue'
 import Settings from './Settings.vue'
+import Help from './Help.vue'
 import {isLogin, logout} from './auth.js'
 
 export default {
@@ -55,7 +59,7 @@ export default {
     }
   },
   components: {
-    Home, History, Auth, Export, Settings
+    Home, History, Auth, Export, Settings, Help
   },
   methods: {
     updateLogin () {
@@ -94,5 +98,9 @@ export default {
   }
   .mx-datepicker input{
     background-color: #ffffff !important;
+  }
+  .md-button.short{
+    width: 36px;
+    min-width: 36px;
   }
 </style>

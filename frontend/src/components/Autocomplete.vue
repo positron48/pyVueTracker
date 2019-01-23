@@ -61,6 +61,27 @@ export default {
           this.select(this.currentFocus)
           e.preventDefault()
         }
+      } else if (e.keyCode === 9) { // tab
+        e.preventDefault()
+        this.inputValue = this.inputValue.trim()
+        if (!this.inputValue.match(/[@#,]/)) {
+          this.inputValue += '@'
+          this.setInput(this.inputValue)
+        } else if (!this.inputValue.match(/[#,]/)) {
+          if (this.inputValue[this.inputValue.length - 1] === '@') {
+            this.inputValue = this.inputValue.substr(0, this.inputValue.length - 1).trim() + ' #'
+          } else {
+            this.inputValue += ' #'
+          }
+          this.setInput(this.inputValue)
+        } else if (!this.inputValue.match(/,/)) {
+          if (this.inputValue[this.inputValue.length - 1] === '#') {
+            this.inputValue = this.inputValue.substr(0, this.inputValue.length - 1).trim() + ', '
+          } else {
+            this.inputValue += ', '
+          }
+          this.setInput(this.inputValue)
+        }
       }
     },
     onFocus () {
@@ -72,9 +93,13 @@ export default {
       }
     },
     select (index) {
-      this.inputValue = this.suggestions[index].replace(/\s+/g, ' ')
-      this.$emit('input', this.inputValue)
+      this.setInput(this.suggestions[index])
       this.currentFocus = -1
+    },
+    setInput (value) {
+      var text = value.replace(/\s+/g, ' ')
+      this.inputValue = text
+      this.$emit('input', this.inputValue)
     },
     clear () {
       this.inputValue = ''

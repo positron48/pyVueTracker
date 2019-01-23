@@ -298,11 +298,8 @@ class ApiController:
 
     @send_response
     def link_project(self, project_id, tracker_id, tracker_project_id, tracker_project_title):
-        result = []
-
         self.response.status = self.engine.link_project(project_id, tracker_id, tracker_project_id,
                                                         tracker_project_title)
-        self.response.trackers = result
 
     @send_response
     def export(self, tracker_id, export_task):
