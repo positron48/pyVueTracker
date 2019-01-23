@@ -1,7 +1,7 @@
 from hashlib import sha256
 SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://user:password@localhost/dbname'
 SECRET_KEY = 'qjvFNjCrziBT'
-DEBUG = True
+DEBUG = False
 SALT = sha256('qjvFNjCrziBTcoYiIxweneVpqDIbQrk'.encode()).hexdigest().encode()
 SQLITE = False
 REDMINE_URL = ''

@@ -157,7 +157,6 @@ class Sheduler:
             if external_task is None:
                 return None
 
-            # print(external_task.__dict__)
             result = {
                 'id': external_task.id,
                 'tracker': external_task.tracker_name,

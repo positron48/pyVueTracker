@@ -175,7 +175,6 @@ export default {
     getTrackers () {
       API.getTrackers()
         .then(response => {
-          console.log(response)
           this.trackers = response.data.trackers
         })
         .catch(error => {
@@ -185,7 +184,6 @@ export default {
     getEvoUsers () {
       API.getEvoUsers()
         .then(response => {
-          console.log(response)
           this.evoUsers = response.data.users
         })
         .catch(error => {
@@ -202,7 +200,6 @@ export default {
       if (confirm('вы действительно хотите удалить трекер из списка?')) {
         API.deleteTracker(this.currentTracker)
           .then(response => {
-            console.log(response)
             this.getTrackers()
             this.showTracker = false
           })
@@ -215,7 +212,6 @@ export default {
       // todo сообщение о невозможности редактирвоания, если трекер привязан еще к кому-то
       API.saveTracker(this.currentTracker)
         .then(response => {
-          console.log(response)
           this.getTrackers()
           this.showTracker = false
         })
@@ -226,7 +222,6 @@ export default {
     saveEvoUser () {
       API.saveEvoUser(this.evoUser)
         .then(response => {
-          console.log(response)
           this.getTrackers()
           this.showUser = false
         })
@@ -269,7 +264,6 @@ export default {
     getToken () {
       API.getToken(this.currentTracker.id, this.loginToken, this.passwordToken)
         .then(response => {
-          console.log(response)
           if (response.data.external_token !== undefined && response.data.external_token !== '') {
             this.getTrackers()
 

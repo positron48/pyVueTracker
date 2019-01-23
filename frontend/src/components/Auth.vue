@@ -1,23 +1,21 @@
 <template>
   <div>
-    <form v-on:submit.prevent="log_in()">
-      <md-card class="md-layout-item md-size-15" style="margin: auto">
-        <md-card-content>
-          <md-field>
-            <label>Login</label>
-            <md-input v-model.trim="login" type="text" required></md-input>
-          </md-field>
-          <md-field>
-            <label>Password</label>
-            <md-input v-model.trim="password" type="password" required></md-input>
-          </md-field>
-          <md-radio v-model="radio" value="registration">Registration</md-radio>
-          <md-radio v-model="radio" value="login">Login</md-radio>
-          <md-button type="submit" v-bind:disabled="isLogin">Send</md-button>
-          <md-button v-bind:disabled="!isLogin" v-on:click="log_out()">Logout</md-button>
-        </md-card-content>
-      </md-card>
-    </form>
+    <md-card class="md-layout-item md-size-20" style="margin: auto">
+      <md-card-content>
+        <md-field>
+          <label>Логин</label>
+          <md-input v-model.trim="login" type="text" required></md-input>
+        </md-field>
+        <md-field>
+          <label>Пароль</label>
+          <md-input v-model.trim="password" type="password" required></md-input>
+        </md-field>
+        <div class="auth-buttons">
+          <md-button @click="register()">Регистрация</md-button>
+          <md-button @click="auth()">Вход</md-button>
+        </div>
+      </md-card-content>
+    </md-card>
   </div>
 </template>
 
@@ -30,18 +28,27 @@ export default {
     return {
       login: '',
       password: '',
-      radio: 'login',
       isLogin: false
     }
   },
   computed: {},
   methods: {
-    log_out () {
-      logout()
-      this.isLogin = isLogin()
+    auth () {
+      API.auth(this.login, this.password, 'login')
+        .then(response => {
+          if (response.data.message !== undefined) {
+            alert(response.data.message)
+          } else {
+            this.isLogin = isLogin()
+            this.$emit('login')
+          }
+        })
+        .catch(error => {
+          console.log(['auth error', error])
+        })
     },
-    log_in () {
-      API.auth(this.login, this.password, this.radio)
+    register () {
+      API.auth(this.login, this.password, 'registration')
         .then(response => {
           if (response.data.message !== undefined) {
             alert(response.data.message)
@@ -60,3 +67,9 @@ export default {
   }
 }
 </script>
+
+<style>
+.auth-buttons{
+  text-align: center;
+}
+</style>

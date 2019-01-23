@@ -8,7 +8,6 @@ from flask import Flask, request, jsonify, render_template
 from backend.src.model.mysql import db
 from backend.src.auth import Auth
 from backend.src.controller import ApiController
-from flask_debugtoolbar import DebugToolbarExtension
 import json
 from flask_migrate import Migrate
 
@@ -20,72 +19,71 @@ app.config.from_pyfile('config.py')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 migrate = Migrate(app, db)
-dtb = DebugToolbarExtension(app)
 
 
-@app.route('/debug/fill_external')
-def fill():
-    from backend.src.sheduler import Sheduler
-    user = Auth.get_user_by_token('MQinK4')
-    s = Sheduler(user)
-    return s.fetch_external_data()
-
-@app.route('/debug/add_user')
-def add_users():
-    from backend.src.model.mysql import Tracker, User, TrackerUserLink
-    trackerEvo = Tracker(title='evolution', code='evo', api_url=app.config.get('EVO_URL'), type='evo')
-    trackerRedmine = Tracker(title='redmine', code='redmine', api_url=app.config.get('REDMINE_URL'), type='redmine')
-    user = User(login='login', hash=Auth.get_hash('login', 'password', app.config.get('SALT')), token='MQinK4')
-    user2 = User(login='login2', hash=Auth.get_hash('login2', 'password2', app.config.get('SALT')), token='MQinK42')
-
-    tracker_link = TrackerUserLink(tracker=trackerEvo, user=user, external_api_key=app.config.get('EVO_KEY'))
-    tracker_link2 = TrackerUserLink(tracker=trackerRedmine, user=user, external_api_key=app.config.get('REDMINE_KEY'))
-    tracker_link3 = TrackerUserLink(tracker=trackerRedmine, user=user2)
-
-    db.session.add(tracker_link)
-    db.session.add(tracker_link2)
-    db.session.add(tracker_link3)
-    db.session.commit()
-    return 'done!'
-
-@app.route('/debug/regen')
-def regen():
-    db.drop_all()
-    db.create_all()
-    return 'success!'
-
-
-    # todo тест каскадных удалений
-    from backend.src.model.mysql import User, Project, TrackerUserLink, Tracker
-
-    user1 = User(login='first', hash='hash', token='asdasdasd')
-    user2 = User(login='two', hash='hash', token='asdasd')
-    user3 = User(login='three', hash='hash', token='asdasdfd')
-    proj1 = Project(title='first2', code='frst')
-    proj2 = Project(title='two', code='two')
-    user2.projects.append(proj2)
-    user3.projects.append(proj1)
-    db.session.add(user1)
-    db.session.add(user2)
-    db.session.add(user3)
-
-    tracker = Tracker(title='title', code='code', ui_url='url', api_url='base')
-    link = TrackerUserLink(tracker=tracker, user=user1, external_user_id=1234)
-    db.session.add(link)
-
-    db.session.commit()
-    result = '<p>add</p>'
-    for user in User.query.all():
-        result += repr(user)
-    db.session.delete(user2)
-    db.session.commit()
-    return result
-
-
-@app.route('/test')
-def test():
-    token = request.cookies.get('token')
-    return jsonify(locals())
+# @app.route('/debug/fill_external')
+# def fill():
+#     from backend.src.sheduler import Sheduler
+#     user = Auth.get_user_by_token('MQinK4')
+#     s = Sheduler(user)
+#     return s.fetch_external_data()
+#
+# @app.route('/debug/add_user')
+# def add_users():
+#     from backend.src.model.mysql import Tracker, User, TrackerUserLink
+#     trackerEvo = Tracker(title='evolution', code='evo', api_url=app.config.get('EVO_URL'), type='evo')
+#     trackerRedmine = Tracker(title='redmine', code='redmine', api_url=app.config.get('REDMINE_URL'), type='redmine')
+#     user = User(login='login', hash=Auth.get_hash('login', 'password', app.config.get('SALT')), token='MQinK4')
+#     user2 = User(login='login2', hash=Auth.get_hash('login2', 'password2', app.config.get('SALT')), token='MQinK42')
+#
+#     tracker_link = TrackerUserLink(tracker=trackerEvo, user=user, external_api_key=app.config.get('EVO_KEY'))
+#     tracker_link2 = TrackerUserLink(tracker=trackerRedmine, user=user, external_api_key=app.config.get('REDMINE_KEY'))
+#     tracker_link3 = TrackerUserLink(tracker=trackerRedmine, user=user2)
+#
+#     db.session.add(tracker_link)
+#     db.session.add(tracker_link2)
+#     db.session.add(tracker_link3)
+#     db.session.commit()
+#     return 'done!'
+#
+# @app.route('/debug/regen')
+# def regen():
+#     db.drop_all()
+#     db.create_all()
+#     return 'success!'
+#
+#
+#     # todo тест каскадных удалений
+#     from backend.src.model.mysql import User, Project, TrackerUserLink, Tracker
+#
+#     user1 = User(login='first', hash='hash', token='asdasdasd')
+#     user2 = User(login='two', hash='hash', token='asdasd')
+#     user3 = User(login='three', hash='hash', token='asdasdfd')
+#     proj1 = Project(title='first2', code='frst')
+#     proj2 = Project(title='two', code='two')
+#     user2.projects.append(proj2)
+#     user3.projects.append(proj1)
+#     db.session.add(user1)
+#     db.session.add(user2)
+#     db.session.add(user3)
+#
+#     tracker = Tracker(title='title', code='code', ui_url='url', api_url='base')
+#     link = TrackerUserLink(tracker=tracker, user=user1, external_user_id=1234)
+#     db.session.add(link)
+#
+#     db.session.commit()
+#     result = '<p>add</p>'
+#     for user in User.query.all():
+#         result += repr(user)
+#     db.session.delete(user2)
+#     db.session.commit()
+#     return result
+#
+#
+# @app.route('/test')
+# def test():
+#     token = request.cookies.get('token')
+#     return jsonify(locals())
 
 
 @app.route('/api/auth', methods=['POST'])
@@ -116,8 +114,8 @@ def auth():
 
     if user is None:
         message = {
-            'login': 'У нас нет пользователя с такими учетными данными.\r\nСкорее всего ты очепятался.',
-            'registration': 'такой логин уже занят, попробуй другой'
+            'login': 'У нас нет пользователя с такими учетными данными.',
+            'registration': 'Такой логин уже занят, попробуй другой'
         }[action]
         return jsonify({'message': message})
 
