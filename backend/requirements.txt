@@ -9,7 +9,6 @@ Flask
 Flask-Cors
 Flask-Migrate
 Flask-SQLAlchemy
-Flask-DebugToolbar
 idna
 itsdangerous
 Jinja2
