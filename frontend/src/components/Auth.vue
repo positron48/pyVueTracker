@@ -21,7 +21,7 @@
 
 <script>
 import API from './api.js'
-import {isLogin, logout} from './auth.js'
+import {isLogin} from './auth.js'
 
 export default {
   data () {
