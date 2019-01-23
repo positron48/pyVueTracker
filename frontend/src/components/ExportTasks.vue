@@ -275,7 +275,6 @@ export default {
         // со сложением вместе округление работать не хочет
         groupedTasks[task['date']]['duration'] = Math.round(groupedTasks[task['date']]['duration'] * 100) / 100
       }
-      // console.log(groupedTasks)
       return groupedTasks
     }
   },
@@ -385,7 +384,6 @@ export default {
         })
     },
     getTrackerProjects: function (trackerId) {
-      console.log(this.trackersById[trackerId])
       if (this.trackerProjects[trackerId] === undefined && this.trackersById[trackerId]['external_user_id'] !== null) {
         API.getTrackerProjects(trackerId)
           .then(response => {
