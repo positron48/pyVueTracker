@@ -215,14 +215,6 @@ export default {
             tracker['message'] = 'не указан номер задачи'
           } else if (
             tracker['status'] === 'linked' &&
-            tracker['type'] === 'evo' &&
-            (task['external_name'] === undefined && task['external_name'] === '') &&
-            task['description'] === ''
-          ) {
-            tracker['status'] = 'error'
-            tracker['message'] = 'не заполнен комментарий'
-          } else if (
-            tracker['status'] === 'linked' &&
             tracker['type'] === 'redmine' &&
             task['task_id'] > 0 &&
             externalTask === false
@@ -267,6 +259,20 @@ export default {
           }
 
           task['trackers'].push(tracker)
+        }
+
+        // ставим ошибку, если для не указан номер задачи и не заполнен комментарий для эво
+        for (var k = 0; k < this.trackers.length; k++) {
+          var trackerTask = task['trackers'][k]
+          if (
+            trackerTask['status'] === 'linked' &&
+            trackerTask['type'] === 'evo' &&
+            (task['external_name'] === undefined || task['external_name'] === '') &&
+            task['description'] === ''
+          ) {
+            task['trackers'][k]['status'] = 'error'
+            task['trackers'][k]['message'] = 'не заполнен комментарий'
+          }
         }
 
         groupedTasks[task['date']]['tasks'].push(task)
