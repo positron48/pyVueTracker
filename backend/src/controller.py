@@ -318,7 +318,6 @@ class ApiController:
 
             if export_task['external_name'] is not '':
                 title = export_task['external_name']
-                comment += ' ' + export_task['comment']
             else:
                 title = export_task['comment']
         else:
