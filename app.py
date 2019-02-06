@@ -104,13 +104,11 @@ def auth():
     if error is not None:
         return jsonify({'message': error})
 
-    # получаем токен из редмайна по логину/паролю
-    # ищем токен в базе, если нашли - логиним под найденным пользователем
-    # не нашли - регистрируем пользователя с введенным логином и пустым паролем, привязываем сразу к редмайну
-    user = Auth.get_user_by_redmine(login, password)
+    api = ApiController()
+    user = api.get_user_by_redmine(login, password)
 
     if user is None:
-        return jsonify({'message': 'У нас нет пользователя с такими учетными данными.'})
+        return jsonify({'message': 'Неверные данные для входа'})
 
     response = {'token': user.token}
 
