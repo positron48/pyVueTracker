@@ -29,14 +29,33 @@ export default {
       current: null
     }
   },
+  computed: {
+    title: function () {
+      if (this.currentTask === null) {
+        return 'Time Tracker'
+      }
+
+      var hours = Math.floor(this.current['delta'])
+      var minutes = Math.floor((this.current['delta'] - hours) * 60)
+
+      if (minutes < 10) {
+        minutes = '0' + minutes
+      }
+
+      return hours + ':' + minutes + ' ' + this.current['activity']
+    }
+  },
   methods: {
     getCurrentTask () {
       API.getCurrentTask()
         .then(response => {
           if (('status' in response.data && response.data.status) || !('status' in response.data)) {
             this.current = response.data
+
+            document.title = this.title
           } else {
             this.current = null
+            document.title = 'Time tracker'
           }
         })
         .catch(error => {
