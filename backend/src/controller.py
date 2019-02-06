@@ -168,28 +168,56 @@ class ApiController:
 
     @send_response
     def get_token(self, tracker_id, login, password):
-        link = self.engine.get_tracker_link(tracker_id)
-        if link is None:
+        tracker = self.engine.get_tracker_by_id(tracker_id)
+        if tracker is None:
             return None
 
         s = Sheduler()
 
-        token = s.get_token(link.tracker.type, link.tracker.api_url, login, password)
+        token = s.get_token(tracker.type, tracker.api_url, login, password)
 
         self.response.status = token is not None
 
+        self.response.external_token = token = None
         if self.response.status:
             self.response.external_token = token
 
             # редактируем связь пользователя с токеном, добавляя апи ключ
             self.engine.set_api_key(tracker_id, token)
 
+
+    def get_user_by_redmine(self, login, password):
+        # получаем токен из редмайна по логину/паролю
+        # ищем токен в базе, если нашли - логиним под найденным пользователем
+        # не нашли - регистрируем пользователя с введенным логином и пустым паролем, привязываем сразу к редмайну
+
+        tracker = self.engine.get_redmine_tracker()
+        s = Sheduler()
+        token = s.get_token(tracker[0].type, tracker[0].api_url, login, password)
+
+        if token is None:
+            return None
+
+        user_id = self.engine.get_user_by_tracker(tracker[0].id, token)
+
+        if user_id is not None:
+            # получаем пользователя
+            user = Auth.get_user_by_id(user_id)
+            return user
+        else:
+            # надо зарегистрировать пользователя
+            return Auth.add_new_user(login, "", token)
+
+        return True
+
     @send_response
     def get_evo_users(self):
         tracker = self.engine.get_evo_tracker()
         s = Sheduler()
 
-        users = s.get_evo_users(tracker[0].api_url, tracker[1].external_api_key)
+        users = None
+        if tracker[1].external_api_key is not None:
+            users = s.get_evo_users(tracker[0].api_url, tracker[1].external_api_key)
 
         evo_users = []
         if users is None:
