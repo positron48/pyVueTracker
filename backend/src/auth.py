@@ -20,8 +20,6 @@ class Auth:
         tracker_redmine = db.session.query(Tracker).filter(Tracker.title == 'redmine').first()
         tracker_evo = db.session.query(Tracker).filter(Tracker.title == 'evolution').first()
 
-        print([user, redmine_token])
-
         if redmine_token is not None:
             from .model.trackers.redmine import Redmine
             redmine = Redmine(tracker_redmine.api_url, token=redmine_token)
