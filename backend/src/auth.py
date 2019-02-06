@@ -9,7 +9,7 @@ from hashlib import md5, sha256
 
 class Auth:
     @classmethod
-    def add_new_user(cls, login, hash):
+    def add_new_user(cls, login, hash, redmine_token=None):
         user = cls.get_user_by_login(login)
         if user is not None:
             return None
@@ -20,7 +20,14 @@ class Auth:
         tracker_redmine = db.session.query(Tracker).filter(Tracker.title == 'redmine').first()
         tracker_evo = db.session.query(Tracker).filter(Tracker.title == 'evolution').first()
 
-        tracker_link = TrackerUserLink(tracker=tracker_redmine, user=user)
+        if redmine_token is not None:
+            from .model.trackers.redmine import Redmine
+            redmine = Redmine(tracker_redmine.api_url, token=redmine_token)
+            external_user_id = redmine.get_user_id()
+            tracker_link = TrackerUserLink(tracker=tracker_redmine, user=user, external_api_key=redmine_token, external_user_id=external_user_id)
+        else:
+            tracker_link = TrackerUserLink(tracker=tracker_redmine, user=user)
+
         tracker_link2 = TrackerUserLink(tracker=tracker_evo, user=user)
 
         db.session.add(tracker_link)
@@ -36,6 +43,10 @@ class Auth:
     @staticmethod
     def get_user_by_login(login) -> Optional[User]:
         return db.session.query(User.id).filter(User.login == login).first()
+
+    @staticmethod
+    def get_user_by_id(user_id) -> Optional[User]:
+        return db.session.query(User).filter(User.id == user_id).first()
 
     @staticmethod
     def get_user_by_login_and_hash(login, hash) -> Optional[User]:

@@ -94,30 +94,21 @@ def auth():
         global error
         value = request.values.get(field)
         if value is None:
-            error = 'заполни' + field
+            error = 'введите' + field
         if field not in ('password', 'token'):
             return value.lower()
         return value
 
-    login, password, action = get('login'), get('password'), get('action')
+    login, password = get('login'), get('password')
 
     if error is not None:
         return jsonify({'message': error})
 
-    hash = Auth.get_hash(login, password, app.config.get('SALT'))
-
-    user = None
-    if action == 'login':
-        user = Auth.get_user_by_login_and_hash(login, hash)
-    if action == 'registration':
-        user = Auth.add_new_user(login, hash)
+    api = ApiController()
+    user = api.get_user_by_redmine(login, password)
 
     if user is None:
-        message = {
-            'login': 'У нас нет пользователя с такими учетными данными.',
-            'registration': 'Такой логин уже занят, попробуй другой'
-        }[action]
-        return jsonify({'message': message})
+        return jsonify({'message': 'Неверные данные для входа'})
 
     response = {'token': user.token}
 
