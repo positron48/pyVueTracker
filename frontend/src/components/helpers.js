@@ -50,4 +50,15 @@ export function formatDate (date, short) {
     (short === undefined ? ('.' + date.getFullYear()) : '')
 }
 
-export default {urlEncode, formatLabel, formatDate}
+export function deltaToHMM (delta) {
+  var hours = Math.floor(delta)
+  var minutes = Math.floor((delta - hours) * 60)
+
+  if (minutes < 10) {
+    minutes = '0' + minutes
+  }
+
+  return hours + ':' + minutes
+}
+
+export default {urlEncode, formatLabel, formatDate, deltaToHMM}

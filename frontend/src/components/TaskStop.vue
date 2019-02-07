@@ -22,6 +22,7 @@
 <script>
 import TaskItem from './TaskItem.vue'
 import API from './api.js'
+import {deltaToHMM} from './helpers.js'
 
 export default {
   data () {
@@ -34,15 +35,7 @@ export default {
       if (this.currentTask === null) {
         return 'Time Tracker'
       }
-
-      var hours = Math.floor(this.current['delta'])
-      var minutes = Math.floor((this.current['delta'] - hours) * 60)
-
-      if (minutes < 10) {
-        minutes = '0' + minutes
-      }
-
-      return hours + ':' + minutes + ' ' + this.current['activity']
+      return deltaToHMM(this.current['delta']) + ' ' + this.current['activity']
     }
   },
   methods: {

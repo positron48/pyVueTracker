@@ -153,6 +153,7 @@ class ApiController:
                     'id': task['id'],
                     'date': task['date'],
                     'delta': ceil(task['hours'] * 10) / 10,
+                    'delta_full': task['hours'],
                     'description': description,
                     'name': task['name'],
                     'category': task['cat'],

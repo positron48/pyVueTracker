@@ -3,7 +3,10 @@
   <div>
     <nav>
       <div class="md-toolbar md-accent md-theme-demo-light md-elevation-1">
-        <div class="md-title main-title">Time tracker</div>
+        <div class="md-title main-title">
+          <a @click="go('Home')">Time tracker</a>
+        </div>
+
         <button v-if="isLogin" type="button" class="md-button md-theme-demo-light short" @click="go('Help')">
           <font-awesome-icon icon="question-circle"/>
         </button>
@@ -95,6 +98,12 @@ export default {
   .main-title{
     flex: 1;
     text-align: left;
+  }
+  .main-title a{
+    cursor: pointer;
+  }
+  .main-title a:hover{
+    text-decoration: none;
   }
   .mx-datepicker input{
     background-color: #ffffff !important;

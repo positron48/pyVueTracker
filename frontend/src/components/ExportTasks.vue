@@ -65,6 +65,7 @@
                         <md-field>
                           <label></label>
                           <md-input v-model="task.delta" type="number" min="0" step="0.05"></md-input>
+                          <md-tooltip md-direction="top" v-if="task.delta_full">{{task.delta_full}}</md-tooltip>
                         </md-field>
                       </md-table-cell>
                       <md-table-cell>
@@ -276,7 +277,7 @@ export default {
         }
 
         groupedTasks[task['date']]['tasks'].push(task)
-        groupedTasks[task['date']]['duration'] += task['delta']
+        groupedTasks[task['date']]['duration'] += task['delta'] > 0 ? task['delta'] : 0
 
         // со сложением вместе округление работать не хочет
         groupedTasks[task['date']]['duration'] = Math.round(groupedTasks[task['date']]['duration'] * 100) / 100
