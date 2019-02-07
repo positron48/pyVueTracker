@@ -196,6 +196,11 @@ export var API = {
     })
   },
 
+  // получение данных о задаче с трекера
+  getVersion (version) {
+    return HTTP.get('/api/version?version=' + version)
+  },
+
   // обновление задания
   exportTask (exportTask) {
     return HTTP.post('/api/task/export',

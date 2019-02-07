@@ -405,6 +405,34 @@ def tracker_task():
     return api.get_tracker_task(tracker_id, task_id)
 
 
+@app.route('/api/version', methods=['GET'])
+@Auth.check_api_request_readonly
+def version():
+    client_version = None
+    if 'version' in request.values:
+        try:
+            client_version = float(request.values['version'])
+        except (ValueError):
+            client_version = None
+
+    changes = []
+
+    # чтобы попросить пользователя обновить страницу, если релизятся правки по фронту (стили/скрипты)
+    history = {
+        0.10: "скрытие графиков, если в них нет данных",
+        0.11: "уведомление пользователей при обновлении",
+    }
+
+    current_version = list(history.keys())[-1]
+
+    if client_version is not None and current_version > client_version:
+        for v in history:
+            if v > client_version:
+                changes.append(history[v])
+
+    return jsonify({"status": True, "version": current_version, "changes": changes})
+
+
 @app.route('/api/task/export', methods=['POST'])
 @Auth.check_api_request_readonly
 def export_task():
