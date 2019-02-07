@@ -109,6 +109,7 @@ export default {
   },
   mounted: function () {
     this.updateLogin()
+    this.getVersion()
     this.timer = setInterval(this.getVersion, 300000)
   }
 }
