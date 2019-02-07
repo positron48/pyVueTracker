@@ -84,7 +84,7 @@ export default {
             if (confirm('Доступна новая версия!\nОбновить страницу?\nИзменения:\n' + response.data.changes.join('\n'))) {
               location.reload()
             } else {
-              this.timer = setInterval(this.getVersion, 6000)
+              this.timer = setInterval(this.getVersion, 300000)
             }
           }
         })
@@ -109,7 +109,7 @@ export default {
   },
   mounted: function () {
     this.updateLogin()
-    this.timer = setInterval(this.getVersion, 6000)
+    this.timer = setInterval(this.getVersion, 300000)
   }
 }
 </script>
