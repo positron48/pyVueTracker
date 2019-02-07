@@ -23,12 +23,18 @@
       </template>
     </div>
     <div class="task-col task-description">{{task.description}}</div>
-    <div class="task-col task-duration">{{task.delta}}</div>
+    <div class="task-col task-duration">{{deltaTime}}</div>
   </md-list-item>
 </template>
 
 <script>
+import {deltaToHMM} from './helpers.js'
 export default {
+  computed: {
+    deltaTime: function () {
+      return deltaToHMM(this.task.delta)
+    }
+  },
   props: {
     task: {
       type: Object,

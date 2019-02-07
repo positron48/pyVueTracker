@@ -21,7 +21,7 @@
               @resume="resumeTask(arguments[0])"
             />
             <md-list-item class="task-duration-list-item">
-              {{taskGroup.duration}}
+              {{taskGroup.duration_formatted}}
             </md-list-item>
           </md-list>
         </template>
@@ -79,7 +79,7 @@
 import TaskItem from './TaskItem.vue'
 import BarChart from './BarChart.vue'
 import Modal from './Modal.vue'
-import {formatLabel, formatDate} from './helpers.js'
+import {formatLabel, formatDate, deltaToHMM} from './helpers.js'
 import HorizontalBarChart from './HorizontalBarChart.vue'
 import API from './api.js'
 import MaskedInput from 'vue-masked-input'
@@ -139,6 +139,10 @@ export default {
         groupedTasks['dates'][task['date']]['duration'] = Math.round(groupedTasks['dates'][task['date']]['duration'] * 100) / 100
         groupedTasks['activities'][task['activity_id']]['duration'] = Math.round(groupedTasks['activities'][task['activity_id']]['duration'] * 100) / 100
         groupedTasks['categories'][task['category']]['duration'] = Math.round(groupedTasks['categories'][task['category']]['duration'] * 100) / 100
+
+        groupedTasks['dates'][task['date']]['duration_formatted'] = deltaToHMM(groupedTasks['dates'][task['date']]['duration'])
+        groupedTasks['activities'][task['activity_id']]['duration_formatted'] = deltaToHMM(groupedTasks['activities'][task['activity_id']]['duration'])
+        groupedTasks['categories'][task['category']]['duration_formatted'] = deltaToHMM(groupedTasks['categories'][task['category']]['duration'])
       })
 
       return groupedTasks
