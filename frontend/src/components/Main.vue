@@ -52,13 +52,16 @@ import Export from './Export.vue'
 import Settings from './Settings.vue'
 import Help from './Help.vue'
 import {isLogin, logout} from './auth.js'
+import API from './api.js'
 
 export default {
   data () {
     return {
       currentComponent: 'Auth',
       loginText: 'Выйти',
-      isLogin: false
+      isLogin: false,
+      version: null,
+      timer: null
     }
   },
   components: {
@@ -69,6 +72,25 @@ export default {
       this.isLogin = isLogin()
       this.loginText = this.isLogin ? 'Выйти' : 'Войти'
       this.currentComponent = this.isLogin ? 'Home' : 'Auth'
+    },
+    getVersion () {
+      API.getVersion(this.version)
+        .then(response => {
+          if (this.version === null) {
+            this.version = response.data.version
+          } else if (this.version < parseFloat(response.data.version)) {
+            // вывод уведомления пользователю с просьбой обновить страницу
+            clearInterval(this.timer)
+            if (confirm('Доступна новая версия!\nОбновить страницу?\nИзменения:\n' + response.data.changes.join('\n'))) {
+              location.reload()
+            } else {
+              this.timer = setInterval(this.getVersion, 6000)
+            }
+          }
+        })
+        .catch(error => {
+          console.log(['getVersion error', error])
+        })
     },
     go (screen) {
       if (screen === 'Auth') {
@@ -87,6 +109,7 @@ export default {
   },
   mounted: function () {
     this.updateLogin()
+    this.timer = setInterval(this.getVersion, 6000)
   }
 }
 </script>
@@ -103,7 +126,7 @@ export default {
     cursor: pointer;
   }
   .main-title a:hover{
-    text-decoration: none;
+    text-decoration: none !important;
   }
   .mx-datepicker input{
     background-color: #ffffff !important;
