@@ -551,7 +551,7 @@ export default {
     margin: 0 auto;
   }
   .task-group{
-    margin-top: 20px;
+    margin-top: 20px !important;
   }
   .task-group-date .md-list-item-content{
     font-weight: bold;

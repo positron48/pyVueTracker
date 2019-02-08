@@ -424,9 +424,10 @@ def version():
         0.12: "увеличен интервал проверки обновлений до 5 минут",
         0.13: "увеличен интервал проверки обновлений до 5 минут fix",
         0.14: "увеличен интервал проверки обновлений до 5 минут fix",
+        0.15: "переключение символов [#@,] по shift+tab в обратную сторону, мелкие правки",
     }
 
-    current_version = list(history.keys())[-1]
+    current_version = 0.15  # подобное не работает на боевом нормально - list(history.keys())[-1]
 
     if client_version is not None and current_version > client_version:
         for v in history:

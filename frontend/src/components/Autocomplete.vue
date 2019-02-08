@@ -63,24 +63,46 @@ export default {
         }
       } else if (e.keyCode === 9) { // tab
         e.preventDefault()
-        this.inputValue = this.inputValue.trim()
-        if (!this.inputValue.match(/[@#,]/)) {
-          this.inputValue += '@'
-          this.setInput(this.inputValue)
-        } else if (!this.inputValue.match(/[#,]/)) {
-          if (this.inputValue[this.inputValue.length - 1] === '@') {
-            this.inputValue = this.inputValue.substr(0, this.inputValue.length - 1).trim() + ' #'
-          } else {
-            this.inputValue += ' #'
+        if (!event.shiftKey) {
+          this.inputValue = this.inputValue.trim()
+          if (!this.inputValue.match(/[@#,]/)) {
+            this.inputValue += '@'
+            this.setInput(this.inputValue)
+          } else if (!this.inputValue.match(/[#,]/)) {
+            if (this.inputValue[this.inputValue.length - 1] === '@') {
+              this.inputValue = this.inputValue.substr(0, this.inputValue.length - 1).trim() + ' #'
+            } else {
+              this.inputValue += ' #'
+            }
+            this.setInput(this.inputValue)
+          } else if (!this.inputValue.match(/,/)) {
+            if (this.inputValue[this.inputValue.length - 1] === '#') {
+              this.inputValue = this.inputValue.substr(0, this.inputValue.length - 1).trim() + ', '
+            } else {
+              this.inputValue += ', '
+            }
+            this.setInput(this.inputValue)
           }
-          this.setInput(this.inputValue)
-        } else if (!this.inputValue.match(/,/)) {
-          if (this.inputValue[this.inputValue.length - 1] === '#') {
-            this.inputValue = this.inputValue.substr(0, this.inputValue.length - 1).trim() + ', '
-          } else {
-            this.inputValue += ', '
+        } else {
+          // меняем символы в обратную сторону
+          this.inputValue = this.inputValue.trim()
+          var lastSymbol = this.inputValue[this.inputValue.length - 1]
+          if (lastSymbol === ',' && !this.inputValue.match(/[#]/)) {
+            this.inputValue = this.inputValue.replace(/,$/, ' #')
+            this.setInput(this.inputValue)
+          } else if (lastSymbol === ',' && this.inputValue.match(/[#]/)) {
+            this.inputValue = this.inputValue.replace(/,$/, '')
+            this.setInput(this.inputValue)
+          } else if (lastSymbol === '#' && !this.inputValue.match(/[@]/)) {
+            this.inputValue = this.inputValue.replace(/\s*#$/, '@')
+            this.setInput(this.inputValue)
+          } else if (lastSymbol === '#' && this.inputValue.match(/[@]/)) {
+            this.inputValue = this.inputValue.replace(/#$/, '')
+            this.setInput(this.inputValue)
+          } else if (lastSymbol === '@') {
+            this.inputValue = this.inputValue.replace(/@$/, '')
+            this.setInput(this.inputValue)
           }
-          this.setInput(this.inputValue)
         }
       }
     },
