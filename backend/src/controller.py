@@ -176,10 +176,11 @@ class ApiController:
         s = Sheduler()
 
         token = s.get_token(tracker.type, tracker.api_url, login, password)
+        print(token)
 
         self.response.status = token is not None
 
-        self.response.external_token = token = None
+        self.response.external_token = token
         if self.response.status:
             self.response.external_token = token
 

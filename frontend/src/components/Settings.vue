@@ -35,11 +35,12 @@
                 </a>
               </md-table-head>
               <md-table-head>
-                <a class="simple-link" v-if="tracker.external_api_key"
+                <a class="simple-link" v-if="tracker.external_api_key && tracker.type === 'evo'"
                  @click="showUserModal(tracker)">
                   <span v-if="!tracker.external_user_id && tracker.type === 'evo'">Указать пользователя</span>
                   <span v-if="tracker.external_user_id">{{tracker.external_user_id}}</span>
                 </a>
+                <span v-if="tracker.external_user_id && tracker.type === 'redmine'">{{tracker.external_user_id}}</span>
               </md-table-head>
             </md-table-row>
           </md-table>

@@ -82,7 +82,7 @@ export default {
             // вывод уведомления пользователю с просьбой обновить страницу
             clearInterval(this.timer)
             if (confirm('Доступна новая версия!\nОбновить страницу?\nИзменения:\n' + response.data.changes.join('\n'))) {
-              location.reload()
+              location.reload(true)
             } else {
               this.timer = setInterval(this.getVersion, 300000)
             }
