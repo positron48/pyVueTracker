@@ -406,7 +406,6 @@ def tracker_task():
 
 
 @app.route('/api/version', methods=['GET'])
-@Auth.check_api_request_readonly
 def version():
     client_version = None
     if 'version' in request.values:
@@ -424,9 +423,10 @@ def version():
         0.12: "увеличен интервал проверки обновлений до 5 минут",
         0.14: "увеличен интервал проверки обновлений до 5 минут fix",
         0.15: "переключение символов [#@,] по shift+tab в обратную сторону, мелкие правки",
+        0.16: "стилизация окна уведомления о новой версии",
     }
 
-    current_version = 0.15  # подобное не работает на боевом нормально - list(history.keys())[-1]
+    current_version = 0.16  # подобное не работает на боевом нормально - list(history.keys())[-1]
 
     if client_version is not None and current_version > client_version:
         for v in history:

@@ -41,6 +41,15 @@
     <div class="container" id="main">
       <component v-bind:is="currentComponent" @login="updateLogin"></component>
     </div>
+
+    <md-dialog-confirm
+      :md-active.sync="dialog.show"
+      :md-title="dialog.title"
+      :md-content="dialog.content"
+      md-confirm-text="Да"
+      md-cancel-text="Обновлю позже"
+      @md-cancel="onCancel"
+      @md-confirm="onConfirm" />
   </div>
 </template>
 
@@ -61,7 +70,12 @@ export default {
       loginText: 'Выйти',
       isLogin: false,
       version: null,
-      timer: null
+      timer: null,
+      dialog: {
+        show: false,
+        title: 'Доступна новая версия!',
+        content: ''
+      }
     }
   },
   components: {
@@ -80,12 +94,8 @@ export default {
             this.version = response.data.version
           } else if (this.version < parseFloat(response.data.version)) {
             // вывод уведомления пользователю с просьбой обновить страницу
-            clearInterval(this.timer)
-            if (confirm('Доступна новая версия!\nОбновить страницу?\nИзменения:\n' + response.data.changes.join('\n'))) {
-              location.reload(true)
-            } else {
-              this.timer = setInterval(this.getVersion, 300000)
-            }
+            this.dialog.content = 'Изменения:<br>' + response.data.changes.join('<br>') + '<br><br>Обновить страницу?'
+            this.dialog.show = true
           }
         })
         .catch(error => {
@@ -105,6 +115,12 @@ export default {
           this.updateLogin()
         }
       }
+    },
+    onConfirm () {
+      location.reload(true)
+    },
+    onCancel () {
+      this.dialog.show = false
     }
   },
   mounted: function () {
