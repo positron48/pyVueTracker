@@ -8,6 +8,7 @@
                 <Autocomplete
                   v-model="taskName"
                   :suggestions="filteredSuggestion"
+                  @input="getCompletitions()"
                   ref="autocomplete"
                 />
               </div>
@@ -57,7 +58,7 @@ export default {
   },
   methods: {
     getCompletitions () {
-      API.getCompletitions()
+      API.getCompletitions(this.taskName)
         .then(response => {
           this.taskCompletitions = response.data.values
         })
