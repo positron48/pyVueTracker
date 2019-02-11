@@ -84,14 +84,21 @@ class Engine:
 
     def get_autocomplete(self, text, count=50):
         db_facts = None
-        if text is None or True:
+        if text is None:
             db_facts = db.session.query(Activity) \
                 .filter(Activity.user_id == self.user.id) \
                 .order_by(desc(Activity.time_start)) \
                 .limit(count) \
                 .all()
         else:
-            pass  # todo тут будет парсинг текста для умного автокомплита
+            # todo тут будет парсинг текста для умного автокомплита
+            db_facts = db.session.query(Activity) \
+                .filter(Activity.user_id == self.user.id) \
+                .filter(Activity.name.like('%' + text + '%')) \
+                .order_by(desc(Activity.time_start)) \
+                .limit(count) \
+                .all()
+
         return db_facts
 
     def add_fact(self, fact: Fact):
@@ -109,15 +116,15 @@ class Engine:
         new_activity.user = self.user
         new_activity.task = self.__get_or_create_task_by_fact(fact)
 
-        current = self.get_current()  # type:Activity
-        if current is not None:
+        last = self.get_last()  # type:Activity
+        if last is not None:
             # проверяем, чтобы время начала новой активности было не раньше времени начала текущей активности
-            if current.time_start > new_activity.time_start:
+            if last.time_start > new_activity.time_start:
                 return 'Новая активность начинается раньше текущей.\n' \
                        'Исправьте время начала новой активности,\n' \
                        'или удалите/отредактируйте текущую активность.'
             # закрываем текущую активность, время завершения = время начала новой
-            current.stop(new_activity.time_start)
+            last.stop(new_activity.time_start)
 
         db.session.add(new_activity)
         return True
@@ -130,6 +137,14 @@ class Engine:
             .order_by(desc(Activity.time_start)) \
             .first()
         return current
+
+    def get_last(self):
+        last = db.session.query(Activity) \
+            .filter(Activity.user_id == self.user.id) \
+            .filter(cast(Activity.time_start, Date) == dt.date.today()) \
+            .order_by(desc(Activity.time_start)) \
+            .first()
+        return last
 
     def get_facts(self, dateFrom, dateTo):
         facts = db.session.query(Activity) \
