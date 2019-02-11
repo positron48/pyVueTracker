@@ -60,13 +60,14 @@ import Auth from './Auth.vue'
 import Export from './Export.vue'
 import Settings from './Settings.vue'
 import Help from './Help.vue'
+import NotFound from './NotFound.vue'
 import {isLogin, logout} from './auth.js'
 import API from './api.js'
 
 export default {
   data () {
     return {
-      currentComponent: 'Auth',
+      currentComponent: null,
       loginText: 'Выйти',
       isLogin: false,
       version: null,
@@ -79,13 +80,25 @@ export default {
     }
   },
   components: {
-    Home, History, Auth, Export, Settings, Help
+    Home, History, Auth, Export, Settings, Help, NotFound
   },
   methods: {
     updateLogin () {
       this.isLogin = isLogin()
       this.loginText = this.isLogin ? 'Выйти' : 'Войти'
-      this.currentComponent = this.isLogin ? 'Home' : 'Auth'
+      if (this.isLogin) {
+        var component = location.pathname.substr(1)
+        component = component.charAt(0).toUpperCase() + component.slice(1)
+        if (component === 'Auth' || component === '') {
+          this.go('Home')
+        } else if (['Home', 'History', 'Export', 'Help', 'Settings'].indexOf(component) !== -1) {
+          this.go(component)
+        } else {
+          this.go('NotFound')
+        }
+      } else {
+        this.go('Auth')
+      }
     },
     getVersion () {
       API.getVersion(this.version)
@@ -103,16 +116,24 @@ export default {
         })
     },
     go (screen) {
-      if (screen === 'Auth') {
-        if (this.isLogin) {
-          logout()
-        }
-        this.updateLogin()
-      } else {
-        if (this.isLogin) {
-          this.currentComponent = screen
+      if (screen !== this.currentComponent) {
+        if (window.history.replaceState) {
+          window.history.replaceState(screen, screen, '/' + screen.toLowerCase())
         } else {
+          window.history.pushState(screen, screen, '/' + screen.toLowerCase())
+        }
+        if (screen === 'Auth') {
+          if (this.isLogin) {
+            logout()
+          }
+          this.currentComponent = screen
           this.updateLogin()
+        } else {
+          if (this.isLogin) {
+            this.currentComponent = screen
+          } else {
+            this.updateLogin()
+          }
         }
       }
     },
