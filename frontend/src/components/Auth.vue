@@ -11,8 +11,7 @@
           <md-input v-model.trim="password" type="password" required></md-input>
         </md-field>
         <div class="auth-buttons">
-          <md-button @click="register()">Регистрация</md-button>
-          <md-button @click="auth()">Вход</md-button>
+          <md-button @click="auth()">Войти</md-button>
         </div>
       </md-card-content>
     </md-card>
@@ -35,20 +34,6 @@ export default {
   methods: {
     auth () {
       API.auth(this.login, this.password, 'login')
-        .then(response => {
-          if (response.data.message !== undefined) {
-            alert(response.data.message)
-          } else {
-            this.isLogin = isLogin()
-            this.$emit('login')
-          }
-        })
-        .catch(error => {
-          console.log(['auth error', error])
-        })
-    },
-    register () {
-      API.auth(this.login, this.password, 'registration')
         .then(response => {
           if (response.data.message !== undefined) {
             alert(response.data.message)
