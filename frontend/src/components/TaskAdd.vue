@@ -58,7 +58,10 @@ export default {
   },
   methods: {
     getCompletitions () {
-      API.getCompletitions(this.taskName)
+      var name = this.taskName.toLowerCase()
+      var timeDelta = this.getTimeDelta(name, '', 0)
+      var nameForFilter = name.replace(timeDelta, '').trim()
+      API.getCompletitions(nameForFilter)
         .then(response => {
           this.taskCompletitions = response.data.values
         })
