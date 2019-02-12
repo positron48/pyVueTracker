@@ -113,6 +113,10 @@
         <md-button class="md-accent" @click="saveLinkProject">сохранить</md-button>
       </div>
     </modal>
+    <md-dialog-alert
+      :md-active.sync="haveNotClosedTask"
+      :md-content="dialogMessage"
+      md-confirm-text="Ок" />
   </div>
 </template>
 
@@ -143,7 +147,10 @@ export default {
       showLink: false,
       linkToProject: null,
       trackerProjects: {},
-      currentTrackerProjects: []
+      currentTrackerProjects: [],
+
+      haveNotClosedTask: false,
+      dialogMessage: 'У вас есть незавершенные задачи, они не будут экспортированы'
     }
   },
   props: {
@@ -312,6 +319,10 @@ export default {
         .then(response => {
           if (('status' in response.data && response.data.status) || !('status' in response.data)) {
             this.tasks = response.data.tasks
+            this.dialogMessage = 'У вас есть незавершенные задачи, они не будут экспортированы:<br>' +
+              response.data.not_closed_tasks.replace(/\n/, '<br>')
+            this.haveNotClosedTask = response.data.not_closed_tasks !== ''
+
             this.getProjects()
           }
         })
@@ -607,10 +618,16 @@ export default {
   }
   .tracker-checkbox {
     float: right !important;
+    margin: 0 5px !important;
+  }
+  .tracker-checkbox .md-checkbox-container{
     height: 18px !important;
     width: 18px !important;
     min-width: 18px !important;
-    margin: 0 5px !important;
+  }
+  .tracker-checkbox .md-checkbox-container:after{
+    width: 5px !important;
+    height: 12px !important;
   }
   .tracker-checkbox.md-checkbox .md-checkbox-container:before {
     height: 18px !important;
@@ -633,5 +650,8 @@ export default {
   .column-task-date {
     max-width: 130px;
     width: 130px;
+  }
+  .md-table-cell-container span:first-child .tracker-checkbox{
+    margin-top: 3px !important;
   }
 </style>

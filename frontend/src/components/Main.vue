@@ -176,4 +176,12 @@ export default {
   .current{
     color: #20a000;
   }
+  .dropdown.v-select button.clear span{
+    position: relative !important;
+    top: 4px !important;
+  }
+  .dropdown.v-select button.open-indicator span{
+    top: -1px;
+    position: relative;
+  }
 </style>
