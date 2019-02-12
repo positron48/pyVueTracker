@@ -42,7 +42,10 @@ export var API = {
   // список заданий за период
   getTasks (dateStart, dateEnd) {
     var formattedStart = formatDate(dateStart)
-    var formattedEnd = formatDate(dateEnd)
+
+    var nextDayDateEnd = new Date()
+    nextDayDateEnd.setDate(dateEnd.getDate() + 1)
+    var formattedEnd = formatDate(nextDayDateEnd)
 
     const path = '/api/tasks?interval=' + formattedStart + '-' + formattedEnd
     return HTTP.get(path)
