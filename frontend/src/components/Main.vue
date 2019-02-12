@@ -7,7 +7,7 @@
           <a @click="go('Home')">Time tracker</a>
         </div>
 
-        <button v-if="isLogin" type="button" class="md-button md-theme-demo-light short" @click="go('Help')">
+        <button type="button" class="md-button md-theme-demo-light short" @click="go('Help')">
           <font-awesome-icon icon="question-circle" :class="currentComponent=='Help' ? 'current' : ''"/>
         </button>
         <button v-if="isLogin" type="button" class="md-button md-theme-demo-light" @click="go('Home')">
@@ -117,24 +117,27 @@ export default {
     },
     go (screen) {
       if (screen !== this.currentComponent) {
-        if (window.history.replaceState) {
-          window.history.replaceState(screen, screen, '/' + screen.toLowerCase())
-        } else {
-          window.history.pushState(screen, screen, '/' + screen.toLowerCase())
-        }
-        if (screen === 'Auth') {
-          if (this.isLogin) {
+        if (['Auth', 'Help'].indexOf(screen) !== -1) {
+          if (screen === 'Auth' && this.isLogin) {
             logout()
           }
           this.currentComponent = screen
-          this.updateLogin()
+          this.changeUrl(screen)
         } else {
           if (this.isLogin) {
             this.currentComponent = screen
+            this.changeUrl(screen)
           } else {
             this.updateLogin()
           }
         }
+      }
+    },
+    changeUrl (screen) {
+      if (window.history.replaceState) {
+        window.history.replaceState(screen, screen, '/' + screen.toLowerCase())
+      } else {
+        window.history.pushState(screen, screen, '/' + screen.toLowerCase())
       }
     },
     onConfirm () {

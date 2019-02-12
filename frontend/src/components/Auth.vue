@@ -5,10 +5,12 @@
         <md-field>
           <label>Логин</label>
           <md-input v-model.trim="login" type="text" required></md-input>
+          <md-tooltip md-direction="right">Логин redmine</md-tooltip>
         </md-field>
         <md-field>
           <label>Пароль</label>
           <md-input v-model.trim="password" type="password" required></md-input>
+          <md-tooltip md-direction="right">Пароль redmine</md-tooltip>
         </md-field>
         <div class="auth-buttons">
           <md-button @click="auth()">Войти</md-button>
