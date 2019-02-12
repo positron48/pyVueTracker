@@ -8,31 +8,31 @@
         </div>
 
         <button v-if="isLogin" type="button" class="md-button md-theme-demo-light short" @click="go('Help')">
-          <font-awesome-icon icon="question-circle"/>
+          <font-awesome-icon icon="question-circle" :class="currentComponent=='Help' ? 'current' : ''"/>
         </button>
         <button v-if="isLogin" type="button" class="md-button md-theme-demo-light" @click="go('Home')">
           <div class="md-ripple">
-              <div class="md-button-content">Главный экран</div>
+              <div class="md-button-content" :class="currentComponent=='Home' ? 'current' : ''">Главный экран</div>
           </div>
         </button>
-        <button v-if="isLogin" type="button" class="md-button md-theme-demo-light">
+        <button v-if="isLogin" type="button" class="md-button md-theme-demo-light" @click="go('History')">
           <div class="md-ripple">
-              <div class="md-button-content" @click="go('History')">История</div>
+              <div class="md-button-content" :class="currentComponent=='History' ? 'current' : ''">История</div>
           </div>
         </button>
-        <button v-if="isLogin" type="button" class="md-button md-theme-demo-light">
+        <button v-if="isLogin" type="button" class="md-button md-theme-demo-light" @click="go('Export')">
           <div class="md-ripple">
-              <div class="md-button-content" @click="go('Export')">Экспорт</div>
+              <div class="md-button-content" :class="currentComponent=='Export' ? 'current' : ''">Экспорт</div>
           </div>
         </button>
-        <button v-if="isLogin" type="button" class="md-button md-theme-demo-light">
+        <button v-if="isLogin" type="button" class="md-button md-theme-demo-light" @click="go('Settings')">
           <div class="md-ripple">
-              <div class="md-button-content" @click="go('Settings')">Настройки</div>
+              <div class="md-button-content" :class="currentComponent=='Settings' ? 'current' : ''">Настройки</div>
           </div>
         </button>
-        <button type="button" class="md-button md-theme-demo-light">
+        <button type="button" class="md-button md-theme-demo-light" @click="go('Auth')">
           <div class="md-ripple">
-              <div class="md-button-content" @click="go('Auth')">{{loginText}}</div>
+              <div class="md-button-content" :class="currentComponent=='Auth' ? 'current' : ''">{{loginText}}</div>
           </div>
         </button>
       </div>
@@ -172,5 +172,8 @@ export default {
   .md-button.short{
     width: 36px;
     min-width: 36px;
+  }
+  .current{
+    color: #20a000;
   }
 </style>
