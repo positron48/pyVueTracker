@@ -192,6 +192,9 @@ export default {
                 ' #' + externalTask['id'] + ': ' + externalTask['name']
             }
           }
+          if (this.loadingTaskCount === 0) {
+            this.exportDisabled = false
+          }
 
           // todo: status: ?warning? часы за этот день по проекту уже выгружались
           var exportStatus = this.getTaskExportStatus(task['date'], groupedTasks[task['date']].tasks.length, tracker.id)
