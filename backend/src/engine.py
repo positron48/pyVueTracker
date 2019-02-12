@@ -149,8 +149,8 @@ class Engine:
     def get_facts(self, dateFrom, dateTo):
         facts = db.session.query(Activity) \
             .filter(Activity.user_id == self.user.id) \
-            .filter(cast(Activity.time_start, Date) >= dateFrom) \
-            .filter(cast(Activity.time_start, Date) <= dateTo) \
+            .filter(Activity.time_start >= dateFrom) \
+            .filter(Activity.time_start <= dateTo) \
             .all()
         return facts
 

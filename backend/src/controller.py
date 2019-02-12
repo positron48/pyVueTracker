@@ -99,10 +99,14 @@ class ApiController:
     @send_response
     def get_grouped_tasks(self, dateFrom, dateTo):
         tasks = []
+        not_closed_tasks = ''
         for db_fact in self.engine.get_facts(dateFrom, dateTo):  # type: Activity
-            if db_fact.time_end is None:  # не учитываем открытые активности
-                continue
             fact = FormattedFact(db_fact)
+            if db_fact.time_end is None:  # не учитываем открытые активности
+                print([dateFrom, dateTo, db_fact.__dict__])
+                not_closed_tasks += "\n" + fact.date + ' ' + fact.activity + '@' + fact.category
+                continue
+
             task = {
                 'id': fact.id,
                 'date': fact.date,
@@ -166,6 +170,7 @@ class ApiController:
 
         self.response.status = True
         self.response.tasks = tasks
+        self.response.not_closed_tasks = not_closed_tasks
 
     @send_response
     def get_token(self, tracker_id, login, password):
