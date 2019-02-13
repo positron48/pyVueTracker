@@ -1,7 +1,7 @@
 import datetime as dt
 from typing import Union, Sequence, List, Optional
 
-from sqlalchemy import desc, cast, Date, update
+from sqlalchemy import asc, desc, cast, Date, update
 
 from backend.src.auth import Auth
 from backend.src.model.hamster import Fact
@@ -119,15 +119,41 @@ class Engine:
         last = self.get_last()  # type:Activity
         if last is not None:
             # проверяем, чтобы время начала новой активности было не раньше времени начала текущей активности
-            if last.time_start > new_activity.time_start:
-                return 'Новая активность начинается раньше текущей.\n' \
-                       'Исправьте время начала новой активности,\n' \
-                       'или удалите/отредактируйте текущую активность.'
-            # закрываем текущую активность, время завершения = время начала новой
-            last.stop(new_activity.time_start)
+            if last.time_start < new_activity.time_start:
+                # закрываем текущую активность, время завершения = время начала новой
+                last.stop(new_activity.time_start)
+            else:
+                # проверка на пересечение с другими активностями
+                if not self.check_intervals(new_activity.time_start, new_activity.time_end):
+                    return 'Активность пересекается с предыдущими. ' + \
+                           'Измените интервал или отредактируйте предыдущие активности'
 
         db.session.add(new_activity)
         return True
+
+    def check_intervals(self, start, end, exclude_id=None):
+        date_start = start.replace(hour=0, minute=0, second=0)  # взять начало дня
+
+        date_end = end
+        if date_end is None:
+            date_end = dt.datetime.now()
+
+        tasks = self.get_facts(date_start, date_end)  # дата окончания или текущая, если нулл
+
+        # проверяем все полученные активности, не пересекается ли одна из них с новой
+        for task in tasks:
+            if ((exclude_id is None) or (task.id is not exclude_id)) and \
+                    self.is_interval_intersect(start, date_end, task.time_start, task.time_end):
+
+                return False
+
+        return True
+
+    @staticmethod
+    def is_interval_intersect(t1_start, t1_end, t2_start, t2_end):
+        if t2_end is None:
+            t2_end = dt.datetime.now()
+        return (t1_start <= t2_start < t1_end) or (t2_start <= t1_start < t2_end)
 
     def get_current(self):
         current = db.session.query(Activity) \
@@ -146,11 +172,12 @@ class Engine:
             .first()
         return last
 
-    def get_facts(self, dateFrom, dateTo):
+    def get_facts(self, date_from, date_to):
         facts = db.session.query(Activity) \
             .filter(Activity.user_id == self.user.id) \
-            .filter(Activity.time_start >= dateFrom) \
-            .filter(Activity.time_start <= dateTo) \
+            .filter(Activity.time_start >= date_from) \
+            .filter(Activity.time_start <= date_to) \
+            .order_by(asc(Activity.time_start)) \
             .all()
         return facts
 
@@ -308,8 +335,10 @@ class Engine:
             return 'Не заполнено время начала активности'
         if fact.end_time is not None and fact.end_time <= fact.start_time:
             return 'Время окончания активности меньше, чем время начала'
-        if db_fact.time_end is not None and fact.end_time is None:
-            return 'Не заполнено время окончания активности'
+        if not self.check_intervals(fact.start_time, fact.end_time, int(id)):
+            return 'Активность пересекается с предыдущими. ' + \
+                   'Измените интервал или отредактируйте предыдущие активности'
+
         db_fact.time_start = fact.start_time
         db_fact.time_end = fact.end_time
         db_fact.name = fact.get_task_name()
