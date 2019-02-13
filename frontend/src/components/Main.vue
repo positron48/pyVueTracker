@@ -86,9 +86,9 @@ export default {
     updateLogin () {
       this.isLogin = isLogin()
       this.loginText = this.isLogin ? 'Выйти' : 'Войти'
+      var component = location.pathname.substr(1)
+      component = component.charAt(0).toUpperCase() + component.slice(1)
       if (this.isLogin) {
-        var component = location.pathname.substr(1)
-        component = component.charAt(0).toUpperCase() + component.slice(1)
         if (component === 'Auth' || component === '') {
           this.go('Home')
         } else if (['Home', 'History', 'Export', 'Help', 'Settings'].indexOf(component) !== -1) {
@@ -97,7 +97,11 @@ export default {
           this.go('NotFound')
         }
       } else {
-        this.go('Auth')
+        if (component === 'Help') {
+          this.go(component)
+        } else {
+          this.go('Auth')
+        }
       }
     },
     getVersion () {
@@ -120,6 +124,8 @@ export default {
         if (['Auth', 'Help'].indexOf(screen) !== -1) {
           if (screen === 'Auth' && this.isLogin) {
             logout()
+            this.isLogin = isLogin()
+            this.loginText = this.isLogin ? 'Выйти' : 'Войти'
           }
           this.currentComponent = screen
           this.changeUrl(screen)
