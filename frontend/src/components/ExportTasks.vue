@@ -251,7 +251,7 @@ export default {
           }
 
           var needExport = this.getTaskNeedExport(task['date'], groupedTasks[task['date']].tasks.length, tracker.id)
-          if (tracker['status'] === 'linked' || tracker['status'] === 'warning') {
+          if (tracker['status'] === 'linked' || tracker['status'] === 'warning' || tracker['status'] === 'fatal') {
             tracker['available'] = needExport
             if (needExport === null) {
               tracker['available'] = true
@@ -472,7 +472,7 @@ export default {
 
           for (var k = 0; k < task.trackers.length; k++) {
             var needExport = this.getTaskNeedExport(task['date'], j, task.trackers[k].id)
-            if (needExport === true && (task.trackers[k].status === 'linked' || task.trackers[k].status === 'warning')) {
+            if (needExport === true && (task.trackers[k].status === 'linked' || task.trackers[k].status === 'warning' || task.trackers[k].status === 'fatal')) {
               exportTask.tracker_id = task.trackers[k].id
               exportTask.project_id = this.projects[task.project_id]['tracker_projects'][exportTask.tracker_id]['external_project_id']
 
