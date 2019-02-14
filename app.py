@@ -449,9 +449,11 @@ def version():
         0.23: "- проверка пересечения интервала с другими задачами при добавлении и редактировании",
         0.24: "- автокомплит по проектам и тегам при добавлении задачи<br>" +
               "- возможность повторной выгрузки задач, если во время экспорта возникла ошибка",
+        1.0: "- группировка часов в экспорте по трекерам:<br>" +
+              "<img src='/static/_screen_export_trackers.png'>",
     }
 
-    current_version = 0.24  # подобное не работает на боевом нормально - list(history.keys())[-1]
+    current_version = 1.0  # подобное не работает на боевом нормально - list(history.keys())[-1]
 
     if client_version is not None and current_version > client_version:
         for v in history:
