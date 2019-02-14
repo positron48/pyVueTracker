@@ -85,9 +85,11 @@
                 </md-table>
               <md-list-item class="task-duration-list-item">
                   {{taskGroup.duration}}
-                </md-list-item>
-              </md-list>
-
+              </md-list-item>
+              <md-list-item v-for="(duration, title) in taskGroup.durationByTrackers" v-if="duration > 0" :key="taskGroup.date + title" class="task-duration-list-item tracker-durations">
+                  {{title}}: {{duration}}
+              </md-list-item>
+            </md-list>
         </template>
       </div>
     </div>
@@ -166,7 +168,7 @@ export default {
 
         // дни
         if (groupedTasks[task['date']] === undefined) {
-          groupedTasks[task['date']] = {duration: 0, tasks: [], date: task['date']}
+          groupedTasks[task['date']] = {duration: 0, durationByTrackers: {}, tasks: [], date: task['date']}
         }
         task['delta'] = parseFloat(task['delta'])
 
@@ -267,6 +269,15 @@ export default {
             this.setTaskNeedExport(task['date'], groupedTasks[task['date']].tasks.length, tracker.id, null)
           } else if (tracker['status'] === '') {
             this.setTaskNeedExport(task['date'], groupedTasks[task['date']].tasks.length, tracker.id, null)
+          }
+
+          if (this.getTaskNeedExport(task['date'], groupedTasks[task['date']].tasks.length, tracker.id)) {
+            if (groupedTasks[task['date']]['durationByTrackers'][tracker.title] === undefined) {
+              groupedTasks[task['date']]['durationByTrackers'][tracker.title] = 0
+            }
+            groupedTasks[task['date']]['durationByTrackers'][tracker.title] += task['delta'] > 0 ? task['delta'] : 0
+            groupedTasks[task['date']]['durationByTrackers'][tracker.title] =
+              Math.round(groupedTasks[task['date']]['durationByTrackers'][tracker.title] * 100) / 100
           }
 
           task['trackers'].push(tracker)
@@ -653,5 +664,14 @@ export default {
   }
   .md-table-cell-container span:first-child .tracker-checkbox{
     margin-top: 3px !important;
+  }
+  .tracker-durations{
+    width: auto;
+  }
+  .tracker-durations .md-list-item-content {
+    font-size: 12px !important;
+    padding: 0 !important;
+    margin: 0 20px !important;
+    min-height: 20px !important;
   }
 </style>
