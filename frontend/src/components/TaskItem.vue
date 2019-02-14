@@ -72,15 +72,4 @@ export default {
     width: initial;
     white-space: normal;
   }
-  .md-list-item-content{
-    display: block !important;
-    padding-top: 15px !important;
-  }
-  .task-duration-list-item .md-list-item-content{
-    width: 90px;
-    text-align: right;
-    float: right;
-    margin-right: 5px;
-    font-weight: bold;
-  }
 </style>
