@@ -451,7 +451,7 @@ def version():
               "- возможность повторной выгрузки задач, если во время экспорта возникла ошибка",
     }
 
-    current_version = 0.23  # подобное не работает на боевом нормально - list(history.keys())[-1]
+    current_version = 0.24  # подобное не работает на боевом нормально - list(history.keys())[-1]
 
     if client_version is not None and current_version > client_version:
         for v in history:
