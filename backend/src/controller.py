@@ -272,7 +272,6 @@ class ApiController:
     @send_response
     def get_user_tags(self):
         user_tags = self.engine.get_user_tags()
-        print(user_tags)
         tags = []
         for tag in user_tags:
             tags.append(tag.name)
