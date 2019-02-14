@@ -1,7 +1,7 @@
 import datetime as dt
 from typing import Union, Sequence, List, Optional
 
-from sqlalchemy import asc, desc, cast, Date, update
+from sqlalchemy import asc, desc, cast, Date, update, func
 
 from backend.src.auth import Auth
 from backend.src.model.hamster import Fact
@@ -358,19 +358,22 @@ class Engine:
             .filter(TrackerUserLink.user_id == self.user.id) \
             .first()
 
-    def get_user_project_ids(self):
-        return db.session.query(Task.project_id) \
+    def get_user_projects(self):
+        return db.session.query(Project.title, func.count(Project.title).label('total')) \
+            .join(Task.project) \
             .join(Activity) \
             .filter(Activity.task_id == Task.id) \
             .filter(Activity.user_id == self.user.id) \
-            .group_by(Task.project_id) \
+            .group_by(Project.title) \
+            .order_by('total DESC') \
             .all()
 
     def get_user_tags(self):
-        return db.session.query(HashTag.name) \
+        return db.session.query(HashTag.name, func.count(HashTag.name).label('total')) \
             .join(HashTag.activities) \
             .filter(Activity.user_id == self.user.id) \
             .group_by(HashTag.name) \
+            .order_by('total DESC') \
             .all()
 
     def get_projects(self, project_ids=None):

@@ -204,4 +204,7 @@ export default {
     margin-right: 5px;
     font-weight: bold;
   }
+  .md-overlay{
+    z-index: 7 !important;
+  }
 </style>

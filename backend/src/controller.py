@@ -257,14 +257,10 @@ class ApiController:
 
     @send_response
     def get_user_projects(self):
-        user_project_ids = self.engine.get_user_project_ids()
-        project_ids = []
-        for p in user_project_ids:
-            project_ids.append(p[0])
-
+        user_projects = self.engine.get_user_projects()
         projects = []
-        for project in self.engine.get_projects(project_ids):
-            projects.append(project.title)
+        for project in user_projects:
+            projects.append(project[0])
 
         self.response.status = True
         self.response.projects = projects
