@@ -35,6 +35,14 @@ export default {
       showSuggestion: false
     }
   },
+  props: {
+    tags: {
+      type: Array
+    },
+    projects: {
+      type: Array
+    }
+  },
   components: {
     Autocomplete
   },
@@ -42,15 +50,45 @@ export default {
     filteredSuggestion: function () {
       var filtered = []
       var name = this.taskName.toLowerCase()
-      var timeDelta = this.getTimeDelta(name, '', 0)
-      var nameForFilter = name.replace(timeDelta, '').trim()
-      var re = new RegExp(nameForFilter, 'i')
-      for (var item of this.taskCompletitions) {
-        if (item.match(re) && item !== nameForFilter) {
-          filtered.push(timeDelta + ' ' + item)
+      var re
+      var partBefore
+      var part
+
+      if (!/[@#,]/.test(name)) {
+        var timeDelta = this.getTimeDelta(name, '', 0)
+        var nameForFilter = name.replace(timeDelta, '').trim()
+        re = new RegExp(nameForFilter, 'i')
+        for (var item of this.taskCompletitions) {
+          if (re.test(item) && item !== nameForFilter) {
+            filtered.push(timeDelta + ' ' + item)
+          }
+          if (filtered.length >= 10) {
+            break
+          }
         }
-        if (filtered.length >= 10) {
-          break
+      } else if (/@/.test(name) && !/[#,]/.test(name)) {
+        partBefore = name.replace(/^(.*@).*$/, '$1')
+        part = name.replace(/^.*@(.*)$/, '$1')
+        re = new RegExp(part, 'i')
+        for (var project of this.projects) {
+          if (re.test(project) && project !== part) {
+            filtered.push(partBefore + project)
+          }
+          if (filtered.length >= 10) {
+            break
+          }
+        }
+      } else if (/#/.test(name) && !/[,]/.test(name)) {
+        partBefore = name.replace(/^(.*#).*$/, '$1')
+        part = name.replace(/^.*#(.*)$/, '$1')
+        re = new RegExp(part, 'i')
+        for (var tag of this.tags) {
+          if (re.test(tag) && tag !== part) {
+            filtered.push(partBefore + tag)
+          }
+          if (filtered.length >= 10) {
+            break
+          }
         }
       }
       return filtered

@@ -6,9 +6,9 @@
       </div>
     </div>
 
-    <TaskStop v-on:stop-task="refreshData" ref="taskStop"/>
-    <TaskAdd v-on:add-task="refreshData" ref="taskAdd"/>
-    <Tasks ref="tasks" @update="refreshData()"/>
+    <TaskStop v-on:stop-task="onStopTask" ref="taskStop"/>
+    <TaskAdd v-on:add-task="onAddTask" ref="taskAdd" :projects="userProjects" :tags="userTags"/>
+    <Tasks ref="tasks" @update="onEditTask()"/>
   </div>
 </template>
 
@@ -16,11 +16,15 @@
 import Tasks from './Tasks.vue'
 import TaskAdd from './TaskAdd.vue'
 import TaskStop from './TaskStop.vue'
+import {API} from './api.js'
 
 export default {
   data () {
     return {
-      timer: null
+      timer: null,
+
+      userProjects: [],
+      userTags: []
     }
   },
   methods: {
@@ -29,6 +33,39 @@ export default {
       this.$refs.taskAdd.getCompletitions()
       this.$refs.tasks.refreshDate()
       this.$refs.tasks.getTasks()
+    },
+    onStopTask () {
+      this.refreshData()
+      this.getUserProjects()
+      this.getUserTags()
+    },
+    onAddTask () {
+      this.refreshData()
+      this.getUserProjects()
+      this.getUserTags()
+    },
+    onEditTask () {
+      this.refreshData()
+      this.getUserProjects()
+      this.getUserTags()
+    },
+    getUserProjects () {
+      API.getUserProjects()
+        .then(response => {
+          this.userProjects = response.data.projects
+        })
+        .catch(error => {
+          console.log(['getUserProjects error', error])
+        })
+    },
+    getUserTags () {
+      API.getUserTags()
+        .then(response => {
+          this.userTags = response.data.tags
+        })
+        .catch(error => {
+          console.log(['getUserTags error', error])
+        })
     }
   },
   components: {
@@ -36,6 +73,8 @@ export default {
   },
   mounted () {
     this.timer = setInterval(this.refreshData, 60000)
+    this.getUserProjects()
+    this.getUserTags()
   },
   destroyed () {
     clearInterval(this.timer)

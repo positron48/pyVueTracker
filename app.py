@@ -118,7 +118,7 @@ def auth():
 @app.route('/api/tasks')
 @Auth.check_api_request
 def get_tasks():
-    now = dt.datetime.now()
+    now = dt.datetime.now().replace(second=0, microsecond=0)
 
     interval = request.args.get('interval')
     dateFrom = now - dt.timedelta(days=1)
@@ -149,6 +149,20 @@ def get_trackers():
     return api.get_trackers()
 
 
+@app.route('/api/user_projects')
+@Auth.check_api_request
+def get_user_projects():
+    api = ApiController()
+    return api.get_user_projects()
+
+
+@app.route('/api/user_tags')
+@Auth.check_api_request
+def get_user_tags():
+    api = ApiController()
+    return api.get_user_tags()
+
+
 @app.route('/api/trackerProjects')
 @Auth.check_api_request
 def get_tracker_projects():
@@ -169,7 +183,7 @@ def get_evo_users():
 @Auth.check_api_request
 def get_current():
     if app.config.get('SQLITE'):
-        dateFrom = dt.datetime.now()
+        dateFrom = dt.datetime.now().replace(second=0, microsecond=0)
 
         storage = Storage()
         last_entries = storage.get_formated_facts(dateFrom)
@@ -200,7 +214,7 @@ def complete_task():
 @app.route('/api/grouped_tasks')
 @Auth.check_api_request
 def get_grouped_tasks():
-    now = dt.datetime.now()
+    now = dt.datetime.now().replace(second=0, microsecond=0)
 
     interval = request.args.get('interval')
     dateFrom = now
