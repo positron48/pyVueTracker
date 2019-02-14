@@ -144,9 +144,6 @@ class Engine:
         for task in tasks:
             if ((exclude_id is None) or (task.id is not exclude_id)) and \
                     self.is_interval_intersect(start, date_end, task.time_start, task.time_end):
-                print([task.name, task.time_start, task.time_end])
-                print([start, date_end])
-                print([task.time_start, task.time_end])
                 return False
 
         return True
