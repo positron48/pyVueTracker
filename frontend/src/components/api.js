@@ -88,6 +88,16 @@ export var API = {
     })
   },
 
+  // список проектов
+  getUserProjects () {
+    return HTTP.get('/api/user_projects')
+  },
+
+  // список тегов
+  getUserTags () {
+    return HTTP.get('/api/user_tags')
+  },
+
   // список проектов на трекере
   getTrackerProjects (trackerId) {
     return HTTP.get('/api/trackerProjects', {

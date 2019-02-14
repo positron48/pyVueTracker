@@ -112,7 +112,7 @@ class Activity(db.Model):
 
     def stop(self, time_end=None):
         if time_end is None:
-            time_end = dt.datetime.now()
+            time_end = dt.datetime.now().replace(second=0, microsecond=0)
 
         self.time_end = time_end
         # если закрыть активность в течении минуты - она считается ошибочной, и удаляется
@@ -126,7 +126,7 @@ class Activity(db.Model):
         db.session.expunge(self)
         make_transient(self)
         self.id = self.time_end = None
-        self.time_start = dt.datetime.now()
+        self.time_start = dt.datetime.now().replace(second=0, microsecond=0)
         db.session.add(self)
         db.session.commit()
         for tag in tags:

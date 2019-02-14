@@ -108,7 +108,7 @@ class Engine:
         if self.user is None:
             return 'нет пользователя с таким токеном'
         new_activity = Activity()
-        new_activity.time_start = fact.start_time or dt.datetime.now()
+        new_activity.time_start = fact.start_time or dt.datetime.now().replace(second=0, microsecond=0)
         new_activity.time_end = fact.end_time
         new_activity.name = fact.get_task_name()
         new_activity.update_hashtags(fact.tags)
@@ -136,7 +136,7 @@ class Engine:
 
         date_end = end
         if date_end is None:
-            date_end = dt.datetime.now()
+            date_end = dt.datetime.now().replace(second=0, microsecond=0)
 
         tasks = self.get_facts(date_start, date_end)  # дата окончания или текущая, если нулл
 
@@ -144,7 +144,9 @@ class Engine:
         for task in tasks:
             if ((exclude_id is None) or (task.id is not exclude_id)) and \
                     self.is_interval_intersect(start, date_end, task.time_start, task.time_end):
-
+                print([task.name, task.time_start, task.time_end])
+                print([start, date_end])
+                print([task.time_start, task.time_end])
                 return False
 
         return True
@@ -152,7 +154,7 @@ class Engine:
     @staticmethod
     def is_interval_intersect(t1_start, t1_end, t2_start, t2_end):
         if t2_end is None:
-            t2_end = dt.datetime.now()
+            t2_end = dt.datetime.now().replace(second=0, microsecond=0)
         return (t1_start <= t2_start < t1_end) or (t2_start <= t1_start < t2_end)
 
     def get_current(self):
@@ -348,7 +350,7 @@ class Engine:
         db.session.add(db_fact)
         return True
 
-    def get_tracker_by_id(self, tracker_id) -> Optional[TrackerUserLink]:
+    def get_tracker_by_id(self, tracker_id) -> Optional[Tracker]:
         return db.session.query(Tracker) \
             .filter(Tracker.id == tracker_id) \
             .first()
@@ -358,6 +360,21 @@ class Engine:
             .filter(TrackerUserLink.tracker_id == tracker_id) \
             .filter(TrackerUserLink.user_id == self.user.id) \
             .first()
+
+    def get_user_project_ids(self):
+        return db.session.query(Task.project_id) \
+            .join(Activity) \
+            .filter(Activity.task_id == Task.id) \
+            .filter(Activity.user_id == self.user.id) \
+            .group_by(Task.project_id) \
+            .all()
+
+    def get_user_tags(self):
+        return db.session.query(HashTag.name) \
+            .join(HashTag.activities) \
+            .filter(Activity.user_id == self.user.id) \
+            .group_by(HashTag.name) \
+            .all()
 
     def get_projects(self, project_ids=None):
         if project_ids is None:

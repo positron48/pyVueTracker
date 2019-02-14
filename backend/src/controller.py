@@ -256,6 +256,31 @@ class ApiController:
         self.response.trackers = result
 
     @send_response
+    def get_user_projects(self):
+        user_project_ids = self.engine.get_user_project_ids()
+        project_ids = []
+        for p in user_project_ids:
+            project_ids.append(p[0])
+
+        projects = []
+        for project in self.engine.get_projects(project_ids):
+            projects.append(project.title)
+
+        self.response.status = True
+        self.response.projects = projects
+
+    @send_response
+    def get_user_tags(self):
+        user_tags = self.engine.get_user_tags()
+        print(user_tags)
+        tags = []
+        for tag in user_tags:
+            tags.append(tag.name)
+
+        self.response.status = True
+        self.response.tags = tags
+
+    @send_response
     def get_projects(self, project_ids=None):
         result = {}
 

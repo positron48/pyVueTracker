@@ -116,7 +116,7 @@ class FormattedFact(Fact):
     def __delta(self):
         if self.start_time is None:
             return None
-        end_time = self.end_time or dt.datetime.now()
+        end_time = self.end_time or dt.datetime.now().replace(second=0, microsecond=0)
         delta = end_time - self.start_time
         return round(delta.total_seconds() / 3600, 2)
 
@@ -147,7 +147,7 @@ class Hamster:
             TODO - While we are now bit cooler and going recursively, this code
             still looks rather awfully spaghetterian. What is the real solution?
         """
-        now = dt.datetime.now()
+        now = dt.datetime.now().replace(second=0, microsecond=0)
 
         # determine what we can look for
         phases = [
