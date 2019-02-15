@@ -103,10 +103,9 @@ class Engine:
 
     def add_fact(self, fact: Fact):
         if not fact.validate():
-            return 'Не заполнена обязательная часть:\n' \
-                   '[время] [номер_задачи] имя_активности[@проект] [#тег], [#тег2], [описание]'
+            return 'Введите название задачи'
         if self.user is None:
-            return 'нет пользователя с таким токеном'
+            return 'Нет пользователя с таким токеном'
         new_activity = Activity()
         new_activity.time_start = fact.start_time or dt.datetime.now().replace(second=0, microsecond=0)
         new_activity.time_end = fact.end_time
@@ -144,6 +143,9 @@ class Engine:
         for task in tasks:
             if ((exclude_id is None) or (task.id != exclude_id)) and \
                     self.is_interval_intersect(start, date_end, task.time_start, task.time_end):
+                # print([task.name])
+                # print([start, date_end])
+                # print([task.time_start, task.time_end])
                 return False
 
         return True
@@ -157,7 +159,6 @@ class Engine:
     def get_current(self):
         current = db.session.query(Activity) \
             .filter(Activity.user_id == self.user.id) \
-            .filter(cast(Activity.time_start, Date) == dt.date.today()) \
             .filter(Activity.time_end.is_(None)) \
             .order_by(desc(Activity.time_start)) \
             .first()

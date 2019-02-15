@@ -207,4 +207,10 @@ export default {
   .md-overlay{
     z-index: 7 !important;
   }
+  .md-dialog {
+    z-index: 10000 !important;
+  }
+  .md-overlay {
+    z-index: 9999 !important;
+  }
 </style>

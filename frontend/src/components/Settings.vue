@@ -145,6 +145,7 @@
         <md-button class="md-accent" @click="saveEvoUser">сохранить</md-button>
       </div>
     </modal>
+    <md-dialog-alert :md-active.sync="showAlert" :md-content="alertMessage" md-confirm-text="Ок" />
   </div>
 </template>
 
@@ -169,7 +170,10 @@ export default {
       },
       showTracker: false,
       showUser: false,
-      showToken: false
+      showToken: false,
+
+      showAlert: false,
+      alertMessage: ''
     }
   },
   methods: {
@@ -265,7 +269,7 @@ export default {
     getToken () {
       API.getToken(this.currentTracker.id, this.loginToken, this.passwordToken)
         .then(response => {
-          if (response.data.external_token !== undefined && response.data.external_token !== '') {
+          if (response.data.external_token !== undefined && response.data.external_token !== null) {
             this.getTrackers()
 
             if (this.currentTracker.type === 'evo') {
@@ -274,12 +278,16 @@ export default {
 
             this.showToken = false
           } else {
-            alert('Токен не получен')
+            this.alert('Токен не получен')
           }
         })
         .catch(error => {
           console.log(['getToken error', error])
         })
+    },
+    alert (message) {
+      this.alertMessage = message
+      this.showAlert = true
     }
   },
   components: {

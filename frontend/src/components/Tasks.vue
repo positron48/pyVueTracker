@@ -72,6 +72,7 @@
         <md-button class="md-accent" @click="saveTask()">сохранить</md-button>
       </div>
     </modal>
+    <md-dialog-alert :md-active.sync="showAlert" :md-content="alertMessage" md-confirm-text="Ок" />
   </div>
 </template>
 
@@ -95,7 +96,10 @@ export default {
       showNewPostModal: false,
       editTask: {},
       show: false,
-      labelWidth: 200
+      labelWidth: 200,
+
+      showAlert: false,
+      alertMessage: ''
     }
   },
   props: {
@@ -358,7 +362,7 @@ export default {
       API.updateTask(this.editTask)
         .then(response => {
           if ('message' in response.data && response.data.message) {
-            alert(response.data.message)
+            this.alert(response.data.message)
           }
           if (('status' in response.data && response.data.status) || !('status' in response.data)) {
             this.$emit('update')
@@ -386,6 +390,10 @@ export default {
         start: new Date(),
         end: new Date()
       }
+    },
+    alert (message) {
+      this.alertMessage = message
+      this.showAlert = true
     }
   },
   components: {
