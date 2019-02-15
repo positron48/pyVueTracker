@@ -385,7 +385,9 @@ export default {
         }
       }
       this.currentProject = projectId
-      if (this.projects[projectId]['tracker_projects'][trackerId] !== undefined) {
+      if (this.projects[projectId]['tracker_projects'][trackerId] !== undefined &&
+        this.projects[projectId]['tracker_projects'][trackerId]['external_project_id'] > 0
+      ) {
         this.linkToProject = {
           value: this.projects[projectId]['tracker_projects'][trackerId]['external_project_id'],
           label: this.projects[projectId]['tracker_projects'][trackerId]['external_project_title']

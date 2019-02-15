@@ -180,7 +180,7 @@ class TrackerProjectLink(db.Model):
     __tablename__ = 'tracker_projects'
     tracker_id = db.Column(db.Integer, db.ForeignKey(Tracker.id), primary_key=True)
     project_id = db.Column(db.Integer, db.ForeignKey(Project.id), primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey(User.id), primary_key=False, nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey(User.id), primary_key=True)
 
     # автозаполняемые справочники
     external_project_id = db.Column(db.Integer)

@@ -264,27 +264,42 @@ class Engine:
         return True
 
     def link_project(self, project_id, tracker_id, tracker_project_id, tracker_project_title):
-        tracker_project = db.session.query(TrackerProjectLink) \
+        tracker_project_user = db.session.query(TrackerProjectLink) \
             .filter(TrackerProjectLink.tracker_id == tracker_id) \
+            .filter(TrackerProjectLink.user_id == self.user.id) \
             .filter(TrackerProjectLink.project_id == project_id).first()
 
-        # для id=0 удаляем связь, если она есть
-        if tracker_project_id == 0:
-            if tracker_project is not None:
-                db.session.delete(tracker_project)
-                db.session.commit()
-            return True
+        # sqlalchemy требует наличие primary key, который не может быть nullable. Чтобы не менять сильно схему, делаем
+        # костыль, 1 - служебный пользователь. Привязываем общие связи к нему
+        tracker_project_all = db.session.query(TrackerProjectLink) \
+            .filter(TrackerProjectLink.tracker_id == tracker_id) \
+            .filter(TrackerProjectLink.user_id == 1) \
+            .filter(TrackerProjectLink.project_id == project_id).first()
 
-        if tracker_project is not None:
-            tracker_project.external_project_id = tracker_project_id
-            tracker_project.external_project_title = tracker_project_title
-            tracker_project.user_id = self.user.id
-        else:
+        print([tracker_project_user, tracker_project_all])
+
+        if tracker_project_user is not None:
+            # у пользователя уже есть соответствие проекту - редактируем его
+            tracker_project_user.external_project_id = tracker_project_id
+            tracker_project_user.external_project_title = tracker_project_title
+        elif tracker_project_all is not None:
+            # есть только общее соответствие, добавляем новое от пользователя
             tracker_project = TrackerProjectLink(
                 project_id=project_id,
                 tracker_id=tracker_id,
                 external_project_id=tracker_project_id,
-                external_project_title=tracker_project_title
+                external_project_title=tracker_project_title,
+                user_id=self.user.id
+            )
+            db.session.add(tracker_project)
+        else:
+            # соответствия вообще никакого нет, делаем общее
+            tracker_project = TrackerProjectLink(
+                project_id=project_id,
+                tracker_id=tracker_id,
+                external_project_id=tracker_project_id,
+                external_project_title=tracker_project_title,
+                user_id=1
             )
             db.session.add(tracker_project)
 
