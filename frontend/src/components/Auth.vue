@@ -4,12 +4,12 @@
       <md-card-content>
         <md-field>
           <label>Логин</label>
-          <md-input v-model.trim="login" type="text" required></md-input>
+          <md-input @keydown.native="onKeyDown" v-model.trim="login" type="text" required></md-input>
           <md-tooltip md-direction="right">Логин redmine</md-tooltip>
         </md-field>
         <md-field>
           <label>Пароль</label>
-          <md-input v-model.trim="password" type="password" required></md-input>
+          <md-input @keydown.native="onKeyDown" v-model.trim="password" type="password" required></md-input>
           <md-tooltip md-direction="right">Пароль redmine</md-tooltip>
         </md-field>
         <div class="auth-buttons">
@@ -17,6 +17,7 @@
         </div>
       </md-card-content>
     </md-card>
+    <md-dialog-alert :md-active.sync="showAlert" :md-content="alertMessage" md-confirm-text="Ок" />
   </div>
 </template>
 
@@ -29,7 +30,10 @@ export default {
     return {
       login: '',
       password: '',
-      isLogin: false
+      isLogin: false,
+
+      showAlert: false,
+      alertMessage: ''
     }
   },
   computed: {},
@@ -38,7 +42,7 @@ export default {
       API.auth(this.login, this.password, 'login')
         .then(response => {
           if (response.data.message !== undefined) {
-            alert(response.data.message)
+            this.alert(response.data.message)
           } else {
             this.isLogin = isLogin()
             this.$emit('login')
@@ -47,6 +51,15 @@ export default {
         .catch(error => {
           console.log(['auth error', error])
         })
+    },
+    onKeyDown (e) {
+      if (e.keyCode === 13) { // enter
+        this.auth()
+      }
+    },
+    alert (message) {
+      this.alertMessage = message
+      this.showAlert = true
     }
   },
   mounted: function () {

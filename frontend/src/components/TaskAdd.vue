@@ -20,6 +20,7 @@
           </md-card-content>
         </md-card>
       </form>
+      <md-dialog-alert :md-active.sync="showAlert" :md-content="alertMessage" md-confirm-text="Ок" />
     </div>
 </template>
 
@@ -32,7 +33,10 @@ export default {
     return {
       taskName: '',
       taskCompletitions: [],
-      showSuggestion: false
+      showSuggestion: false,
+
+      showAlert: false,
+      alertMessage: ''
     }
   },
   props: {
@@ -115,7 +119,7 @@ export default {
             this.$emit('add-task')
             this.$refs.autocomplete.clear()
           } else if ('message' in response.data) {
-            alert(response.data.message)
+            this.alert(response.data.message)
           }
         })
         .catch(error => {
@@ -160,6 +164,10 @@ export default {
     },
     onFocus () {
       this.showSuggestion = true
+    },
+    alert (message) {
+      this.alertMessage = message
+      this.showAlert = true
     }
   },
   mounted () {
