@@ -321,7 +321,10 @@ class ApiController:
         s = Sheduler()
         projects = s.get_projects(link.tracker.type, link.tracker.api_url, link.external_api_key)
 
-        self.response.status = len(projects) > 0
+        if projects is None:
+            projects = []
+
+        self.response.status = True
         self.response.projects = projects
 
     @send_response

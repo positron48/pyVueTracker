@@ -119,6 +119,7 @@
       :md-active.sync="haveNotClosedTask"
       :md-content="dialogMessage"
       md-confirm-text="Ок" />
+    <md-dialog-alert :md-active.sync="showAlert" :md-content="alertMessage" md-confirm-text="Ок" />
   </div>
 </template>
 
@@ -152,7 +153,10 @@ export default {
       currentTrackerProjects: [],
 
       haveNotClosedTask: false,
-      dialogMessage: 'У вас есть незавершенные задачи, они не будут экспортированы'
+      dialogMessage: 'У вас есть незавершенные задачи, они не будут экспортированы',
+
+      showAlert: false,
+      alertMessage: ''
     }
   },
   props: {
@@ -163,6 +167,7 @@ export default {
   recomputed: {
     groupedTasks: function () {
       var groupedTasks = {}
+      var haveTaskToExport = false;
       for (var i = 0; i < this.tasks.length; i++) {
         var task = this.tasks[i]
 
@@ -200,9 +205,6 @@ export default {
               task['external_message'] = '[' + externalTask['project'] + '] ' + externalTask['tracker'] +
                 ' #' + externalTask['id'] + ': ' + externalTask['name']
             }
-          }
-          if (this.loadingTaskCount === 0) {
-            this.exportDisabled = false
           }
 
           // todo: status: ?warning? часы за этот день по проекту уже выгружались
@@ -278,6 +280,8 @@ export default {
             groupedTasks[task['date']]['durationByTrackers'][tracker.title] += task['delta'] > 0 ? task['delta'] : 0
             groupedTasks[task['date']]['durationByTrackers'][tracker.title] =
               Math.round(groupedTasks[task['date']]['durationByTrackers'][tracker.title] * 100) / 100
+
+            haveTaskToExport = true
           }
 
           task['trackers'].push(tracker)
@@ -302,6 +306,11 @@ export default {
 
         // со сложением вместе округление работать не хочет
         groupedTasks[task['date']]['duration'] = Math.round(groupedTasks[task['date']]['duration'] * 100) / 100
+      }
+      if (this.loadingTaskCount === 0 && haveTaskToExport === true) {
+        this.exportDisabled = false
+      } else if (this.loadingTaskCount === 0 && haveTaskToExport === false) {
+        this.exportDisabled = true
       }
       return groupedTasks
     }
@@ -396,14 +405,16 @@ export default {
         this.linkToProject = null
       }
       this.getTrackerProjects(trackerId)
-
-      this.showLinkModal()
     },
     closeLinkModal: function () {
       this.showLink = false
     },
     showLinkModal: function () {
-      this.showLink = true
+      if (this.currentTrackerProjects.length > 0) {
+        this.showLink = true
+      } else {
+        this.alert('Список проектов пуст - трекер недоступен, либо не указаны доступы к нему в настройках.')
+      }
     },
     saveLinkProject: function () {
       API.linkProject(this.currentProject, this.currentTracker.id, this.linkToProject)
@@ -424,6 +435,7 @@ export default {
             if (('status' in response.data && response.data.status) || !('status' in response.data)) {
               this.trackerProjects[trackerId] = response.data.projects
               this.currentTrackerProjects = this.trackerProjects[trackerId]
+              this.showLinkModal()
             }
           })
           .catch(error => {
@@ -431,6 +443,7 @@ export default {
           })
       } else {
         this.currentTrackerProjects = this.trackerProjects[trackerId]
+        this.showLinkModal()
       }
     },
     getTrackerTask: function (trackerId, externalTaskId) {
@@ -450,7 +463,7 @@ export default {
             this.groupTasksRecompute()
           })
           .catch(error => {
-            console.log(['getTrackerProjects error', error])
+            console.log(['getTrackerTask error', error])
             this.trackerTasks[trackerId][externalTaskId] = false
             this.loadingTaskCount--
             if (this.loadingTaskCount === 0) {
@@ -558,6 +571,10 @@ export default {
     },
     groupTasksRecompute: function () {
       this.$recompute('groupedTasks')
+    },
+    alert (message) {
+      this.alertMessage = message
+      this.showAlert = true
     }
   },
   components: {
