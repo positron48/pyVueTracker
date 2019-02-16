@@ -103,7 +103,6 @@ class ApiController:
         for db_fact in self.engine.get_facts(dateFrom, dateTo):  # type: Activity
             fact = FormattedFact(db_fact)
             if db_fact.time_end is None:  # не учитываем открытые активности
-                print([dateFrom, dateTo, db_fact.__dict__])
                 not_closed_tasks += "\n" + fact.date + ' ' + fact.activity + '@' + fact.category
                 continue
 
@@ -295,10 +294,13 @@ class ApiController:
             for tracker_prop in project.tracker_properties:
                 # сопоставления по приоритету - сначала привязанные к текущему пользователю,
                 # затем не привязанные ни к кому
-                if tracker_prop.tracker_id in tracker_ids and tracker_prop.external_project_id > 0 and \
-                        tracker_prop.user_id is None or tracker_prop.user_id == user.id:
+                if tracker_prop.tracker_id in tracker_ids and \
+                        tracker_prop.user_id == 1 or tracker_prop.user_id == user.id:
 
-                    if tracker_prop.tracker_id not in element['tracker_projects'] or tracker_prop.user_id is not None:
+                    if tracker_prop.external_project_id == 0:
+                        tracker_prop.external_project_id = None
+
+                    if tracker_prop.tracker_id not in element['tracker_projects'] or tracker_prop.user_id == user.id:
                         element['tracker_projects'][tracker_prop.tracker_id] = {
                             'tracker_id': tracker_prop.tracker_id,
                             'external_project_id': tracker_prop.external_project_id,
@@ -319,7 +321,10 @@ class ApiController:
         s = Sheduler()
         projects = s.get_projects(link.tracker.type, link.tracker.api_url, link.external_api_key)
 
-        self.response.status = len(projects) > 0
+        if projects is None:
+            projects = []
+
+        self.response.status = True
         self.response.projects = projects
 
     @send_response

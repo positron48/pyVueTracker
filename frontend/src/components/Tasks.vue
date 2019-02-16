@@ -176,16 +176,18 @@ export default {
         var hour = 5
 
         for (var i = 0; i < 24; i++) {
-          hour = i + 5
-          if (hour > 23) {
-            hour -= 24
-          }
+          hour = i
+
           labels.push(hour)
           values.push(0)
 
           while (currentTask < tasksCount) {
             taskStart = this.convertToHours(this.tasks[currentTask].start_time)
             taskEnd = this.convertToHours(this.tasks[currentTask].end_time)
+            if (taskEnd < taskStart) {
+              taskEnd += 24
+            }
+            console.log([taskStart, taskEnd, this.tasks[currentTask]])
 
             if (taskStart >= (hour + 1)) {
               break

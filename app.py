@@ -321,11 +321,19 @@ def edit_task():
         'description': description,
         'tags': [tag.strip() for tag in request.values['tags'].split(',')]
     }
-    start_dt = dt.datetime.strptime(fact['date'] + ' ' + fact['start_time'], "%d.%m.%Y %H:%M")
-    if len(fact['end_time']) < 5:
+
+    try:
+        start_dt = dt.datetime.strptime(fact['date'] + ' ' + fact['start_time'], "%d.%m.%Y %H:%M")
+    except ValueError:
+        return jsonify({"status": False, "message": "Дата и время начала введены некорректно"})
+
+    if len(fact['end_time']) < 5 or fact['end_time'] == '__:__':
         end_dt = None
     else:
-        end_dt = dt.datetime.strptime(fact['date'] + ' ' + fact['end_time'], "%d.%m.%Y %H:%M")
+        try:
+            end_dt = dt.datetime.strptime(fact['date'] + ' ' + fact['end_time'], "%d.%m.%Y %H:%M")
+        except ValueError:
+            return jsonify({"status": False, "message": "Время окончания заполнено некорректно"})
 
     if app.config.get('SQLITE'):
         storage = Storage()
