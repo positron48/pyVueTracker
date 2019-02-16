@@ -466,7 +466,7 @@ def version():
               "- правки верстки",
     }
 
-    current_version = 1.1  # подобное не работает на боевом нормально - list(history.keys())[-1]
+    current_version = 1.2  # подобное не работает на боевом нормально - list(history.keys())[-1]
 
     if client_version is not None and current_version > client_version:
         for v in history:
