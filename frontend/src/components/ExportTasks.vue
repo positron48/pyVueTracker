@@ -167,7 +167,7 @@ export default {
   recomputed: {
     groupedTasks: function () {
       var groupedTasks = {}
-      var haveTaskToExport = false;
+      var haveTaskToExport = false
       for (var i = 0; i < this.tasks.length; i++) {
         var task = this.tasks[i]
 
@@ -175,7 +175,7 @@ export default {
         if (groupedTasks[task['date']] === undefined) {
           groupedTasks[task['date']] = {duration: 0, durationByTrackers: {}, tasks: [], date: task['date']}
         }
-        task['delta'] = parseFloat(task['delta'])
+        var delta = parseFloat(task['delta'])
 
         task['trackers'] = []
         for (var j = 0; j < this.trackers.length; j++) {
@@ -277,7 +277,7 @@ export default {
             if (groupedTasks[task['date']]['durationByTrackers'][tracker.title] === undefined) {
               groupedTasks[task['date']]['durationByTrackers'][tracker.title] = 0
             }
-            groupedTasks[task['date']]['durationByTrackers'][tracker.title] += task['delta'] > 0 ? task['delta'] : 0
+            groupedTasks[task['date']]['durationByTrackers'][tracker.title] += delta > 0 ? delta : 0
             groupedTasks[task['date']]['durationByTrackers'][tracker.title] =
               Math.round(groupedTasks[task['date']]['durationByTrackers'][tracker.title] * 100) / 100
 
@@ -302,7 +302,7 @@ export default {
         }
 
         groupedTasks[task['date']]['tasks'].push(task)
-        groupedTasks[task['date']]['duration'] += task['delta'] > 0 ? task['delta'] : 0
+        groupedTasks[task['date']]['duration'] += delta > 0 ? delta : 0
 
         // со сложением вместе округление работать не хочет
         groupedTasks[task['date']]['duration'] = Math.round(groupedTasks[task['date']]['duration'] * 100) / 100
