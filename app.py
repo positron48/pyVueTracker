@@ -464,9 +464,10 @@ def version():
               "- добавлены новые",
         1.2:  "- активность экспорта, только если есть задачи для выгрузки<br>" +
               "- правки верстки",
+        1.3:  "- в экспорте задач в качестве разделителя в часах можно использовать как запятую, так и точку",
     }
 
-    current_version = 1.2  # подобное не работает на боевом нормально - list(history.keys())[-1]
+    current_version = 1.3  # подобное не работает на боевом нормально - list(history.keys())[-1]
 
     if client_version is not None and current_version > client_version:
         for v in history:
