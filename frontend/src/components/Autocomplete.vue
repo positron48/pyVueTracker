@@ -46,6 +46,7 @@ export default {
   },
   methods: {
     onKeydown (e) {
+      this.showSuggestion = e.target === document.activeElement
       if (e.keyCode === 40) { // down
         this.currentFocus++
         if (this.currentFocus >= this.suggestions.length - 1) {
@@ -132,7 +133,6 @@ export default {
     }
   },
   mounted () {
-    /* execute a function when someone clicks in the document: */
     document.addEventListener('click', this.onClickOut)
   }
 }
