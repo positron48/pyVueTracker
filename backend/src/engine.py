@@ -189,9 +189,8 @@ class Engine:
             .all()
         return trackers
 
-    def get_redmine_tracker(self):
-        tracker = db.session.query(Tracker, TrackerUserLink) \
-            .join(TrackerUserLink) \
+    def get_default_redmine_tracker(self):
+        tracker = db.session.query(Tracker) \
             .filter(Tracker.type == 'redmine') \
             .first()
         return tracker
@@ -435,10 +434,8 @@ class Engine:
             .filter(Activity.time_end.isnot(None)) \
             .all()
 
-    def get_user_by_tracker(self, tracker_id, token) -> Optional[TrackerUserLink]:
-
-        tracker_link = db.session.query(TrackerUserLink) \
-            .filter(TrackerUserLink.tracker_id == tracker_id) \
+    def get_tracker_link_by_token(self, token) -> Optional[TrackerUserLink]:
+        return db.session.query(TrackerUserLink) \
             .filter(TrackerUserLink.external_api_key == token) \
             .first()
 

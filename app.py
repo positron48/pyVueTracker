@@ -105,15 +105,7 @@ def auth():
         return jsonify({'message': error})
 
     api = ApiController()
-    user = api.get_user_by_redmine(login, password)
-
-    if user is None:
-        return jsonify({'message': 'Неверные данные для входа'})
-
-    response = {'token': user.token}
-
-    return jsonify(response)
-
+    return api.get_user_by_redmine(login, password)
 
 @app.route('/api/tasks')
 @Auth.check_api_request
