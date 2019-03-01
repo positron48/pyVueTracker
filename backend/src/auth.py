@@ -9,12 +9,20 @@ from hashlib import md5, sha256
 
 class Auth:
     @classmethod
+    def newAuthToken(cls):
+        db_row_len = User.token.property.columns[0].type.length  # default = 255
+        token_len = db_row_len >> 3  # row_len / 8, сейчас это 31.
+        '''Изменение длины токена на старых пользователей не влияет.
+        Если нужно поменять все старые токены на новые - имеет смысл делать это в момент авторизации'''
+        token = StringHelper.get_random_ascii_string(token_len)
+        return token
+
+    @classmethod
     def add_new_user(cls, login, hash, redmine_token=None):
         user = cls.get_user_by_login(login)
         if user is not None:
             return None
-        token_len = User.token.property.columns[0].type.length >> 3
-        user = User(login=login, hash=hash, token=StringHelper.get_random_ascii_string(token_len))
+        user = User(login=login, hash=hash, token=cls.newAuthToken())
 
         # привязываем дефолтный набор трекеров
         tracker_redmine = db.session.query(Tracker).filter(Tracker.title == 'redmine').first()
