@@ -142,15 +142,15 @@ class Engine:
 
         # проверяем все полученные активности, не пересекается ли одна из них с новой
         for task in tasks:
-            if task.time_end is None and end is None:
-                return False
+            if (exclude_id is None) or (task.id != exclude_id):
+                if task.time_end is None and end is None:
+                    return False
 
-            if ((exclude_id is None) or (task.id != exclude_id)) and \
-                    self.is_interval_intersect(start, date_end, task.time_start, task.time_end):
-                # print([task.name])
-                # print([start, date_end])
-                # print([task.time_start, task.time_end])
-                return False
+                if self.is_interval_intersect(start, date_end, task.time_start, task.time_end):
+                    # print([task.name])
+                    # print([start, date_end])
+                    # print([task.time_start, task.time_end])
+                    return False
 
         return True
 
