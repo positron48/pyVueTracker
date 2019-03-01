@@ -118,7 +118,7 @@ class Engine:
         last = self.get_last()  # type:Activity
         if last is not None:
             # проверяем, чтобы время начала новой активности было не раньше времени начала текущей активности
-            if last.time_start < new_activity.time_start:
+            if last.time_start <= new_activity.time_start:
                 # закрываем текущую активность, время завершения = время начала новой
                 last.stop(new_activity.time_start)
             else:
@@ -139,8 +139,12 @@ class Engine:
 
         tasks = self.get_facts(date_start, date_end)  # дата окончания или текущая, если нулл
 
+
         # проверяем все полученные активности, не пересекается ли одна из них с новой
         for task in tasks:
+            if task.time_end is None and end is None:
+                return False
+
             if ((exclude_id is None) or (task.id != exclude_id)) and \
                     self.is_interval_intersect(start, date_end, task.time_start, task.time_end):
                 # print([task.name])
@@ -154,6 +158,7 @@ class Engine:
     def is_interval_intersect(t1_start, t1_end, t2_start, t2_end):
         if t2_end is None:
             t2_end = dt.datetime.now().replace(second=0, microsecond=0)
+        print(t1_start, t1_end, t2_start, t2_end)
         return (t1_start <= t2_start < t1_end) or (t2_start <= t1_start < t2_end)
 
     def get_current(self):
