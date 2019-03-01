@@ -158,7 +158,6 @@ class Engine:
     def is_interval_intersect(t1_start, t1_end, t2_start, t2_end):
         if t2_end is None:
             t2_end = dt.datetime.now().replace(second=0, microsecond=0)
-        print(t1_start, t1_end, t2_start, t2_end)
         return (t1_start <= t2_start < t1_end) or (t2_start <= t1_start < t2_end)
 
     def get_current(self):
