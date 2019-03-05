@@ -122,6 +122,16 @@ export var API = {
     return HTTP.post('/api/getToken', urlEncode({id: id, login: login, password: password}))
   },
 
+  // получение настроек пользователя
+  getSettings () {
+    return HTTP.get('/api/settings')
+  },
+
+  // сохранение настроек пользователя
+  saveSettings (settings) {
+    return HTTP.post('/api/settings', urlEncode(settings))
+  },
+
   // остановка задания
   stopTask (id) {
     return HTTP.post('/api/task/stop',

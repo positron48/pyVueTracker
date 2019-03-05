@@ -6,7 +6,7 @@ from sqlalchemy import asc, desc, cast, Date, update, func
 from backend.src.auth import Auth
 from backend.src.model.hamster import Fact
 from backend.src.model.mysql import db, User, Activity, Task, HashTag, Project, Tracker, TrackerUserLink, \
-    TrackerProjectLink
+    TrackerProjectLink, UserSettings
 
 
 class Engine:
@@ -450,3 +450,31 @@ class Engine:
             return tracker_link.user_id
 
         return None
+
+    def get_settings(self):
+        current_settings = {}
+        for object in self.user.settings:
+            current_settings[object.code] = object.value
+
+        return current_settings
+
+    def save_settings(self, settings):
+
+        current_settings = {}
+        for object in self.user.settings:
+            current_settings[object.code] = object
+
+        for key, value in settings.items():
+            if key in current_settings:
+                current_settings[key].value = value
+            else:
+                setting = UserSettings(
+                    user_id=self.user.id,
+                    code=key,
+                    value=value
+                )
+                db.session.add(setting)
+
+        db.session.commit()
+
+        return True

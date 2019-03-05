@@ -187,7 +187,6 @@ export default {
             if (taskEnd < taskStart) {
               taskEnd += 24
             }
-            console.log([taskStart, taskEnd, this.tasks[currentTask]])
 
             if (taskStart >= (hour + 1)) {
               break
