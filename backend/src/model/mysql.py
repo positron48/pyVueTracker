@@ -19,6 +19,7 @@ class User(db.Model):
 
     trackers = db.relationship(lambda: Tracker, secondary='tracker_users')
     projects = db.relationship(lambda: TrackerProjectLink)
+    settings = db.relationship(lambda: UserSettings)
 
     def __repr__(self):
         return 'User: %r' % self.login
@@ -135,6 +136,16 @@ class Activity(db.Model):
         db.session.commit()
 
 
+class UserSettings(db.Model):
+    __tablename__ = 'user_settings'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey(User.id))
+    code = db.Column(db.String(255))
+    value = db.Column(db.String(255))
+
+    user = db.relationship(lambda: User)
+
+
 class HashTag(db.Model):
     __tablename__ = 'hashtags'
     id = db.Column(db.Integer, primary_key=True)
@@ -245,6 +256,11 @@ class CategorySchema(ModelSchema):
 class ActivitySchema(ModelSchema):
     class Meta:
         model = Activity
+
+
+class UserSettingsSchema(ModelSchema):
+    class Meta:
+        model = UserSettings
 
 
 class HashTagSchema(ModelSchema):

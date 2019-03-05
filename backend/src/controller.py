@@ -362,6 +362,14 @@ class ApiController:
                                                         tracker_project_title)
 
     @send_response
+    def get_settings(self):
+        self.response.data = self.engine.get_settings()
+
+    @send_response
+    def save_settings(self, settings):
+        self.response.status = self.engine.save_settings(settings)
+
+    @send_response
     def export(self, tracker_id, export_task):
         link = self.engine.get_tracker_link(tracker_id)
         if link is None:
@@ -372,14 +380,28 @@ class ApiController:
         comment = ''
         title = None
 
+        settings = self.engine.get_settings()
+
         if link.tracker.type == 'evo':
             if export_task['external_id'] > 0:
-                comment = '#' + str(export_task['external_id'])
+                if 'evo_in_comment' in settings:
+                    comment = self.replace_export_template(settings['evo_in_comment'], export_task)
+                else:
+                    comment = '#' + str(export_task['external_id'])
+            else:
+                if 'evo_out_comment' in settings:
+                    comment = self.replace_export_template(settings['evo_out_comment'], export_task)
 
             if export_task['external_name'] is not '':
-                title = export_task['external_name']
+                if 'evo_in_name' in settings:
+                    title = self.replace_export_template(settings['evo_in_name'], export_task)
+                else:
+                    title = export_task['external_name']
             else:
-                title = export_task['comment']
+                if 'evo_out_name' in settings:
+                    title = self.replace_export_template(settings['evo_out_name'], export_task)
+                else:
+                    title = export_task['comment']
         else:
             comment = export_task['comment']
 
@@ -388,6 +410,7 @@ class ApiController:
             time=export_task['hours'],
             date=export_task['date'],
             user_id=link.external_user_id,
+            name=export_task['name'],
             project_id=export_task['project_id'],
             comment=comment,
             title=title,
@@ -397,3 +420,10 @@ class ApiController:
         result = s.export(link, activity)
 
         self.response.status = result > 0
+
+    def replace_export_template(self, template, task):
+        return template \
+            .replace('#redmine_name', task['external_name']) \
+            .replace('#name', task['name']) \
+            .replace('#redmine_id', str(task['external_id'])) \
+            .replace('#comments', task['comment'])

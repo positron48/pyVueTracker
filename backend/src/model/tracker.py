@@ -34,11 +34,13 @@ class Category:
 
 class Activity:
     def __init__(self, time: float, date: dt.date, task_id: int = None, id: int = None, user_id: int = None,
-                 comment: str = None, title: str = None, category_id: int = None, project_id: int = None):
+                 comment: str = None, name: str = None, title: str = None, category_id: int = None,
+                 project_id: int = None):
         self.id = id
         self.user_id = user_id
         self.date = date
         self.time = time
+        self.name = name
         self.task_id = task_id
         self.comment = comment
         self.title = title  # формулировка для эво

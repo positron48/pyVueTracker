@@ -390,6 +390,27 @@ def link_project():
     return api.link_project(project_id, tracker_id, tracker_project_id, tracker_project_title)
 
 
+@app.route('/api/settings', methods=['GET'])
+@Auth.check_api_request_readonly
+def get_settings():
+    api = ApiController()
+    return api.get_settings()
+
+
+@app.route('/api/settings', methods=['POST'])
+@Auth.check_api_request
+def save_settings():
+    data = {
+        'evo_in_name': request.values['evo_in_name'],
+        'evo_in_comment': request.values['evo_in_comment'],
+        'evo_out_name': request.values['evo_out_name'],
+        'evo_out_comment': request.values['evo_out_comment'],
+    }
+
+    api = ApiController()
+    return api.save_settings(data)
+
+
 @app.route('/api/task/resume', methods=['POST'])
 @Auth.check_api_request
 def resume_task():
@@ -472,6 +493,7 @@ def export_task():
         'date': dt.datetime.strptime(request.values['date'], "%d.%m.%Y").date(),
         'hours': float(request.values['hours']),
         'comment': request.values['comment'],
+        'name': request.values['name'],
         'external_id': external_id,
         'project_id': int(request.values['project_id']),
         'external_name': request.values['external_name']

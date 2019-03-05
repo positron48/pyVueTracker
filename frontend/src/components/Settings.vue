@@ -5,7 +5,7 @@
       <div class="md-layout-item md-size-80">
         <md-list>
           <md-list-item>
-            Трекеры
+            <h3>Трекеры</h3>
           </md-list-item>
 
           <md-table>
@@ -83,6 +83,54 @@
           <md-list-item>
             <md-button>Добавить</md-button>
           </md-list-item>
+        </md-list>
+      </div>
+    </div>
+    <br>
+    <div class="md-layout md-gutter md-alignment-top-center center">
+      <div class="md-layout-item md-size-80">
+        <md-list>
+          <md-list-item>
+            <h3>Формат выгрузки часов в evolution</h3>
+          </md-list-item>
+
+          <md-list-item>
+            <b>Есть задача в redmine</b>
+            <md-field>
+              <label>формулировка</label>
+              <md-input v-model="userSettings.evo_in_name" required></md-input>
+            </md-field>
+            <md-field>
+              <label>комментарий</label>
+              <md-input v-model="userSettings.evo_in_comment"></md-input>
+            </md-field>
+          </md-list-item>
+
+          <md-list-item>
+            <b>Нет задачи в redmine</b>
+            <md-field>
+              <label>формулировка</label>
+              <md-input v-model="userSettings.evo_out_name" required></md-input>
+            </md-field>
+            <md-field>
+              <label>комментарий</label>
+              <md-input v-model="userSettings.evo_out_comment"></md-input>
+            </md-field>
+          </md-list-item>
+
+          <md-list-item>
+            <b>Допустимые подстановки:</b><br>
+            <br><i>#redmine_name</i> - название задачи из редмайн
+            <br><i>#redmine_id</i> - номер задачи из редмайн
+            <br><i>#name</i> - название задачи из трекера
+            <br><i>#comments</i> - комментарии к задаче из трекера
+          </md-list-item>
+
+          <md-list-item>
+            <md-button class="md-accent" @click="saveSettings()">Сохранить</md-button>
+            <md-button @click="restoreSettings()">По умолчанию</md-button>
+          </md-list-item>
+
         </md-list>
       </div>
     </div>
@@ -173,7 +221,14 @@ export default {
       showToken: false,
 
       showAlert: false,
-      alertMessage: ''
+      alertMessage: '',
+
+      userSettings: {
+        evo_in_name: '#redmine_name',
+        evo_in_comment: '##redmine_id',
+        evo_out_name: '#comments',
+        evo_out_comment: ''
+      }
     }
   },
   methods: {
@@ -247,6 +302,39 @@ export default {
       this.currentTracker = tracker
       this.showTrackerModal()
     },
+    getSettings () {
+      API.getSettings()
+        .then(response => {
+          for (var key in response.data.data) {
+            this.userSettings[key] = response.data.data[key]
+          }
+        })
+        .catch(error => {
+          console.log(['getSettings error', error])
+        })
+    },
+    saveSettings () {
+      if (this.userSettings.evo_in_name.trim() === '' || this.userSettings.evo_out_name.trim() === '') {
+        this.alert('<span style="color: red;">Формулировка обязательна!</span>')
+        return false
+      }
+      API.saveSettings(this.userSettings)
+        .then(response => {
+          this.alert('Изменения сохранены!')
+        })
+        .catch(error => {
+          console.log(['saveSettings error', error])
+          this.alert('Ошибка:' + error)
+        })
+    },
+    restoreSettings () {
+      this.userSettings = {
+        evo_in_name: '#redmine_name',
+        evo_in_comment: '##redmine_id',
+        evo_out_name: '#comments',
+        evo_out_comment: ''
+      }
+    },
     showTokenModal (tracker) {
       this.loginToken = ''
       this.passwordToken = ''
@@ -296,6 +384,7 @@ export default {
   mounted () {
     this.getTrackers()
     this.getEvoUsers()
+    this.getSettings()
   }
 }
 </script>

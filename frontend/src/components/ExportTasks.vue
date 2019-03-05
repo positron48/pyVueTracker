@@ -489,6 +489,7 @@ export default {
           var exportTask = {
             tracker_id: null,
             date: task['date'],
+            name: task['name'],
             hours: task.delta,
             comment: task.description,
             project_id: 0,
