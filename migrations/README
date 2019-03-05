@@ -1,3 +1,4 @@
 Generic single-database configuration.
 https://flask-migrate.readthedocs.io/en/latest/
-flask db upgrade
+flask db downgrade - откатить последнюю миграцию. Повторять, если нужно откатить несколько миграций
+flask db upgrade - накатить все новые миграции.  В т.ч. позволяет новую БД без табличек заполнить табличками

@@ -41,11 +41,13 @@ export default {
     auth () {
       API.auth(this.login, this.password, 'login')
         .then(response => {
-          if (response.data.message !== undefined) {
-            this.alert(response.data.message)
-          } else {
+          if ('status' in response.data && response.data.status) {
             this.isLogin = isLogin()
             this.$emit('login')
+          } else if ('message' in response.data && response.data.message) {
+            this.alert(response.data.message)
+          } else {
+            this.alert('Попробуйте позже')
           }
         })
         .catch(error => {
