@@ -491,7 +491,7 @@ def version():
         1.5:  "- настройки формата выгрузки задач в evo в меню 'настройки'",
     }
 
-    current_version = 1.4  # подобное не работает на боевом нормально - list(history.keys())[-1]
+    current_version = 1.5  # подобное не работает на боевом нормально - list(history.keys())[-1]
 
     if client_version is not None and current_version > client_version:
         for v in history:
