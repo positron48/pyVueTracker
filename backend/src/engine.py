@@ -193,9 +193,8 @@ class Engine:
             .all()
         return trackers
 
-    def get_redmine_tracker(self):
-        tracker = db.session.query(Tracker, TrackerUserLink) \
-            .join(TrackerUserLink) \
+    def get_default_redmine_tracker(self):
+        tracker = db.session.query(Tracker) \
             .filter(Tracker.type == 'redmine') \
             .first()
         return tracker
@@ -268,45 +267,21 @@ class Engine:
         return True
 
     def link_project(self, project_id, tracker_id, tracker_project_id, tracker_project_title):
-        tracker_project_user = db.session.query(TrackerProjectLink) \
+        link = db.session.query(TrackerProjectLink) \
             .filter(TrackerProjectLink.tracker_id == tracker_id) \
             .filter(TrackerProjectLink.user_id == self.user.id) \
             .filter(TrackerProjectLink.project_id == project_id).first()
 
-        # sqlalchemy требует наличие primary key, который не может быть nullable. Чтобы не менять сильно схему, делаем
-        # костыль, 1 - служебный пользователь. Привязываем общие связи к нему
-        tracker_project_all = db.session.query(TrackerProjectLink) \
-            .filter(TrackerProjectLink.tracker_id == tracker_id) \
-            .filter(TrackerProjectLink.user_id == 1) \
-            .filter(TrackerProjectLink.project_id == project_id).first()
+        if link is None:
+            new_link = TrackerProjectLink(project_id=project_id, tracker_id=tracker_id, user_id=self.user.id)
+            db.session.add(new_link)
+            link = new_link
 
-        print([tracker_project_user, tracker_project_all])
+        # обновляем данные
+        link.external_project_id = tracker_project_id
+        link.external_project_title = tracker_project_title
 
-        if tracker_project_user is not None:
-            # у пользователя уже есть соответствие проекту - редактируем его
-            tracker_project_user.external_project_id = tracker_project_id
-            tracker_project_user.external_project_title = tracker_project_title
-        elif tracker_project_all is not None:
-            # есть только общее соответствие, добавляем новое от пользователя
-            tracker_project = TrackerProjectLink(
-                project_id=project_id,
-                tracker_id=tracker_id,
-                external_project_id=tracker_project_id,
-                external_project_title=tracker_project_title,
-                user_id=self.user.id
-            )
-            db.session.add(tracker_project)
-        else:
-            # соответствия вообще никакого нет, делаем общее
-            tracker_project = TrackerProjectLink(
-                project_id=project_id,
-                tracker_id=tracker_id,
-                external_project_id=tracker_project_id,
-                external_project_title=tracker_project_title,
-                user_id=1
-            )
-            db.session.add(tracker_project)
-
+        # применяем изменения
         db.session.commit()
 
         return True
@@ -439,10 +414,8 @@ class Engine:
             .filter(Activity.time_end.isnot(None)) \
             .all()
 
-    def get_user_by_tracker(self, tracker_id, token) -> Optional[TrackerUserLink]:
-
-        tracker_link = db.session.query(TrackerUserLink) \
-            .filter(TrackerUserLink.tracker_id == tracker_id) \
+    def get_tracker_link_by_token(self, token) -> Optional[TrackerUserLink]:
+        return db.session.query(TrackerUserLink) \
             .filter(TrackerUserLink.external_api_key == token) \
             .first()
 

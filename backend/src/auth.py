@@ -9,29 +9,34 @@ from hashlib import md5, sha256
 
 class Auth:
     @classmethod
+    def newAuthToken(cls):
+        db_row_len = User.token.property.columns[0].type.length  # default = 255
+        token_len = db_row_len >> 3  # row_len / 8, сейчас это 31.
+        '''Изменение длины токена на старых пользователей не влияет.
+        Если нужно поменять все старые токены на новые - имеет смысл делать это в момент авторизации'''
+        token = StringHelper.get_random_ascii_string(token_len)
+        return token
+
+    @classmethod
     def add_new_user(cls, login, hash, redmine_token=None):
         user = cls.get_user_by_login(login)
         if user is not None:
             return None
-        token_len = User.token.property.columns[0].type.length >> 3
-        user = User(login=login, hash=hash, token=StringHelper.get_random_ascii_string(token_len))
+        user = User(login=login, hash=hash, token=cls.newAuthToken())
 
-        # todo привязку стоит оформить явно, через фронт и отдельный метод
+        # привязываем дефолтный набор трекеров
         tracker_redmine = db.session.query(Tracker).filter(Tracker.title == 'redmine').first()
         tracker_evo = db.session.query(Tracker).filter(Tracker.title == 'evolution').first()
-
-        if redmine_token is not None:
+        if redmine_token is None:
+            redmine_link = TrackerUserLink(tracker=tracker_redmine, user=user)
+        else:
             from .model.trackers.redmine import Redmine
             redmine = Redmine(tracker_redmine.api_url, token=redmine_token)
             external_user_id = redmine.get_user_id()
-            tracker_link = TrackerUserLink(tracker=tracker_redmine, user=user, external_api_key=redmine_token, external_user_id=external_user_id)
-        else:
-            tracker_link = TrackerUserLink(tracker=tracker_redmine, user=user)
+            redmine_link = TrackerUserLink(tracker=tracker_redmine, user=user, external_api_key=redmine_token, external_user_id=external_user_id)
 
-        tracker_link2 = TrackerUserLink(tracker=tracker_evo, user=user)
-
-        db.session.add(tracker_link)
-        db.session.add(tracker_link2)
+        db.session.add(redmine_link)
+        db.session.add(TrackerUserLink(tracker=tracker_evo, user=user))
         db.session.add(user)
         db.session.commit()
         return user

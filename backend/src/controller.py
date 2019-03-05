@@ -191,30 +191,31 @@ class ApiController:
             # редактируем связь пользователя с токеном, добавляя апи ключ
             self.engine.set_api_key(tracker_id, token)
 
-
+    @send_response
     def get_user_by_redmine(self, login, password):
         # получаем токен из редмайна по логину/паролю
         # ищем токен в базе, если нашли - логиним под найденным пользователем
         # не нашли - регистрируем пользователя с введенным логином и пустым паролем, привязываем сразу к редмайну
+        self.response.status = False
 
-        tracker = self.engine.get_redmine_tracker()
+        tracker = self.engine.get_default_redmine_tracker()
+        if tracker is None:
+            self.response.message = 'Служба авторизации недоступна. Сообщите админу: controller 203'
+            return
+
         s = Sheduler()
-        token = s.get_token(tracker[0].type, tracker[0].api_url, login, password)
-
+        token = s.get_token(tracker.type, tracker.api_url, login, password)
         if token is None:
-            return None
+            self.response.message = 'Неверные данные для входа'
+            return
 
-        user_id = self.engine.get_user_by_tracker(tracker[0].id, token)
-
-        if user_id is not None:
-            # получаем пользователя
-            user = Auth.get_user_by_id(user_id)
-            return user
-        else:
-            # надо зарегистрировать пользователя
-            return Auth.add_new_user(login, "", token)
-
-        return True
+        link = self.engine.get_tracker_link_by_token(token)
+        if link is None:  # надо зарегистрировать пользователя
+            user = Auth.add_new_user(login, "", token)
+        else:  # получаем пользователя
+            user = Auth.get_user_by_id(link.user_id)
+        self.response.token = user.token
+        self.response.status = True
 
     @send_response
     def get_evo_users(self):
