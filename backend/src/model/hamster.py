@@ -84,6 +84,12 @@ class Fact:
             self.__task_name = name
         return name
 
+    def get_task_category(self):
+        if self.category is not None:
+            return self.category
+
+        return None
+
     def as_text(self):
         tags = {'#' + tag for tag in self.tags}
         s = ''

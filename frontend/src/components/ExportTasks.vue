@@ -2,7 +2,7 @@
 <template>
   <div>
     <div class="md-layout md-gutter md-alignment-top-center">
-      <div class="md-layout-item md-large-size-80 md-xlarge-size-90 md-medium-size-90 md-small-size-100 taskItems minimal-input" v-if="tasks.length">
+      <div class="md-layout-item md-large-size-80 md-xlarge-size-90 md-medium-size-100 md-small-size-100 taskItems minimal-input" v-if="tasks.length">
         <template
             v-for="taskGroup in groupedTasks"
           >
@@ -42,8 +42,11 @@
                           <md-input v-model="task.date"></md-input>
                         </md-field>
                       </md-table-cell>
-                      <md-table-cell>
-                        <div>{{task.name}}</div>
+                      <md-table-cell class="column-task-name">
+                        <md-field>
+                          <label></label>
+                          <md-input v-model="task.name"></md-input>
+                        </md-field>
                       </md-table-cell>
                       <md-table-cell class="column-task-number">
                         <md-field>
@@ -68,7 +71,7 @@
                           <md-tooltip md-direction="top" v-if="task.delta_full">{{task.delta_full}}</md-tooltip>
                         </md-field>
                       </md-table-cell>
-                      <md-table-cell>
+                      <md-table-cell class="column-task-trackers">
                         <template v-for="tracker in task.trackers">
                           <span v-bind:key="tracker.id + '_' + task.id" :class="tracker.status">
                             <md-checkbox @change="groupTasksRecompute()" v-model="taskTrackerData[task.date][taskKey][tracker.id]['needExport']" class="tracker-checkbox" :disabled="tracker.disabled"></md-checkbox>
@@ -674,6 +677,14 @@ export default {
   .column-task-time {
     max-width: 110px;
     width: 110px;
+  }
+  .column-task-name {
+    max-width: 250px;
+    width: 250px;
+  }
+  .column-task-trackers {
+    min-width: 150px;
+    width: 150px;
   }
   .column-task-time input, .column-task-number input{
     width: 100%;
