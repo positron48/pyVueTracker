@@ -22,8 +22,12 @@ class Engine:
         return db.session.query(Task).filter(Task.title == task_name).first()  # type:Task
 
     @staticmethod
-    def __get_task_by_name(task_name):
-        return db.session.query(Task).filter(Task.title == task_name).first()  # type:Task
+    def __get_task_by_name(task_name, task_category=None):
+        if task_category is None:
+            return db.session.query(Task).filter(Task.title == task_name).first()  # type:Task
+        else:
+            return db.session.query(Task).join(Task.project) \
+                .filter(Task.title == task_name).filter(Project.title == task_category).first()
 
     def __get_or_create_project_by_fact(self, fact: Fact):
         project_name = fact.category
@@ -35,6 +39,7 @@ class Engine:
     def __get_or_create_task_by_fact(self, fact: Fact):
         task_id = fact.get_task_id()
         task_name = fact.get_task_name()
+        task_category = fact.get_task_category()
 
         if task_id is None and task_name is None:
             return None
@@ -43,7 +48,7 @@ class Engine:
         if task_id is not None:
             task = self.__get_task_by_external_task_id(task_id)
         if task is None:
-            task = self.__get_task_by_name(task_name)
+            task = self.__get_task_by_name(task_name, task_category)
         if task is None:
             task = Task(external_task_id=task_id, title=task_name)
 
@@ -120,7 +125,8 @@ class Engine:
             # проверяем, чтобы время начала новой активности было не раньше времени начала текущей активности
             if last.time_start <= new_activity.time_start:
                 # закрываем текущую активность, время завершения = время начала новой
-                last.stop(new_activity.time_start)
+                if last.time_end is None or last.time_end >= new_activity.time_start:
+                    last.stop(new_activity.time_start)
             else:
                 # проверка на пересечение с другими активностями
                 if not self.check_intervals(new_activity.time_start, new_activity.time_end):
