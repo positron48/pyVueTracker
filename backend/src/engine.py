@@ -425,10 +425,6 @@ class Engine:
             .filter(TrackerUserLink.external_api_key == token) \
             .first()
 
-        if tracker_link is not None:
-            return tracker_link.user_id
-
-        return None
 
     def get_settings(self):
         current_settings = {}
@@ -438,7 +434,6 @@ class Engine:
         return current_settings
 
     def save_settings(self, settings):
-
         current_settings = {}
         for object in self.user.settings:
             current_settings[object.code] = object
