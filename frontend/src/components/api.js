@@ -43,7 +43,7 @@ export var API = {
   getTasks (dateStart, dateEnd) {
     var formattedStart = formatDate(dateStart)
 
-    var nextDayDateEnd = new Date()
+    var nextDayDateEnd = new Date(dateEnd.getTime())
     nextDayDateEnd.setDate(dateEnd.getDate() + 1)
     var formattedEnd = formatDate(nextDayDateEnd)
 

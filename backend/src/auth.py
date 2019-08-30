@@ -95,6 +95,7 @@ class Auth:
 
         return argument_router
 
+    #todo убрать по возможности. В check_api_request можно пробросить параметр, либо проверить имя декорируемого метода
     @classmethod
     def check_api_request_readonly(cls, func):
         @wraps(func)
