@@ -3,7 +3,7 @@ import {isLogin, logout, getToken} from './auth.js'
 import {urlEncode, formatDate} from './helpers.js'
 
 const HTTP = axios.create({
-  baseURL: 'http://localhost:5000',
+  baseURL: 'https://time.skillum.ru',
   headers: {
     'Content-type': 'application/x-www-form-urlencoded'
   }
@@ -43,7 +43,7 @@ export var API = {
   getTasks (dateStart, dateEnd) {
     var formattedStart = formatDate(dateStart)
 
-    var nextDayDateEnd = new Date()
+    var nextDayDateEnd = new Date(dateEnd.getTime())
     nextDayDateEnd.setDate(dateEnd.getDate() + 1)
     var formattedEnd = formatDate(nextDayDateEnd)
 
