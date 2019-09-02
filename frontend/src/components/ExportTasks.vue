@@ -268,7 +268,7 @@ export default {
             tracker['available'] = false
             tracker['disabled'] = true
           }
-          if (needExport === null && !this.exportDisabled && tracker['available']) {
+          if (needExport === null && tracker['available']) {
             this.setTaskNeedExport(task['date'], groupedTasks[task['date']].tasks.length, tracker.id, tracker['available'])
           } else if (needExport === null && tracker['available'] !== true) {
             this.setTaskNeedExport(task['date'], groupedTasks[task['date']].tasks.length, tracker.id, null)
