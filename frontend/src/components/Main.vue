@@ -164,6 +164,7 @@ export default {
 <style>
   #main{
     margin-top: 60px;
+    padding: 0 20px;
   }
   .main-title{
     flex: 1;
