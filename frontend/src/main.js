@@ -7,11 +7,12 @@ import vSelect from 'vue-select'
 import 'vue-material/dist/vue-material.min.css'
 import 'vue-material/dist/theme/black-green-light.css'
 import {library} from '@fortawesome/fontawesome-svg-core'
-import {faEdit, faPlayCircle, faStopCircle, faQuestionCircle} from '@fortawesome/free-solid-svg-icons'
+import {faEdit, faSync, faPlayCircle, faStopCircle, faQuestionCircle} from '@fortawesome/free-solid-svg-icons'
 import {FontAwesomeIcon} from '@fortawesome/vue-fontawesome'
 
 library.add(faEdit)
 library.add(faPlayCircle)
+library.add(faSync)
 library.add(faStopCircle)
 library.add(faQuestionCircle)
 

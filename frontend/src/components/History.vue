@@ -15,6 +15,10 @@
           :shortcuts="shortcuts"
         >
         </date-picker>
+        <div class="refresh-button" v-on:click="refreshData">
+          <font-awesome-icon icon="sync"/>
+          <md-tooltip md-direction="top">Обновить</md-tooltip>
+        </div>
       </div>
     </div>
     <Tasks :initialDate="selectedDate" ref="tasks" @update="refreshData()"/>
@@ -91,3 +95,12 @@ export default {
   }
 }
 </script>
+<style>
+.refresh-button{
+  display: contents;
+  cursor: pointer;
+}
+.refresh-button svg{
+  margin-left: 10px;
+}
+</style>
