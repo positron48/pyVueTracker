@@ -60,7 +60,7 @@ export default {
 
       if (!/[@#,]/.test(name)) {
         var timeDelta = this.getTimeDelta(name, '', 0)
-        var nameForFilter = name.replace(timeDelta, '').trim()
+        var nameForFilter = name.replace(timeDelta, '').trim().replace(/[[\]{}()*+?.,\\^$|#\s]/g, '\\$&')
         re = new RegExp(nameForFilter, 'i')
         for (var item of this.taskCompletitions) {
           if (re.test(item) && item !== nameForFilter) {
