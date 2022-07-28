@@ -170,7 +170,8 @@ class Evolution(Tracker):
             'date': activity.date.strftime('%d.%m.%Y'),
             'comment': activity.comment,
             'employee_id': activity.user_id,
-            'project_id': activity.project_id
+            'project_id': activity.project_id,
+            'task_id': activity.task_id
         }
         response = requests.post(self.url + "/api/task", data=data)
         response = response.json()
