@@ -225,7 +225,7 @@ export default {
 
       userSettings: {
         evo_in_name: '#redmine_name',
-        evo_in_comment: '##redmine_id',
+        evo_in_comment: '#comments',
         evo_out_name: '#comments',
         evo_out_comment: ''
       }
@@ -330,7 +330,7 @@ export default {
     restoreSettings () {
       this.userSettings = {
         evo_in_name: '#redmine_name',
-        evo_in_comment: '##redmine_id',
+        evo_in_comment: '#comments',
         evo_out_name: '#comments',
         evo_out_comment: ''
       }
