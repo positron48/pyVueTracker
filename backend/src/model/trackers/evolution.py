@@ -164,7 +164,7 @@ class Evolution(Tracker):
         :return: возвращает activity_id созданной активности, или None, в случае неудачи
         """
         task_id = ''
-        if(activity.task_id > 0)
+        if activity.task_id > 0:
             task_id = activity.task_id
 
         data = {
