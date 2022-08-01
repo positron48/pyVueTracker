@@ -164,10 +164,6 @@ class Evolution(Tracker):
         :param activity: активность
         :return: возвращает activity_id созданной активности, или None, в случае неудачи
         """
-        task_id = ''
-        if activity.task_id > 0:
-            task_id = activity.task_id
-
         data = {
             'token': self.token,
             'name': activity.title,
@@ -175,9 +171,12 @@ class Evolution(Tracker):
             'date': activity.date.strftime('%d.%m.%Y'),
             'comment': activity.comment,
             'employee_id': activity.user_id,
-            'project_id': activity.project_id,
-            'task_id': activity.task_id
+            'project_id': activity.project_id
         }
+
+        if activity.task_id > 0:
+            data['task_id'] = activity.task_id
+
         response = requests.post(self.url + "/api/task", data=data)
         response = response.json()
         if "success" in response and response['success']:
