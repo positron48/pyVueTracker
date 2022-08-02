@@ -402,7 +402,7 @@ class ApiController:
                 if 'evo_in_comment' in settings:
                     comment = self.replace_export_template(settings['evo_in_comment'], export_task)
                 else:
-                    comment = '#' + str(export_task['external_id'])
+                    comment = str(export_task['comment'])
             else:
                 if 'evo_out_comment' in settings:
                     comment = self.replace_export_template(settings['evo_out_comment'], export_task)
