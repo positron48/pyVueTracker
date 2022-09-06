@@ -41,10 +41,10 @@ def downgrade():
     op.drop_constraint('tracker_projects_ibfk_3', 'tracker_projects', type_='foreignkey')
     # дропаем PK
     op.execute('ALTER TABLE tracker_projects DROP PRIMARY KEY')
+    # возвращаем PK
+    op.create_primary_key('pk_tracker_projects', 'tracker_projects', ['tracker_id', 'project_id'])
     # возвращаем внешние ключи
     op.create_foreign_key(None, 'tracker_projects', 'projects', ['project_id'], ['id'])
     op.create_foreign_key(None, 'tracker_projects', 'trackers', ['tracker_id'], ['id'])
     op.create_foreign_key(None, 'tracker_projects', 'users', ['user_id'], ['id'])
-    # возвращаем PK
-    op.create_primary_key('pk_tracker_projects', 'tracker_projects', ['tracker_id', 'project_id'])
     # ### end Alembic commands ###
