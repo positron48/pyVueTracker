@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.associationproxy import association_proxy
-from marshmallow_sqlalchemy import ModelSchema
+from marshmallow_sqlalchemy import ModelConverter as ModelSchema
 import datetime as dt
 from sqlalchemy.orm.session import make_transient
 
