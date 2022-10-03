@@ -268,7 +268,7 @@ class Storage(object):
                 formated_tasks[taskDate][task['task_id']]['hours'] += task['hours']
 
             description = copy.copy(task['description'])
-            if description is not '':
+            if description != '':
                 formated_tasks[taskDate][task['task_id']]['description'].append(description)
 
         tasks = []

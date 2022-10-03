@@ -181,7 +181,7 @@ def get_current():
         last_entries = storage.get_formated_facts(dateFrom)
 
         for k, item in enumerate(last_entries):
-            if item['end_time'] is '':
+            if item['end_time'] == '':
                 item['status'] = True
                 return jsonify(item)
 

@@ -136,7 +136,7 @@ class ApiController:
                 formated_tasks[taskDate][task['task_id']]['hours'] += task['hours']
 
             description = copy.copy(task['description'])
-            if description is not '':
+            if description != '':
                 formated_tasks[taskDate][task['task_id']]['description'].append(description)
 
         tasks = []
@@ -393,7 +393,7 @@ class ApiController:
                 if 'evo_out_comment' in settings:
                     comment = self.replace_export_template(settings['evo_out_comment'], export_task)
 
-            if export_task['external_name'] is not '':
+            if export_task['external_name'] != '':
                 if 'evo_in_name' in settings:
                     title = self.replace_export_template(settings['evo_in_name'], export_task)
                 else:
