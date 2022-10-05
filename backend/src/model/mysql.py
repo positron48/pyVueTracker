@@ -50,6 +50,7 @@ class Tracker(db.Model):
     users = db.relationship(User, secondary='tracker_users')
     properties = db.relationship(lambda: TrackerUserLink)
     categories = db.relationship(lambda: Category)
+    uploaded_activities = db.relationship(lambda: Activity, secondary='activity_trackers_upload')
 
 
 class Task(db.Model):
@@ -90,6 +91,7 @@ class Activity(db.Model):
     task = db.relationship(lambda: Task)
     hashtags = db.relationship(lambda: HashTag, secondary='activity_hashtags')
     categories = db.relationship(lambda: Category, secondary='activity_categories')
+    uploaded_trackers = db.relationship(lambda: Tracker, secondary='activity_trackers_upload')
 
     @staticmethod
     def get_hashtags(tag_names):
@@ -169,6 +171,13 @@ activity_categories_table = db.Table('activity_categories', db.metadata,
                                      db.Column('activity_id', db.Integer, db.ForeignKey(Activity.id), primary_key=True),
                                      db.Column('category_id', db.Integer, db.ForeignKey(Category.id), primary_key=True)
                                      )
+
+activity_trackers_upload_table = db.Table('activity_trackers_upload', db.metadata,
+                                          db.Column('activity_id', db.Integer, db.ForeignKey(Activity.id),
+                                                    primary_key=True),
+                                          db.Column('tracker_id', db.Integer, db.ForeignKey(Tracker.id),
+                                                    primary_key=True)
+                                          )
 
 ########################################### MTM extra fields: ##########################################################
 '''как пользоваться extra fields: https://www.pythoncentral.io/sqlalchemy-association-tables/'''
