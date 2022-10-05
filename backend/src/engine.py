@@ -484,6 +484,17 @@ class Engine:
 
         return ext_time
 
+    def is_task_uploaded_in_tracker(self, activity_id: int, tracker_id: int):
+        activity = self.__get_fact_by_id(activity_id)  # type: Activity
+        if activity is None:
+            return None
+
+        for tracker in activity.uploaded_trackers:
+            if tracker.id == tracker_id:
+                return True
+
+        return False
+
     def export_activity(self, link: TrackerUserLink, activity: TrackerActivity) -> Optional[str]:
         """
         Перед экспортом запрашиваем на трекере время по задаче на дату активности.
@@ -495,10 +506,19 @@ class Engine:
         :param activity: TrackerActivity
         :return: [None|'new'|'exist'|'partial']
         """
-
-        if activity.date is None or activity.user_id is None:
+        if activity.date is None or activity.user_id is None or activity.id is None:
             return None  # ошибка
 
+        db_activity = self.__get_fact_by_id(activity.id)
+        if db_activity is None:
+            return None  # ошибка
+
+
+        # убедимся, что активность не выгружена
+        if self.is_task_uploaded_in_tracker(activity.id, link.tracker.id):
+            return 'exist'
+
+        # запросим суммарное время по задаче на дату активности у трекера и БД
         ext_time = self.get_task_time_by_date_for_tracker_link(link, activity.task_id, activity.date)
         db_time = self.get_task_time_by_date_for_db(activity.task_id, activity.date)
 
@@ -513,5 +533,9 @@ class Engine:
         api = TrackerModel.get_api(link.tracker.type, link.tracker.api_url, link.external_api_key)
         if not api.is_auth() or api.new_activity(activity) is None:
             return None  # ошибка
+
+        # проставляем upload_link
+        link.tracker.uploaded_activities.append(db_activity)
+        db.session.commit()
 
         return 'new'
