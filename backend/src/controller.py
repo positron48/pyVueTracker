@@ -405,6 +405,7 @@ class ApiController:
             comment = export_task['comment']
 
         activity = TrackerActivity(
+            id=export_task['id'],
             task_id=export_task['external_id'],
             time=export_task['hours'],
             date=export_task['date'],

@@ -514,6 +514,7 @@ def export_task():
 
     api = ApiController()
     return api.export(request.values['tracker_id'], {
+        'id': int(request.values['id']),
         'date': dt.datetime.strptime(request.values['date'], "%d.%m.%Y").date(),
         'hours': float(request.values['hours']),
         'comment': request.values['comment'],

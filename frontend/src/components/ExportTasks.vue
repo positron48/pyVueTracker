@@ -490,6 +490,7 @@ export default {
           var task = this.groupedTasks[dates[i]].tasks[j]
 
           var exportTask = {
+            id: task['id'],
             tracker_id: null,
             date: task['date'],
             name: task['name'],
