@@ -521,6 +521,15 @@ export default {
           if (response !== undefined && ('status' in response.data && response.data.status)) {
             this.setTaskExportStatus(exportTask.date, j, trackerId, true)
           } else {
+            if ('export_result' in response.data) {
+              if (response.data.export_result === undefined) {
+                this.alert('Ошибка экспорта по задаче ' + exportTask.external_id)
+              } else if (response.data.export_result === 'exist') {
+                this.alert('Задача ' + exportTask.external_id + ' уже экспортирована, пропускаю')
+              } else if (response.data.export_result === 'partial') {
+                this.alert('Экспорт задачи ' + exportTask.external_id + 'невозможен: на трекере лишнее время, добаленное в обход системы. Система пока не умеет разрешать такие ситуации, проверьте вручную')
+              }
+            }
             this.setTaskExportStatus(exportTask.date, j, trackerId, false)
           }
           this.exportingTaskCount--
