@@ -518,16 +518,17 @@ class Engine:
         if self.is_task_uploaded_in_tracker(activity.id, link.tracker.id):
             return 'exist'
 
-        # запросим суммарное время по задаче на дату активности у трекера и БД
-        ext_time = self.get_task_time_by_date_for_tracker_link(link, activity.task_id, activity.date)
-        db_time = self.get_task_time_by_date_for_db(activity.task_id, activity.date)
+        if activity.task_id > 0:
+            # запросим суммарное время по задаче на дату активности у трекера и БД
+            ext_time = self.get_task_time_by_date_for_tracker_link(link, activity.task_id, activity.date)
+            db_time = self.get_task_time_by_date_for_db(activity.task_id, activity.date)
 
-        if abs(db_time - ext_time) < 0.05:  # время совпадает - все активности уже синхронизированы
-            return 'exist'
+            if abs(db_time - ext_time) < 0.05:  # время совпадает - все активности уже синхронизированы
+                return 'exist'
 
-        if db_time < ext_time:  # время в БД меньше, чем на трекере - какая-то активность создана в обход БД
-            # todo импортируем активности с трекера в БД?
-            return 'partial'
+            if db_time < ext_time:  # время в БД меньше, чем на трекере - какая-то активность создана в обход БД
+                # todo импортируем активности с трекера в БД?
+                return 'partial'
 
         # время в БД больше, чем на трекере - выгружаем активность
         api = TrackerModel.get_api(link.tracker.type, link.tracker.api_url, link.external_api_key)
