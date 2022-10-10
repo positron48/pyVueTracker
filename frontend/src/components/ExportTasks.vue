@@ -212,7 +212,10 @@ export default {
 
           // todo: status: ?warning? часы за этот день по проекту уже выгружались
           var exportStatus = this.getTaskExportStatus(task['date'], groupedTasks[task['date']].tasks.length, tracker.id)
-          if (exportStatus === true) {
+          if(task['exportedTrackers'].indexOf(tracker.id) !== -1) {
+            tracker['status'] = 'exported'
+            tracker['message'] = 'задача была выгружена ранее'
+          } else if (exportStatus === true) {
             tracker['status'] = 'exported'
             tracker['message'] = 'задача выгружена'
           } else if (exportStatus === false) {

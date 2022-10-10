@@ -139,6 +139,15 @@ class ApiController:
             if description != '':
                 formated_tasks[taskDate][task['task_id']]['description'].append(description)
 
+
+        trackers = []
+        for tracker in self.engine.get_trackers():
+            element = {
+                'id': tracker[0].id,
+                'title': tracker[0].title
+            }
+            trackers.append(element)
+
         tasks = []
         i = 0
         for formated_tasks in formated_tasks.values():
@@ -152,6 +161,12 @@ class ApiController:
                 else:
                     task_id = ""
 
+                # убедимся, что активность не выгружена
+                exportedTrackers = []
+                for tracker in trackers:
+                    if self.engine.is_task_uploaded_in_tracker(task['id'], tracker['id']):
+                        exportedTrackers.append(tracker['id'])
+
                 new_task = {
                     'id': task['id'],
                     'date': task['date'],
@@ -162,7 +177,8 @@ class ApiController:
                     'category': task['cat'],
                     'tag': task['tag'],
                     'task_id': task_id,
-                    'project_id': task['project_id']
+                    'project_id': task['project_id'],
+                    'exportedTrackers': exportedTrackers
                 }
                 i += 1
                 tasks.append(new_task)

@@ -367,7 +367,7 @@ class Engine:
             .filter(Activity.task_id == Task.id) \
             .filter(Activity.user_id == self.user.id) \
             .group_by(Project.title) \
-            .order_by('total DESC') \
+            .order_by(desc(func.count(Project.title))) \
             .all()
 
     def get_user_tags(self):
@@ -375,7 +375,7 @@ class Engine:
             .join(HashTag.activities) \
             .filter(Activity.user_id == self.user.id) \
             .group_by(HashTag.name) \
-            .order_by('total DESC') \
+            .order_by(desc(func.count(HashTag.name))) \
             .all()
 
     def get_projects(self, project_ids=None):
