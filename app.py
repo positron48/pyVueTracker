@@ -181,7 +181,7 @@ def get_current():
         last_entries = storage.get_formated_facts(dateFrom)
 
         for k, item in enumerate(last_entries):
-            if item['end_time'] is '':
+            if item['end_time'] == '':
                 item['status'] = True
                 return jsonify(item)
 
@@ -493,9 +493,14 @@ def version():
               "-- теперь в это поле всегда выгружается номер задачи (первое число в названии задачи)<br>" +
               "-- в поле 'комментарий' вместо номера задачи с решеткой выгружается комментарий, который был указан в таймтрекере<br>" +
               "-- настройки заполнения эво по прежнему можно изменить на странице настроек<br>",
+        2.00:  "- исправлены некоторые опечатки в хэлпе<br>" +
+              "- в экспорт добавлен контроль суммарного времени по задаче между таймтрекером и внешним трекером<br><br>" +
+              "-- теперь выгрузка будет блокироваться, если на трекере уже зарегистрировано столько же или больше времени, чем в таймтрекере.<br>" +
+              "-- работает это только для активностей с номером задачи<br>" +
+              "-- выгрузка ранее выгруженной активности будет блокироваться<br>",
     }
 
-    current_version = 1.93  # подобное не работает на боевом нормально - list(history.keys())[-1]
+    current_version = 2.00  # подобное не работает на боевом нормально - list(history.keys())[-1]
 
     if client_version is not None and current_version > client_version:
         for v in history:
@@ -516,6 +521,7 @@ def export_task():
 
     api = ApiController()
     return api.export(request.values['tracker_id'], {
+        'id': int(request.values['id']),
         'date': dt.datetime.strptime(request.values['date'], "%d.%m.%Y").date(),
         'hours': float(request.values['hours']),
         'comment': request.values['comment'],

@@ -7,3 +7,4 @@ services:
     volumes:
       - .:/code
     restart: always
+    network_mode: "host"

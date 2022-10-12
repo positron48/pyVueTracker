@@ -113,6 +113,7 @@ class FormattedFact(Fact):
         self.tags = list(self.tags)
         self.name = self.activity
 
+        # если единственный аргумент - активность, генерируем факт из активности
         if isinstance(text, Activity):
             self.id = text.id
             self.activity_id = text.task_id

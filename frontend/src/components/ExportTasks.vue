@@ -212,7 +212,10 @@ export default {
 
           // todo: status: ?warning? часы за этот день по проекту уже выгружались
           var exportStatus = this.getTaskExportStatus(task['date'], groupedTasks[task['date']].tasks.length, tracker.id)
-          if (exportStatus === true) {
+          if(task['exportedTrackers'].indexOf(tracker.id) !== -1) {
+            tracker['status'] = 'exported'
+            tracker['message'] = 'задача была выгружена ранее'
+          } else if (exportStatus === true) {
             tracker['status'] = 'exported'
             tracker['message'] = 'задача выгружена'
           } else if (exportStatus === false) {
@@ -490,6 +493,7 @@ export default {
           var task = this.groupedTasks[dates[i]].tasks[j]
 
           var exportTask = {
+            id: task['id'],
             tracker_id: null,
             date: task['date'],
             name: task['name'],
@@ -521,6 +525,15 @@ export default {
           if (response !== undefined && ('status' in response.data && response.data.status)) {
             this.setTaskExportStatus(exportTask.date, j, trackerId, true)
           } else {
+            if ('export_result' in response.data) {
+              if (response.data.export_result === undefined) {
+                this.alert('Ошибка экспорта по задаче ' + exportTask.external_id)
+              } else if (response.data.export_result === 'exist') {
+                this.alert('Задача ' + exportTask.external_id + ' уже экспортирована, пропускаю')
+              } else if (response.data.export_result === 'partial') {
+                this.alert('Экспорт задачи ' + exportTask.external_id + 'невозможен: на трекере лишнее время, добаленное в обход системы. Система пока не умеет разрешать такие ситуации, проверьте вручную')
+              }
+            }
             this.setTaskExportStatus(exportTask.date, j, trackerId, false)
           }
           this.exportingTaskCount--

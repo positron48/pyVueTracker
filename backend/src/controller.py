@@ -136,8 +136,17 @@ class ApiController:
                 formated_tasks[taskDate][task['task_id']]['hours'] += task['hours']
 
             description = copy.copy(task['description'])
-            if description is not '':
+            if description != '':
                 formated_tasks[taskDate][task['task_id']]['description'].append(description)
+
+
+        trackers = []
+        for tracker in self.engine.get_trackers():
+            element = {
+                'id': tracker[0].id,
+                'title': tracker[0].title
+            }
+            trackers.append(element)
 
         tasks = []
         i = 0
@@ -152,6 +161,12 @@ class ApiController:
                 else:
                     task_id = ""
 
+                # убедимся, что активность не выгружена
+                exportedTrackers = []
+                for tracker in trackers:
+                    if self.engine.is_task_uploaded_in_tracker(task['id'], tracker['id']):
+                        exportedTrackers.append(tracker['id'])
+
                 new_task = {
                     'id': task['id'],
                     'date': task['date'],
@@ -162,7 +177,8 @@ class ApiController:
                     'category': task['cat'],
                     'tag': task['tag'],
                     'task_id': task_id,
-                    'project_id': task['project_id']
+                    'project_id': task['project_id'],
+                    'exportedTrackers': exportedTrackers
                 }
                 i += 1
                 tasks.append(new_task)
@@ -376,8 +392,6 @@ class ApiController:
         if link is None:
             return None
 
-        s = Sheduler()
-
         comment = ''
         title = None
 
@@ -393,7 +407,7 @@ class ApiController:
                 if 'evo_out_comment' in settings:
                     comment = self.replace_export_template(settings['evo_out_comment'], export_task)
 
-            if export_task['external_name'] is not '':
+            if export_task['external_name'] != '':
                 if 'evo_in_name' in settings:
                     title = self.replace_export_template(settings['evo_in_name'], export_task)
                 else:
@@ -407,6 +421,7 @@ class ApiController:
             comment = export_task['comment']
 
         activity = TrackerActivity(
+            id=export_task['id'],
             task_id=export_task['external_id'],
             time=export_task['hours'],
             date=export_task['date'],
@@ -418,9 +433,9 @@ class ApiController:
             category_id=9  # разработка
         )
 
-        result = s.export(link, activity)
-
-        self.response.status = result > 0
+        result = self.engine.export_activity(link, activity)
+        self.response.export_result = result
+        self.response.status = result == 'new'
 
     def replace_export_template(self, template, task):
         return template \
