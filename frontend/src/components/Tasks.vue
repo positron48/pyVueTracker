@@ -25,9 +25,9 @@
             </md-list-item>
           </md-list>
         </template>
-        <horizontal-bar-chart v-if="chartActivities.values.length" :chart-data="chartActivities.values" :labels="chartActivities.labels" :labelsWidth="labelWidth"/>
-        <horizontal-bar-chart v-if="chartCategories.values.length" :chart-data="chartCategories.values" :labels="chartCategories.labels" :labelsWidth="labelWidth"/>
-        <horizontal-bar-chart v-if="chartTags.values.length" :chart-data="chartTags.values" :labels="chartTags.labels" :labelsWidth="labelWidth"/>
+        <horizontal-bar-chart v-if="chartActivities.values.length" titleChart="Задачи" :chart-data="chartActivities.values" :labels="chartActivities.labels" :labelsWidth="labelWidth"/>
+        <horizontal-bar-chart v-if="chartCategories.values.length" titleChart="Проекты" :chart-data="chartCategories.values" :labels="chartCategories.labels" :labelsWidth="labelWidth"/>
+        <horizontal-bar-chart v-if="chartTags.values.length" titleChart="Теги" :chart-data="chartTags.values" :labels="chartTags.labels" :labelsWidth="labelWidth"/>
       </div>
     </div>
     <modal :show="show" @close="close">
