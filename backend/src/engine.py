@@ -7,6 +7,8 @@ from backend.src.auth import Auth
 from backend.src.model.hamster import Fact
 from backend.src.model.mysql import db, User, Activity, Task, HashTag, Project, Tracker, TrackerUserLink, \
     TrackerProjectLink, UserSettings
+from .model.tracker import Tracker as TrackerModel
+from .model.tracker import Activity as TrackerActivity
 
 
 class Engine:
@@ -144,7 +146,6 @@ class Engine:
             date_end = dt.datetime.now().replace(second=0, microsecond=0)
 
         tasks = self.get_facts(date_start, date_end)  # дата окончания или текущая, если нулл
-
 
         # проверяем все полученные активности, не пересекается ли одна из них с новой
         for task in tasks:
@@ -366,7 +367,7 @@ class Engine:
             .filter(Activity.task_id == Task.id) \
             .filter(Activity.user_id == self.user.id) \
             .group_by(Project.title) \
-            .order_by('total DESC') \
+            .order_by(desc(func.count(Project.title))) \
             .all()
 
     def get_user_tags(self):
@@ -374,7 +375,7 @@ class Engine:
             .join(HashTag.activities) \
             .filter(Activity.user_id == self.user.id) \
             .group_by(HashTag.name) \
-            .order_by('total DESC') \
+            .order_by(desc(func.count(HashTag.name))) \
             .all()
 
     def get_projects(self, project_ids=None):
@@ -425,7 +426,6 @@ class Engine:
             .filter(TrackerUserLink.external_api_key == token) \
             .first()
 
-
     def get_settings(self):
         current_settings = {}
         for object in self.user.settings:
@@ -452,3 +452,91 @@ class Engine:
         db.session.commit()
 
         return True
+
+    def get_task_time_by_date_for_db(self, task_id: int, date: dt.datetime):
+        db_activities = self.get_closed_facts_by_date(date)
+
+        if db_activities is None:  # нет активностей по задаче
+            return 0
+
+        db_time = 0
+        for db_activity in db_activities:  # считаем суммарное время по задаче
+            if db_activity.task.external_task_id == task_id:
+                db_time += round((db_activity.time_end - db_activity.time_start).total_seconds() / 3600, 2)
+
+        return db_time
+
+    def get_task_time_by_date_for_tracker_link(self, link: TrackerUserLink, task_id: int, date: dt.datetime):
+        api = TrackerModel.get_api(link.tracker.type, link.tracker.api_url, link.external_api_key)
+
+        if not api.is_auth():  # нет авторизации на апи
+            return None  # ошибка
+
+        ext_activities = api.list_activities_in_date(date, user_id=link.external_user_id)
+
+        if ext_activities is None:  # нет активностей по задаче
+            return 0
+
+        ext_time = 0
+        for ext_activity in ext_activities:  # считаем суммарное время по задаче
+            if ext_activity.task_id == task_id:
+                ext_time += ext_activity.time
+
+        return ext_time
+
+    def is_task_uploaded_in_tracker(self, activity_id: int, tracker_id: int):
+        activity = self.__get_fact_by_id(activity_id)  # type: Activity
+        if activity is None:
+            return None
+
+        for tracker in activity.uploaded_trackers:
+            if tracker.id == tracker_id:
+                return True
+
+        return False
+
+    def export_activity(self, link: TrackerUserLink, activity: TrackerActivity) -> Optional[str]:
+        """
+        Перед экспортом запрашиваем на трекере время по задаче на дату активности.
+        Активностей на трекере нет - выгрузим активность, вернем статус "new".
+        Время по задаче совпадает - все уже выгружено, вернем статус "exist".
+        Время по задаче в БД больше, чем на трекере - выгрузим активность, вернем статус "new".
+        Время по задаче в БД меньше, чем на трекере - не выгружаем, вернем статус "partial". На трекере активности созданы в обход сервиса.
+        :param link: TrackerUserLink
+        :param activity: TrackerActivity
+        :return: [None|'new'|'exist'|'partial']
+        """
+        if activity.date is None or activity.user_id is None or activity.id is None:
+            return None  # ошибка
+
+        db_activity = self.__get_fact_by_id(activity.id)
+        if db_activity is None:
+            return None  # ошибка
+
+
+        # убедимся, что активность не выгружена
+        if self.is_task_uploaded_in_tracker(activity.id, link.tracker.id):
+            return 'exist'
+
+        if activity.task_id > 0:
+            # запросим суммарное время по задаче на дату активности у трекера и БД
+            ext_time = self.get_task_time_by_date_for_tracker_link(link, activity.task_id, activity.date)
+            db_time = self.get_task_time_by_date_for_db(activity.task_id, activity.date)
+
+            if abs(db_time - ext_time) < 0.05:  # время совпадает - все активности уже синхронизированы
+                return 'exist'
+
+            if db_time < ext_time:  # время в БД меньше, чем на трекере - какая-то активность создана в обход БД
+                # todo импортируем активности с трекера в БД?
+                return 'partial'
+
+        # время в БД больше, чем на трекере - выгружаем активность
+        api = TrackerModel.get_api(link.tracker.type, link.tracker.api_url, link.external_api_key)
+        if not api.is_auth() or api.new_activity(activity) is None:
+            return None  # ошибка
+
+        # проставляем upload_link
+        link.tracker.uploaded_activities.append(db_activity)
+        db.session.commit()
+
+        return 'new'

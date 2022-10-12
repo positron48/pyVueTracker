@@ -60,6 +60,7 @@ class Evolution(Tracker):
             result.append(
                 Activity(
                     id=int(item.get('id')),
+                    task_id=int(item.get('task_id')),
                     user_id=int(item.get('employer_id')),
                     date=dt.datetime.strptime(item.get('date'), "%d.%m.%Y").date(),
                     time=float(item.get('time')),

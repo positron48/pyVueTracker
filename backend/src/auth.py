@@ -25,8 +25,8 @@ class Auth:
         user = User(login=login, hash=hash, token=cls.newAuthToken())
 
         # привязываем дефолтный набор трекеров
-        tracker_redmine = db.session.query(Tracker).filter(Tracker.title == 'redmine').first()
-        tracker_evo = db.session.query(Tracker).filter(Tracker.title == 'evolution').first()
+        tracker_redmine = db.session.query(Tracker).filter(Tracker.type == 'redmine').first()
+        tracker_evo = db.session.query(Tracker).filter(Tracker.type == 'evo').first()
         if redmine_token is None:
             redmine_link = TrackerUserLink(tracker=tracker_redmine, user=user)
         else:
