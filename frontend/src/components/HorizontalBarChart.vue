@@ -13,6 +13,7 @@ export default {
   },
   data () {
     var labelsWidth = this.labelsWidth
+    var titleChart = this.titleChart
     return {
       options: {
         legend: {
@@ -31,7 +32,11 @@ export default {
           }]
         },
         maintainAspectRatio: false,
-        barPercentage: 0.5
+        barPercentage: 0.5,
+        title: {
+          display: true,
+          text: titleChart
+        }
       }
     }
   },
@@ -48,7 +53,7 @@ export default {
       }
     },
     height: function () {
-      return 30 * this.labels.length + 30
+      return 30 * this.labels.length + 60
     },
     myStyles () {
       return {
@@ -66,6 +71,9 @@ export default {
     },
     labelsWidth: {
       type: Number
+    },
+    titleChart: {
+      type: String
     }
   }
 }

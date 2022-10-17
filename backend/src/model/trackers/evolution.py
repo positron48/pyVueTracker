@@ -57,10 +57,13 @@ class Evolution(Tracker):
             comment = item.get('comment') or ''
             if comment == '':
                 comment = None
+            taskId = item.get('task_id')
+            if taskId == '':
+                taskId = 0
             result.append(
                 Activity(
                     id=int(item.get('id')),
-                    task_id=int(item.get('task_id')),
+                    task_id=int(taskId),
                     user_id=int(item.get('employer_id')),
                     date=dt.datetime.strptime(item.get('date'), "%d.%m.%Y").date(),
                     time=float(item.get('time')),
