@@ -89,7 +89,7 @@
               <md-list-item class="task-duration-list-item">
                   {{taskGroup.duration}}
               </md-list-item>
-              <md-list-item v-for="(duration, title) in taskGroup.durationByTrackers" v-if="duration > 0" :key="taskGroup.date + title" class="task-duration-list-item tracker-durations">
+              <md-list-item v-for="(duration, title) in taskGroup.durationByTrackers" :key="taskGroup.date + title" class="task-duration-list-item tracker-durations">
                   {{title}}: {{duration}}
               </md-list-item>
             </md-list>
@@ -279,10 +279,10 @@ export default {
             this.setTaskNeedExport(task['date'], groupedTasks[task['date']].tasks.length, tracker.id, null)
           }
 
+          if (groupedTasks[task['date']]['durationByTrackers'][tracker.title] === undefined) {
+            groupedTasks[task['date']]['durationByTrackers'][tracker.title] = 0
+          }
           if (this.getTaskNeedExport(task['date'], groupedTasks[task['date']].tasks.length, tracker.id)) {
-            if (groupedTasks[task['date']]['durationByTrackers'][tracker.title] === undefined) {
-              groupedTasks[task['date']]['durationByTrackers'][tracker.title] = 0
-            }
             groupedTasks[task['date']]['durationByTrackers'][tracker.title] += delta > 0 ? delta : 0
             groupedTasks[task['date']]['durationByTrackers'][tracker.title] =
               Math.round(groupedTasks[task['date']]['durationByTrackers'][tracker.title] * 100) / 100
