@@ -521,7 +521,7 @@ class Engine:
         if activity.task_id > 0:
             # запросим суммарное время по задаче на дату активности у трекера и БД
             ext_time = self.get_task_time_by_date_for_tracker_link(link, activity.task_id, activity.date)
-            db_time = self.get_task_time_by_date_for_db(activity.task_id, activity.date)
+            db_time = activity.time #self.get_task_time_by_date_for_db(activity.task_id, activity.date)
 
             if abs(db_time - ext_time) < 0.05:  # время совпадает - все активности уже синхронизированы
                 return 'exist'
