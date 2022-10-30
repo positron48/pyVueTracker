@@ -199,7 +199,7 @@ export default {
     padding-top: 15px !important;
   }
   .task-duration-list-item .md-list-item-content{
-    width: 90px;
+    width: 120px;
     text-align: right;
     float: right;
     margin-right: 5px;
