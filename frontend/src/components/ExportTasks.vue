@@ -90,7 +90,18 @@
                   {{taskGroup.duration}}
               </md-list-item>
               <md-list-item v-for="(duration, title) in taskGroup.durationByTrackers" :key="taskGroup.date + title" class="task-duration-list-item tracker-durations">
-                  {{title}}: {{duration}}
+                {{title}}: {{duration}}
+                <span v-bind:key="title">
+
+                  <md-checkbox
+                    class="tracker-check-all"
+                    v-model="trackersSummary[title]['allChecked']"
+                    :disabled="trackersSummary[title]['disabled']"
+                    @change="changeTrackerChecked(title)"
+                  ></md-checkbox>
+
+                  <md-tooltip md-direction="left" v-if="!trackersSummary[title]['disabled']">Отметить все задачи трекера</md-tooltip>
+                </span>
               </md-list-item>
             </md-list>
         </template>
@@ -212,7 +223,7 @@ export default {
 
           // todo: status: ?warning? часы за этот день по проекту уже выгружались
           var exportStatus = this.getTaskExportStatus(task['date'], groupedTasks[task['date']].tasks.length, tracker.id)
-          if(task['exportedTrackers'].indexOf(tracker.id) !== -1) {
+          if (task['exportedTrackers'].indexOf(tracker.id) !== -1) {
             tracker['status'] = 'exported'
             tracker['message'] = 'задача была выгружена ранее'
           } else if (exportStatus === true) {
@@ -319,6 +330,32 @@ export default {
         this.exportDisabled = true
       }
       return groupedTasks
+    },
+    trackersSummary: function () {
+      var result = {}
+      for (var t = 0; t < this.trackers.length; t++) {
+        result[this.trackers[t].title] = { allChecked: true, disabled: true }
+      }
+
+      var dates = Object.keys(this.groupedTasks)
+      for (var i = 0; i < dates.length; i++) {
+        for (var taskKey = 0; taskKey < this.groupedTasks[dates[i]].tasks.length; taskKey++) {
+          var task = this.groupedTasks[dates[i]].tasks[taskKey]
+          for (var j = 0; j < this.groupedTasks[dates[i]].tasks[taskKey].trackers.length; j++) {
+            var tracker = this.groupedTasks[dates[i]].tasks[taskKey].trackers[j]
+            result[tracker.title]['allChecked'] = result[tracker.title]['allChecked'] && (tracker.disabled || this.taskTrackerData[task.date][taskKey][tracker.id]['needExport'])
+            result[tracker.title]['disabled'] = result[tracker.title]['disabled'] && tracker.disabled
+          }
+        }
+      }
+
+      for (var r = 0; r < this.trackers.length; r++) {
+        if (result[this.trackers[r].title].disabled) {
+          result[this.trackers[r].title].allChecked = false
+        }
+      }
+
+      return result
     }
   },
   computed: {
@@ -589,6 +626,24 @@ export default {
     groupTasksRecompute: function () {
       this.$recompute('groupedTasks')
     },
+    changeTrackerChecked: function (title) {
+      var needCheckTracker = this.trackersSummary[title]['allChecked']
+
+      var dates = Object.keys(this.groupedTasks)
+      for (var i = 0; i < dates.length; i++) {
+        for (var taskKey = 0; taskKey < this.groupedTasks[dates[i]].tasks.length; taskKey++) {
+          var task = this.groupedTasks[dates[i]].tasks[taskKey]
+          for (var j = 0; j < this.groupedTasks[dates[i]].tasks[taskKey].trackers.length; j++) {
+            var tracker = this.groupedTasks[dates[i]].tasks[taskKey].trackers[j]
+            if (tracker.title === title && !tracker.disabled) {
+              this.setTaskNeedExport(task['date'], taskKey, tracker.id, needCheckTracker)
+            }
+          }
+        }
+      }
+      this.$recompute('groupedTasks')
+      this.$recompute('trackersSummary')
+    },
     alert (message) {
       this.alertMessage = message
       this.showAlert = true
@@ -717,5 +772,10 @@ export default {
     padding: 0 !important;
     margin: 0 20px !important;
     min-height: 20px !important;
+  }
+  .tracker-check-all {
+    margin: 0 !important;
+    top: 5px !important;
+    height: 26px !important;
   }
 </style>
