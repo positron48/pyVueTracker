@@ -251,7 +251,7 @@ export default {
             tracker['status'] = 'fatal'
             tracker['message'] = 'при выгрузке произошла ошибка'
             statusMessage = this.getTaskTrackerValue(task['date'], groupedTasks[task['date']].tasks.length, tracker.id, 'statusMessage')
-            if (statusMessage.length) {
+            if (typeof statusMessage === 'string' && statusMessage.length > 0) {
               tracker['message'] = statusMessage
             }
           } else if (
