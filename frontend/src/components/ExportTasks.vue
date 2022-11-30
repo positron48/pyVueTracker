@@ -3,108 +3,125 @@
   <div>
     <div class="md-layout md-gutter md-alignment-top-center">
       <div class="md-layout-item md-large-size-80 md-xlarge-size-90 md-medium-size-100 md-small-size-100 taskItems minimal-input" v-if="tasks.length">
-        <template
-            v-for="taskGroup in groupedTasks"
-          >
-            <md-list :key="taskGroup.date" class="task-group">
-              <md-list-item class="task-group-date">
-                {{taskGroup.date}}
-              </md-list-item>
-                <md-table>
-                  <md-table-row>
-                    <md-table-head class="column-task-date">
-                      Дата
-                    </md-table-head>
-                    <md-table-head>Задача</md-table-head>
-                    <md-table-head class="column-task-number">
-                      Номер задачи
-                      <md-tooltip md-direction="top">Номер задачи из редмайна</md-tooltip>
-                    </md-table-head>
-                    <md-table-head>Комментарий</md-table-head>
-                    <md-table-head>
-                      Проект
-                      <md-tooltip md-direction="top">Название проекта в таймтрекере</md-tooltip>
-                    </md-table-head>
-                    <md-table-head class="column-task-time">
-                      Время
-                    </md-table-head>
-                    <md-table-head>
-                      Трекеры
-                      <md-tooltip md-direction="top">Список трекеров, привязанных к проекту</md-tooltip>
-                    </md-table-head>
-                  </md-table-row>
 
-                  <template v-for="(task, taskKey) in taskGroup.tasks">
-                    <md-table-row :key="task.id">
-                      <md-table-cell class="column-task-date">
-                        <md-field>
-                          <label></label>
-                          <md-input v-model="task.date"></md-input>
-                        </md-field>
-                      </md-table-cell>
-                      <md-table-cell class="column-task-name">
-                        <md-field>
-                          <label></label>
-                          <md-input v-model="task.name"></md-input>
-                        </md-field>
-                      </md-table-cell>
-                      <md-table-cell class="column-task-number">
-                        <md-field>
-                          <label></label>
-                          <md-input v-model="task.task_id" type="number" min="1" :class="task.external_status"></md-input>
-                          <md-tooltip md-direction="top" v-if="task.external_message">{{task.external_message}}</md-tooltip>
-                        </md-field>
-                      </md-table-cell>
-                      <md-table-cell>
-                        <md-field>
-                          <label></label>
-                          <md-textarea v-model="task.description" md-autogrow></md-textarea>
-                        </md-field>
-                      </md-table-cell>
-                      <md-table-cell>
-                          <div>{{task.category}}</div>
-                      </md-table-cell>
-                      <md-table-cell class="column-task-time">
-                        <md-field>
-                          <label></label>
-                          <md-input v-model="task.delta" type="number" min="0" step="0.05"></md-input>
-                          <md-tooltip md-direction="top" v-if="task.delta_full">{{task.delta_full}}</md-tooltip>
-                        </md-field>
-                      </md-table-cell>
-                      <md-table-cell class="column-task-trackers">
-                        <template v-for="tracker in task.trackers">
-                          <span v-bind:key="tracker.id + '_' + task.id" :class="tracker.status">
-                            <md-checkbox @change="groupTasksRecompute()" v-model="taskTrackerData[task.date][taskKey][tracker.id]['needExport']" class="tracker-checkbox" :disabled="tracker.disabled"></md-checkbox>
-                            <a class="tracker-badge" @click="linkProject(tracker.id, task.project_id)">
-                              {{tracker.title}}
-                            </a>
-                            <md-tooltip md-direction="left">{{tracker.message}}</md-tooltip>
-                          </span>
-                        </template>
-                      </md-table-cell>
-                    </md-table-row>
-                  </template>
+        <template v-for="taskGroup in groupedTasks">
 
-                </md-table>
-              <md-list-item class="task-duration-list-item">
-                  {{taskGroup.duration}}
-              </md-list-item>
-              <md-list-item v-for="(duration, title) in taskGroup.durationByTrackers" :key="taskGroup.date + title" class="task-duration-list-item tracker-durations">
-                {{title}}: {{duration}}
-                <span v-bind:key="title">
+          <md-list :key="taskGroup.date" class="task-group">
+            <md-list-item class="task-group-date">
+              {{taskGroup.date}}
+            </md-list-item>
+            <md-table>
+              <md-table-row>
+                <md-table-head class="column-task-date">
+                  Дата
+                </md-table-head>
+                <md-table-head>Задача</md-table-head>
+                <md-table-head class="column-task-number">
+                  Номер задачи
+                  <md-tooltip md-direction="top">Номер задачи из редмайна</md-tooltip>
+                </md-table-head>
+                <md-table-head>Комментарий</md-table-head>
+                <md-table-head>
+                  Проект
+                  <md-tooltip md-direction="top">Название проекта в таймтрекере</md-tooltip>
+                </md-table-head>
+                <md-table-head class="column-task-time">
+                  Время
+                </md-table-head>
+                <md-table-head>
+                  Трекеры
+                  <md-tooltip md-direction="top">Список трекеров, привязанных к проекту</md-tooltip>
+                </md-table-head>
+              </md-table-row>
 
-                  <md-checkbox
-                    class="tracker-check-all"
-                    v-model="trackersSummary[title]['allChecked']"
-                    :disabled="trackersSummary[title]['disabled']"
-                    @change="changeTrackerChecked(title)"
-                  ></md-checkbox>
+              <template v-for="(task, taskKey) in taskGroup.tasks">
+                <md-table-row :key="task.id">
+                  <md-table-cell class="column-task-date">
+                    <md-field>
+                      <label></label>
+                      <md-input v-model="task.date"></md-input>
+                    </md-field>
+                  </md-table-cell>
+                  <md-table-cell class="column-task-name">
+                    <md-field>
+                      <label></label>
+                      <md-input v-model="task.name"></md-input>
+                    </md-field>
+                  </md-table-cell>
+                  <md-table-cell class="column-task-number">
+                    <md-field>
+                      <label></label>
+                      <md-input v-model="task.task_id" type="number" min="1" :class="task.external_status"></md-input>
+                      <md-tooltip md-direction="top" v-if="task.external_message">{{task.external_message}}</md-tooltip>
+                    </md-field>
+                  </md-table-cell>
+                  <md-table-cell>
+                    <md-field>
+                      <label></label>
+                      <md-textarea v-model="task.description" md-autogrow></md-textarea>
+                    </md-field>
+                  </md-table-cell>
+                  <md-table-cell>
+                      <div>{{task.category}}</div>
+                  </md-table-cell>
+                  <md-table-cell class="column-task-time">
+                    <md-field>
+                      <label></label>
+                      <md-input v-model="task.delta" type="number" min="0" step="0.05"></md-input>
+                      <md-tooltip md-direction="top" v-if="task.delta_full">{{task.delta_full}}</md-tooltip>
+                    </md-field>
+                  </md-table-cell>
+                  <md-table-cell class="column-task-trackers">
+                    <template v-for="tracker in task.trackers">
+                      <span v-bind:key="tracker.id + '_' + task.id" :class="tracker.status">
+                        <md-checkbox @change="groupTasksRecompute()" v-model="taskTrackerData[task.date][taskKey][tracker.id]['needExport']" class="tracker-checkbox" :disabled="tracker.disabled"></md-checkbox>
+                        <a class="tracker-badge" @click="linkProject(tracker.id, task.project_id)">
+                          {{tracker.title}}
+                        </a>
+                        <md-tooltip md-direction="left">{{tracker.message}}</md-tooltip>
+                      </span>
+                    </template>
+                  </md-table-cell>
+                </md-table-row>
+              </template>
 
-                  <md-tooltip md-direction="left" v-if="!trackersSummary[title]['disabled']">Отметить все задачи трекера</md-tooltip>
-                </span>
-              </md-list-item>
-            </md-list>
+            </md-table>
+            <md-list-item class="task-duration-list-item">
+              {{taskGroup.duration}}
+            </md-list-item>
+            <md-list-item v-for="(duration, title) in taskGroup.durationByTrackers" :key="taskGroup.date + title" class="task-duration-list-item tracker-durations">
+              {{title}}: {{duration}}
+              <span v-bind:key="title">
+
+                <md-checkbox
+                  class="tracker-check-all"
+                  v-model="trackersSummary[title][taskGroup.date]['allChecked']"
+                  :disabled="trackersSummary[title][taskGroup.date]['disabled']"
+                  @change="changeTrackerChecked(title, taskGroup.date)"
+                ></md-checkbox>
+
+                <md-tooltip md-direction="left" v-if="!trackersSummary[title][taskGroup.date]['disabled']">Отметить все задачи трекера</md-tooltip>
+              </span>
+            </md-list-item>
+          </md-list>
         </template>
+
+        <md-list class="task-group" v-if="Object.keys(groupedTasks).length > 1">
+          <md-list-item v-for="(tracker, key) in trackers" :key="key" class="task-duration-list-item tracker-durations">
+            {{trackers[key]['title']}}: {{trackersSummary[trackers[key]['title']]['duration']}}
+            <span v-bind:key="key">
+
+              <md-checkbox
+                class="tracker-check-all"
+                v-model="trackersSummary[trackers[key]['title']]['allChecked']"
+                :disabled="trackersSummary[trackers[key]['title']]['disabled']"
+                @change="changeTrackerChecked(trackers[key]['title'], null)"
+              ></md-checkbox>
+
+              <md-tooltip md-direction="left" v-if="!trackersSummary[trackers[key]['title']]['disabled']">Отметить все задачи трекера</md-tooltip>
+            </span>
+          </md-list-item>
+        </md-list>
       </div>
     </div>
 
@@ -333,18 +350,29 @@ export default {
     },
     trackersSummary: function () {
       var result = {}
-      for (var t = 0; t < this.trackers.length; t++) {
-        result[this.trackers[t].title] = { allChecked: true, disabled: true }
-      }
 
       var dates = Object.keys(this.groupedTasks)
+      for (var t = 0; t < this.trackers.length; t++) {
+        result[this.trackers[t].title] = { allChecked: true, disabled: true, duration: 0 }
+        for (var d = 0; d < dates.length; d++) {
+          result[this.trackers[t].title][dates[d]] = { allChecked: true, disabled: true, duration: 0 }
+        }
+      }
+
       for (var i = 0; i < dates.length; i++) {
         for (var taskKey = 0; taskKey < this.groupedTasks[dates[i]].tasks.length; taskKey++) {
           var task = this.groupedTasks[dates[i]].tasks[taskKey]
           for (var j = 0; j < this.groupedTasks[dates[i]].tasks[taskKey].trackers.length; j++) {
             var tracker = this.groupedTasks[dates[i]].tasks[taskKey].trackers[j]
+            result[tracker.title][dates[i]]['allChecked'] = result[tracker.title][dates[i]]['allChecked'] && (tracker.disabled || this.taskTrackerData[task.date][taskKey][tracker.id]['needExport'])
+            result[tracker.title][dates[i]]['disabled'] = result[tracker.title][dates[i]]['disabled'] && tracker.disabled
+
             result[tracker.title]['allChecked'] = result[tracker.title]['allChecked'] && (tracker.disabled || this.taskTrackerData[task.date][taskKey][tracker.id]['needExport'])
             result[tracker.title]['disabled'] = result[tracker.title]['disabled'] && tracker.disabled
+
+            if (tracker.title in this.groupedTasks[dates[i]]['durationByTrackers']) {
+              result[tracker.title]['duration'] += this.groupedTasks[dates[i]]['durationByTrackers'][tracker.title]
+            }
           }
         }
       }
@@ -352,6 +380,9 @@ export default {
       for (var r = 0; r < this.trackers.length; r++) {
         if (result[this.trackers[r].title].disabled) {
           result[this.trackers[r].title].allChecked = false
+          for (var w = 0; w < dates.length; w++) {
+            result[this.trackers[r].title][dates[w]].allChecked = false
+          }
         }
       }
 
@@ -626,10 +657,15 @@ export default {
     groupTasksRecompute: function () {
       this.$recompute('groupedTasks')
     },
-    changeTrackerChecked: function (title) {
+    changeTrackerChecked: function (title, date) {
       var needCheckTracker = this.trackersSummary[title]['allChecked']
 
       var dates = Object.keys(this.groupedTasks)
+      if (date) {
+        dates = [date]
+        needCheckTracker = this.trackersSummary[title][date]['allChecked']
+      }
+
       for (var i = 0; i < dates.length; i++) {
         for (var taskKey = 0; taskKey < this.groupedTasks[dates[i]].tasks.length; taskKey++) {
           var task = this.groupedTasks[dates[i]].tasks[taskKey]
@@ -765,7 +801,8 @@ export default {
     margin-top: 3px !important;
   }
   .tracker-durations{
-    width: auto;
+    width: 160px;
+    margin-left: calc(100% - 160px);
   }
   .tracker-durations .md-list-item-content {
     font-size: 12px !important;
