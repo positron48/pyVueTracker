@@ -199,6 +199,7 @@ export default {
     groupedTasks: function () {
       var groupedTasks = {}
       var haveTaskToExport = false
+      var statusMessage = ''
       for (var i = 0; i < this.tasks.length; i++) {
         var task = this.tasks[i]
 
@@ -249,6 +250,10 @@ export default {
           } else if (exportStatus === false) {
             tracker['status'] = 'fatal'
             tracker['message'] = 'при выгрузке произошла ошибка'
+            statusMessage = this.getTaskTrackerValue(task['date'], groupedTasks[task['date']].tasks.length, tracker.id, 'statusMessage')
+            if (statusMessage.length) {
+              tracker['message'] = statusMessage
+            }
           } else if (
             this.trackersById[tracker['id']] !== undefined &&
             this.trackersById[tracker['id']]['external_user_id'] === null
@@ -600,6 +605,10 @@ export default {
                 this.alert('Задача ' + exportTask.external_id + ' уже экспортирована, пропускаю')
               } else if (response.data.export_result === 'partial') {
                 this.alert('Экспорт задачи ' + exportTask.external_id + 'невозможен: на трекере лишнее время, добаленное в обход системы. Система пока не умеет разрешать такие ситуации, проверьте вручную')
+              } else if (response.data.export_result === response.data.message) {
+                // внешняя ошибка от трекера
+                this.setTaskExportStatus(exportTask.date, j, trackerId, false)
+                this.setTaskTrackerValue(exportTask.date, j, trackerId, 'statusMessage', response.data.message)
               }
             }
             this.setTaskExportStatus(exportTask.date, j, trackerId, false)

@@ -436,6 +436,8 @@ class ApiController:
         result = self.engine.export_activity(link, activity)
         self.response.export_result = result
         self.response.status = result == 'new'
+        if not self.response.status:
+            self.response.message = result
 
     def replace_export_template(self, template, task):
         return template \
