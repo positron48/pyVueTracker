@@ -532,8 +532,12 @@ class Engine:
 
         # время в БД больше, чем на трекере - выгружаем активность
         api = TrackerModel.get_api(link.tracker.type, link.tracker.api_url, link.external_api_key)
-        if not api.is_auth() or api.new_activity(activity) is None:
-            return None  # ошибка
+        if not api.is_auth():
+            return None
+
+        result = api.new_activity(activity)
+        if result is None or not result.isnumeric():
+            return result  # ошибка
 
         # проставляем upload_link
         link.tracker.uploaded_activities.append(db_activity)
