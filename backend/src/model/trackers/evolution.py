@@ -184,6 +184,8 @@ class Evolution(Tracker):
         response = response.json()
         if "success" in response and response['success']:
             return response['id']
+        elif "errors" in response and len(response['errors']) > 0:
+            return response['errors'][0]['msg']
 
     ######################################### end Tracker interface ####################################################
 
