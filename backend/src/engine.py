@@ -536,7 +536,7 @@ class Engine:
             return None
 
         result = api.new_activity(activity)
-        if result is None or not result.isnumeric():
+        if result is None or not isinstance(result, int):
             return result  # ошибка
 
         # проставляем upload_link
