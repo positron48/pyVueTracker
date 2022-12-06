@@ -9,6 +9,7 @@ from backend.src.model.mysql import db, User, Activity, Task, HashTag, Project, 
     TrackerProjectLink, UserSettings
 from .model.tracker import Tracker as TrackerModel
 from .model.tracker import Activity as TrackerActivity
+import re
 
 
 class Engine:
@@ -401,6 +402,11 @@ class Engine:
                 from .model.trackers.redmine import Redmine
                 redmine = Redmine(tracker_link.tracker.api_url, token=token)
                 tracker_link.external_user_id = redmine.get_user_id()
+            elif tracker_link.tracker.type == 'jira':
+                from .model.trackers.jira import Jira
+                jira = Jira(tracker_link.tracker.api_url, token=token)
+                tracker_link.external_user_id = jira.get_user_key()
+
             db.session.commit()
             return True
 

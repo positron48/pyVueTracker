@@ -53,10 +53,13 @@ class Tracker:
     def get_api(type, url, api_key=None, login=None, password=None):
         from backend.src.model.trackers.redmine import Redmine
         from backend.src.model.trackers.evolution import Evolution
+        from backend.src.model.trackers.jira import Jira
         if type == 'redmine':
             return Redmine(url, api_key, login, password)
         elif type == 'evo':
             return Evolution(url, api_key, login, password)
+        elif type == 'jira':
+            return Jira(url, api_key, login, password)
         return None
 
     def get_tracker_type(self) -> Optional[str]:

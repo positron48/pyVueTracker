@@ -1,5 +1,6 @@
 Generic single-database configuration.
 https://flask-migrate.readthedocs.io/en/latest/
-flask db migrate - проанализировать различия между БД и моделью и сгенерировать миграцию. Только для разработки!!!
-flask db downgrade - откатить последнюю миграцию. Повторять, если нужно откатить несколько миграций
-flask db upgrade - накатить все новые миграции.  В т.ч. позволяет новую БД без табличек заполнить табличками
+[docker-compose exec web] flask db migrate - проанализировать различия между БД и моделью и сгенерировать миграцию. Только для разработки!!!
+[docker-compose exec web] flask db downgrade - откатить последнюю миграцию. Повторять, если нужно откатить несколько миграций
+[docker-compose exec web] flask db upgrade - накатить все новые миграции.  В т.ч. позволяет новую БД без табличек заполнить табличками
+

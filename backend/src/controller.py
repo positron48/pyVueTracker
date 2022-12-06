@@ -196,13 +196,12 @@ class ApiController:
         s = Sheduler()
 
         token = s.get_token(tracker.type, tracker.api_url, login, password)
-        print(token)
 
         self.response.status = token is not None
 
         self.response.external_token = token
         if self.response.status:
-            self.response.external_token = token
+            self.response.external_token = 'действительна' if tracker.type == 'jira' else token
 
             # редактируем связь пользователя с токеном, добавляя апи ключ
             self.engine.set_api_key(tracker_id, token)
@@ -258,12 +257,15 @@ class ApiController:
     def get_trackers(self):
         result = []
         for tracker in self.engine.get_trackers():
+            apiKey = tracker[1].external_api_key
+            if tracker[0].type == 'jira' and tracker[1].external_api_key is not None:
+                apiKey = 'действительна'
             element = {
                 'id': tracker[0].id,
                 'title': tracker[0].title,
                 'type': tracker[0].type,
                 'api_url': tracker[0].api_url,
-                'external_api_key': tracker[1].external_api_key,
+                'external_api_key': apiKey,
                 'external_user_id': tracker[1].external_user_id
             }
             result.append(element)
