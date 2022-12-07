@@ -524,9 +524,11 @@ class Engine:
         if self.is_task_uploaded_in_tracker(activity.id, link.tracker.id):
             return 'exist'
 
-        if activity.task_id > 0:
+        print(link.tracker, flush=True)
+        print(link.tracker.type, flush=True)
+        if activity.task_id is not None and link.tracker.type != 'jira':
             # запросим суммарное время по задаче на дату активности у трекера и БД
-            ext_time = self.get_task_time_by_date_for_tracker_link(link, activity.task_id, activity.date)
+            ext_time = self.get_task_time_by_date_for_tracker_link(link, int(activity.task_id), activity.date)
             db_time = activity.time #self.get_task_time_by_date_for_db(activity.task_id, activity.date)
 
             if abs(db_time - ext_time) < 0.05:  # время совпадает - все активности уже синхронизированы

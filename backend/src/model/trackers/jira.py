@@ -10,9 +10,6 @@ class Jira(Tracker):
     def __init__(self, url, token=None, login=None, password=None):
 
         if token is not None:
-            print(token, flush=True)
-            print(re.split(':', token), flush=True)
-
             data = re.split(':', token)
             login = data[0]
             password = data[1]
@@ -83,6 +80,37 @@ class Jira(Tracker):
         """
         return None
 
+
+    def get_task_by_id(self, task_id) -> Optional[Task]:
+        """
+        Запрашивает у трекера задачу по id, если задачи поддерживаются трекером
+        :param task_id: id запрашиваемой задачи
+        :return: возвращает Task или None
+        """
+        if self.auth:
+            response = requests.get(self.url + "/rest/api/2/search?jql=key=" + task_id,
+                                    auth=(self.login, self.password))
+
+            if response.status_code > 400:
+                return False
+
+            response = response.json()
+
+            if "errors" in response and len(response['reasons']) > 0:
+                return False
+            elif 'issues' in response and len(response['issues']) > 0:
+
+                issue = response['issues'][0]
+
+                return Task(
+                    id=issue['key'],
+                    name=issue['fields']['summary'],
+                    project_id=issue['fields']['project']['id'],
+                    project_name=issue['fields']['project']['name'],
+                    tracker_name=issue['fields']['issuetype']['name'],
+                    status=issue['fields']['status']['name']
+                )
+
     def list_activities_in_date(self, date: dt.date, user_id: int = None, **kwargs) -> Optional[List[Activity]]:
         """
         Запрашивает у трекера список активностей по дате
@@ -120,20 +148,30 @@ class Jira(Tracker):
         :return: возвращает activity_id созданной активности, или None, в случае неудачи
         """
         data = {
-            "billableSeconds": activity.time * 3600,
+            "billableSeconds": int(activity.time * 3600),
             "comment": activity.comment,
             "endDate": activity.date.strftime('%Y-%m-%d'),
-            "includeNonWorkingDays": false,
+            "includeNonWorkingDays": False,
             "originTaskId": activity.task_id,
             "started": activity.date.strftime('%Y-%m-%d'),
-            "timeSpentSeconds": activity.time * 3600,
+            "timeSpentSeconds": int(activity.time * 3600),
             "worker": activity.user_id
         }
 
-        basic = HTTPBasicAuth(self.login, self.password)
+        print(data, flush=True)
+        print(self.url + "/rest/tempo-timesheets/4/worklogs", flush=True)
 
-        response = requests.post(self.url + "/rest/tempo-timesheets/4/worklogs", auth=(self.login, self.password), data=data)
+        response = requests.post(self.url + "/rest/tempo-timesheets/4/worklogs", auth=(self.login, self.password), json=data)
+
+        print(response, flush=True)
+        print(response.status_code, flush=True)
+
+        if response.status_code > 400:
+            return 'StatusCode JIRA: ' + str(response.status_code)
+
         response = response.json()
+        print(response, flush=True)
+
         if "errors" in response and len(response['reasons']) > 0:
             return response['reasons'][0]
         elif len(response) > 0:
@@ -147,19 +185,12 @@ class Jira(Tracker):
 
         response = requests.get(self.url + "/rest/api/2/user?username=" + self.login, auth=(self.login, self.password))
 
-        print(response.status_code, flush=True)
-
         if response.status_code > 400:
             return False
 
-        print(response, flush=True)
-
         response = response.json()
-
-        print(response, flush=True)
 
         if "errors" in response and len(response['reasons']) > 0:
             return False
         elif 'key' in response:
-            print(response['key'], flush=True)
             return response['key']

@@ -16,12 +16,13 @@ class Project:
 
 
 class Task:
-    def __init__(self, id: int, name: str, project_id: int, project_name: str, tracker_name: str, status: str = None):
+    def __init__(self, id, name: str, project_id: int, project_name: str, tracker_name: str, status: str = None, jira_task: str = None):
         self.id = id
         self.name = name
         self.project_id = project_id
         self.project_name = project_name
         self.tracker_name = tracker_name
+        self.jira_task = jira_task
         self.status = status
 
 
@@ -126,7 +127,7 @@ class Tracker:
         """
         return None
 
-    def get_task_by_id(self, task_id: int) -> Optional[Task]:
+    def get_task_by_id(self, task_id) -> Optional[Task]:
         """
         Запрашивает у трекера задачу по id, если задачи поддерживаются трекером
         :param task_id: id запрашиваемой задачи

@@ -177,7 +177,7 @@ class Evolution(Tracker):
             'project_id': activity.project_id
         }
 
-        if activity.task_id > 0:
+        if activity.task_id is not None and int(activity.task_id) > 0:
             data['task_id'] = activity.task_id
 
         response = requests.post(self.url + "/api/task", data=data)
