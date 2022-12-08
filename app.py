@@ -522,7 +522,7 @@ def export_task():
     if external_id == '':
         external_id = 0
     else:
-        external_id = int(external_id)
+        external_id = external_id
 
     api = ApiController()
     return api.export(request.values['tracker_id'], {

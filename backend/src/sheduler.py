@@ -163,7 +163,8 @@ class Sheduler:
                 'project': external_task.project_name,
                 'project_id': external_task.project_id,
                 'status': external_task.status,
-                'name': external_task.name
+                'name': external_task.name,
+                'jira_task': external_task.jira_task
             }
 
             return result

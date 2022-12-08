@@ -8,6 +8,7 @@ from functools import wraps
 from backend.src.sheduler import Sheduler
 from math import ceil
 import copy
+import re
 
 
 class Response:
@@ -196,13 +197,12 @@ class ApiController:
         s = Sheduler()
 
         token = s.get_token(tracker.type, tracker.api_url, login, password)
-        print(token)
 
         self.response.status = token is not None
 
         self.response.external_token = token
         if self.response.status:
-            self.response.external_token = token
+            self.response.external_token = 'действительна' if tracker.type == 'jira' else token
 
             # редактируем связь пользователя с токеном, добавляя апи ключ
             self.engine.set_api_key(tracker_id, token)
@@ -256,6 +256,16 @@ class ApiController:
 
     @send_response
     def get_trackers(self):
+        result = self._get_trackers()
+
+        for tracker in result:
+            if tracker['type'] == 'jira' and tracker['external_api_key'] is not None:
+                tracker['external_api_key'] = 'действительна'
+
+        self.response.status = len(result) > 0
+        self.response.trackers = result
+
+    def _get_trackers(self):
         result = []
         for tracker in self.engine.get_trackers():
             element = {
@@ -268,8 +278,7 @@ class ApiController:
             }
             result.append(element)
 
-        self.response.status = len(result) > 0
-        self.response.trackers = result
+        return result
 
     @send_response
     def get_user_projects(self):
@@ -370,6 +379,28 @@ class ApiController:
         s = Sheduler()
         task = s.get_task(link.tracker.type, link.tracker.api_url, link.external_api_key, task_id)
 
+        # если текущий трекер редмайн и заполнено поле задачи в jira - найти соответствубщий трекер жиры
+        # и передать дополнительные данные по нему
+        jira = None
+        if task['jira_task'] is not None:
+            # получаем все трекеры пользователя
+            # если jira сверяем url задачи и url трекера
+            # если совпадают - передаем на бэк доп инфу для трекера жиры (код задачи)
+            trackers = self._get_trackers()
+            for tracker in trackers:
+                if tracker['type'] == 'jira' and task['jira_task'].find(tracker['api_url']) != -1:
+                    taskKey = re.split('/', task['jira_task']).pop()
+
+                    # todo: проверить доступность задачи и получить данные по ней
+                    taskData = s.get_task(tracker['type'], tracker['api_url'], tracker['external_api_key'], taskKey)
+
+                    jira = {
+                        'tracker_id': tracker['id'],
+                        'task_url': task['jira_task'],
+                        'task': taskData
+                    }
+
+        self.response.jira = jira
         self.response.status = task is not None
         self.response.task = task
 
@@ -398,7 +429,7 @@ class ApiController:
         settings = self.engine.get_settings()
 
         if link.tracker.type == 'evo':
-            if export_task['external_id'] > 0:
+            if export_task['external_id'] is not None and int(export_task['external_id']) > 0:
                 if 'evo_in_comment' in settings:
                     comment = self.replace_export_template(settings['evo_in_comment'], export_task)
                 else:

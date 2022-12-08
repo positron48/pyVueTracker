@@ -14,7 +14,7 @@
               <md-table-head>Название</md-table-head>
               <md-table-head>Url</md-table-head>
               <md-table-head>Тип</md-table-head>
-              <md-table-head>Токен</md-table-head>
+              <md-table-head>Авторизация</md-table-head>
               <md-table-head>Пользователь</md-table-head>
             </md-table-row>
             <md-table-row v-bind:key="tracker.id" v-for="tracker in trackers">
@@ -31,7 +31,7 @@
                 <a class="simple-link" @click="showTokenModal(tracker)">
                   <md-tooltip md-direction="top">Авторизация на трекере</md-tooltip>
                   <span v-if="tracker.external_api_key">{{tracker.external_api_key}}</span>
-                  <span v-if="!tracker.external_api_key">Получить токен</span>
+                  <span v-if="!tracker.external_api_key">Авторизоваться</span>
                 </a>
               </md-table-head>
               <md-table-head>
@@ -40,13 +40,14 @@
                   <span v-if="!tracker.external_user_id && tracker.type === 'evo'">Указать пользователя</span>
                   <span v-if="tracker.external_user_id">{{tracker.external_user_id}}</span>
                 </a>
-                <span v-if="tracker.external_user_id && tracker.type === 'redmine'">{{tracker.external_user_id}}</span>
+                <span v-if="tracker.external_user_id && (tracker.type === 'redmine' || tracker.type === 'jira')">{{tracker.external_user_id}}</span>
               </md-table-head>
             </md-table-row>
           </md-table>
 
           <md-list-item>
-            <md-button @click="addTracker()">Добавить redmine</md-button>
+            <md-button @click="addTracker('redmine')">Добавить redmine</md-button>
+            <md-button @click="addTracker('jira')">Добавить JIRA</md-button>
           </md-list-item>
         </md-list>
       </div>
@@ -65,7 +66,7 @@
               <md-table-head>Название</md-table-head>
               <md-table-head>Url</md-table-head>
               <md-table-head>Тип</md-table-head>
-              <md-table-head>Токен</md-table-head>
+              <md-table-head>Авторизация</md-table-head>
             </md-table-row>
             <md-table-row v-bind:key="project.id" v-for="project in projects">
               <md-table-head>
@@ -176,7 +177,7 @@
       </div>
       <div class="modal-footer text-right">
         <md-button class="md-primary" @click="closeTokenModal">отмена</md-button>
-        <md-button class="md-accent" @click="getToken">получить</md-button>
+        <md-button class="md-accent" @click="getToken">отправить</md-button>
       </div>
     </modal>
 
@@ -289,12 +290,12 @@ export default {
           console.log(['saveTrackerUser error', error])
         })
     },
-    addTracker () {
+    addTracker (type) {
       this.currentTracker = {
         id: 0,
         title: '',
         api_url: '',
-        type: 'redmine'
+        type: type
       }
       this.showTrackerModal()
     },
@@ -366,7 +367,7 @@ export default {
 
             this.showToken = false
           } else {
-            this.alert('Токен не получен')
+            this.alert('Ошибка авторизации')
           }
         })
         .catch(error => {
