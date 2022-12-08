@@ -11,7 +11,7 @@ SQLAlchemy==1.4.41
 Werkzeug==2.2.2
 alembic==1.8.1
 asn1crypto==1.5.1
-certifi==2022.9.14
+certifi==2022.12.7
 cffi==1.15.1
 chardet==5.0.0
 cryptography==38.0.1
