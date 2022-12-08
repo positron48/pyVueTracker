@@ -149,10 +149,14 @@ class Redmine(Tracker):
             try:
                 task = self.api.issue.get(task_id)
                 jira_task = None
-                if 'custom_fields' in task:
-                    for field in task.custom_fields:
-                        if field.name == 'Задача в системе заказчика':
-                            jira_task = field.value
+
+                try:
+                    if task.custom_fields is not None:
+                        for field in task.custom_fields:
+                            if field.name == 'Задача в системе заказчика':
+                                jira_task = field.value
+                except:
+                    pass
 
             except (ResourceNotFoundError, ForbiddenError):
                 return None
