@@ -75,9 +75,12 @@
                     <template v-for="tracker in task.trackers">
                       <span v-bind:key="tracker.id + '_' + task.id" :class="tracker.status">
                         <md-checkbox @change="groupTasksRecompute()" v-model="taskTrackerData[task.date][taskKey][tracker.id]['needExport']" class="tracker-checkbox" :disabled="tracker.disabled"></md-checkbox>
-                        <a class="tracker-badge" @click="linkProject(tracker.id, task.project_id)">
+                        <a v-if="tracker.type !== 'jira'" class="tracker-badge" @click="linkProject(tracker.id, task.project_id)">
                           {{tracker.title}}
                         </a>
+                        <span class="tracker-badge" v-if="tracker.type === 'jira'">
+                          {{tracker.title}}
+                        </span>
                         <md-tooltip md-direction="left">{{tracker.message}}</md-tooltip>
                       </span>
                     </template>
@@ -237,6 +240,15 @@ export default {
               task['external_message'] = '[' + externalTask['project'] + '] ' + externalTask['tracker'] +
                 ' #' + externalTask['id'] + ': ' + externalTask['name']
             }
+          } else if (
+            task['task_id'] > 0 &&
+            tracker.type === 'jira' &&
+            externalTask !== undefined &&
+            externalTask['name'] !== undefined
+          ) {
+            tracker['status'] = 'linked'
+            tracker['message'] = '[' + externalTask['project'] + '] ' +
+              ' #' + externalTask['id'] + ': ' + externalTask['name']
           }
 
           // todo: status: ?warning? часы за этот день по проекту уже выгружались
@@ -287,10 +299,12 @@ export default {
           ) {
             tracker['status'] = 'warning'
             tracker['message'] = 'проект в редмайне отличается от указанного'
-          } else {
+          } else if (tracker['type'] !== 'jira') {
             tracker['message'] = tracker['status'] === 'linked'
               ? this.projects[task['project_id']]['tracker_projects'][this.trackers[j]['id']]['external_project_title']
               : 'проект не сопоставлен'
+          } else if (tracker['type'] === 'jira' && (tracker['message'] === undefined || tracker['message'] === '')) {
+            tracker['message'] = 'задача не найдена'
           }
 
           var needExport = this.getTaskNeedExport(task['date'], groupedTasks[task['date']].tasks.length, tracker.id)
@@ -532,6 +546,9 @@ export default {
           .then(response => {
             if (response !== undefined && (('status' in response.data && response.data.status) || !('status' in response.data))) {
               this.trackerTasks[trackerId][externalTaskId] = response.data.task
+              if (response.data.jira && response.data.jira.tracker_id > 0 && response.data.jira.task) {
+                this.trackerTasks[response.data.jira.tracker_id][externalTaskId] = response.data.jira.task
+              }
             } else {
               this.trackerTasks[trackerId][externalTaskId] = false
             }
@@ -581,7 +598,11 @@ export default {
             var needExport = this.getTaskNeedExport(task['date'], j, task.trackers[k].id)
             if (needExport === true && (task.trackers[k].status === 'linked' || task.trackers[k].status === 'warning' || task.trackers[k].status === 'fatal')) {
               exportTask.tracker_id = task.trackers[k].id
-              exportTask.project_id = this.projects[task.project_id]['tracker_projects'][exportTask.tracker_id]['external_project_id']
+              if (task.trackers[k].type === 'jira') {
+                exportTask.external_id = this.trackerTasks[exportTask.tracker_id][task.task_id]['id']
+              } else {
+                exportTask.project_id = this.projects[task.project_id]['tracker_projects'][exportTask.tracker_id]['external_project_id']
+              }
 
               this.exportingTaskCount++
 

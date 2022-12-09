@@ -139,7 +139,7 @@ class Redmine(Tracker):
                 if project.name == project_name:
                     return project
 
-    def get_task_by_id(self, task_id: int) -> Optional[Task]:
+    def get_task_by_id(self, task_id) -> Optional[Task]:
         """
         Запрашивает у трекера задачу по id, если задачи поддерживаются трекером
         :param task_id: id запрашиваемой задачи
@@ -148,10 +148,20 @@ class Redmine(Tracker):
         if self.auth:
             try:
                 task = self.api.issue.get(task_id)
+                jira_task = None
+
+                try:
+                    if task.custom_fields is not None:
+                        for field in task.custom_fields:
+                            if field.name == 'Задача в системе заказчика':
+                                jira_task = field.value
+                except:
+                    pass
+
             except (ResourceNotFoundError, ForbiddenError):
                 return None
             return Task(id=task.id, name=task.subject, project_id=task.project.id, project_name=task.project.name,
-                        tracker_name=task.tracker.name, status=task.status.name)
+                        tracker_name=task.tracker.name, status=task.status.name, jira_task=jira_task)
 
     def list_tasks_in_project(self, project_id: int, all: bool = False) -> Optional[List[Task]]:
         """

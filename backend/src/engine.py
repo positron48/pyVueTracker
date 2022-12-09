@@ -9,6 +9,7 @@ from backend.src.model.mysql import db, User, Activity, Task, HashTag, Project, 
     TrackerProjectLink, UserSettings
 from .model.tracker import Tracker as TrackerModel
 from .model.tracker import Activity as TrackerActivity
+import re
 
 
 class Engine:
@@ -401,6 +402,11 @@ class Engine:
                 from .model.trackers.redmine import Redmine
                 redmine = Redmine(tracker_link.tracker.api_url, token=token)
                 tracker_link.external_user_id = redmine.get_user_id()
+            elif tracker_link.tracker.type == 'jira':
+                from .model.trackers.jira import Jira
+                jira = Jira(tracker_link.tracker.api_url, token=token)
+                tracker_link.external_user_id = jira.get_user_key()
+
             db.session.commit()
             return True
 
@@ -518,9 +524,11 @@ class Engine:
         if self.is_task_uploaded_in_tracker(activity.id, link.tracker.id):
             return 'exist'
 
-        if activity.task_id > 0:
+        print(link.tracker, flush=True)
+        print(link.tracker.type, flush=True)
+        if activity.task_id is not None and link.tracker.type != 'jira':
             # запросим суммарное время по задаче на дату активности у трекера и БД
-            ext_time = self.get_task_time_by_date_for_tracker_link(link, activity.task_id, activity.date)
+            ext_time = self.get_task_time_by_date_for_tracker_link(link, int(activity.task_id), activity.date)
             db_time = activity.time #self.get_task_time_by_date_for_db(activity.task_id, activity.date)
 
             if abs(db_time - ext_time) < 0.05:  # время совпадает - все активности уже синхронизированы
