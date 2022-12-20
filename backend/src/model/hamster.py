@@ -93,7 +93,7 @@ class Fact:
     def as_text(self):
         tags = {'#' + tag for tag in self.tags}
         s = ''
-        if self.__task_name: s += ' ' + self.__task_name
+        if self.__task_name: s += '' + self.__task_name
         if self.category: s += '@' + self.category
         if len(tags): s += ' ' + ', '.join(tags)
         if self.description: s += ', ' + self.description
