@@ -13,8 +13,8 @@
       <font-awesome-icon icon="stop-circle"/>
       <md-tooltip md-direction="top">Остановить</md-tooltip>
     </div>
-    <div class="task-col task-start-time">{{task.start_time}}</div>
-    <div class="task-col task-end-time">{{task.end_time}}</div>
+    <div v-if="task.start_time" class="task-col task-start-time">{{task.start_time}}&nbsp;</div>
+    <div v-if="task.end_time" class="task-col task-end-time">{{task.end_time}}&nbsp;</div>
     <div class="task-col task-name">{{task.name}}</div>
     <md-badge class="task-col task-category md-primary md-square" :md-content="task.category" v-if="task.category"/>
     <div class="task-col task-tags">
