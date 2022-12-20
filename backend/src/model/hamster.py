@@ -207,7 +207,7 @@ class Hamster:
                 # want meaningful activities
                 return res
 
-            res["activity"] = activity
+            res["activity"] = activity.strip()
             return next_phase(activity, "category")
 
         if "category" in phases:
