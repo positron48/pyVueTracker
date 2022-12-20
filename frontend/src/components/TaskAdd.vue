@@ -64,7 +64,11 @@ export default {
         re = new RegExp(nameForFilter, 'i')
         for (var item of this.taskCompletitions) {
           if (re.test(item) && item !== nameForFilter) {
-            filtered.push(timeDelta + ' ' + item)
+            if (timeDelta.length > 0) {
+              filtered.push(timeDelta + ' ' + item)
+            } else {
+              filtered.push(item)
+            }
           }
           if (filtered.length >= 10) {
             break
