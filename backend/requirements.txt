@@ -8,7 +8,7 @@ Mako==1.2.2
 MarkupSafe==2.1.1
 PyMySQL==1.0.2
 SQLAlchemy==1.4.41
-Werkzeug==2.2.2
+Werkzeug==2.2.3
 alembic==1.8.1
 asn1crypto==1.5.1
 certifi==2022.9.14
