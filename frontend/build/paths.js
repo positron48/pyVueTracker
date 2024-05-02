@@ -12,5 +12,5 @@ module.exports = {
   static: path.resolve(__dirname, '../static'),
 
   // Production build files
-  build: path.resolve(__dirname, '../dist'),
+  build: path.resolve(__dirname, '../../dist'),
 }
