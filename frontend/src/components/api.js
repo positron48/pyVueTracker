@@ -3,7 +3,7 @@ import {isLogin, logout, getToken} from './auth.js'
 import {urlEncode, formatDate} from './helpers.js'
 
 const HTTP = axios.create({
-  baseURL: 'http://localhost:5000',
+  baseURL: 'http://time.skillum.ru',
   headers: {
     'Content-type': 'application/x-www-form-urlencoded'
   }
