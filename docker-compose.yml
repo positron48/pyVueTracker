@@ -15,6 +15,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
+      - .:/usr/src
       - ./frontend:/usr/src/app
     environment:
       NODE_ENV: development
