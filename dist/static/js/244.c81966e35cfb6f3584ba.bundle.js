@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunktracker=self.webpackChunktracker||[]).push([[244],{9244:function(t,e,r){r.r(e),r.d(e,{default:function(){return u}});var n=function(){var t=this._self._c;return t("div",[t("md-empty-state",{attrs:{"md-label":"404 - Страница не найдена","md-description":""}})],1)};n._withStripped=!0;var u=(0,r(4486).A)({},n,[],!1,null,null,null).exports}}]);

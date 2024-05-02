@@ -24,7 +24,7 @@ module.exports = merge(common, {
     // Note: style-loader is for development, MiniCssExtractPlugin is for production
     new MiniCssExtractPlugin({
       filename: 'static/css/[name].[contenthash].css',
-      chunkFilename: '[id].css',
+      chunkFilename: 'static/css/[id].css',
     }),
   ],
   module: {
