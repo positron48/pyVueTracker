@@ -1,10 +1,23 @@
 version: "3.3"
 services:
-  web:
+  app:
     build: .
     ports:
       - "5000:5000"
     volumes:
       - .:/code
     restart: always
+    network_mode: "host"
+
+  web:
+    build:
+      context: ./docker/frontend/
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/usr/src
+      - ./frontend:/usr/src/app
+    environment:
+      NODE_ENV: development
+
     network_mode: "host"

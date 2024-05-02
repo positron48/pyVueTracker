@@ -379,19 +379,22 @@ export default {
       }
 
       for (var i = 0; i < dates.length; i++) {
+        var tracker = null
         for (var taskKey = 0; taskKey < this.groupedTasks[dates[i]].tasks.length; taskKey++) {
           var task = this.groupedTasks[dates[i]].tasks[taskKey]
           for (var j = 0; j < this.groupedTasks[dates[i]].tasks[taskKey].trackers.length; j++) {
-            var tracker = this.groupedTasks[dates[i]].tasks[taskKey].trackers[j]
+            tracker = this.groupedTasks[dates[i]].tasks[taskKey].trackers[j]
             result[tracker.title][dates[i]]['allChecked'] = result[tracker.title][dates[i]]['allChecked'] && (tracker.disabled || this.taskTrackerData[task.date][taskKey][tracker.id]['needExport'])
             result[tracker.title][dates[i]]['disabled'] = result[tracker.title][dates[i]]['disabled'] && tracker.disabled
 
             result[tracker.title]['allChecked'] = result[tracker.title]['allChecked'] && (tracker.disabled || this.taskTrackerData[task.date][taskKey][tracker.id]['needExport'])
             result[tracker.title]['disabled'] = result[tracker.title]['disabled'] && tracker.disabled
-
-            if (tracker.title in this.groupedTasks[dates[i]]['durationByTrackers']) {
-              result[tracker.title]['duration'] += this.groupedTasks[dates[i]]['durationByTrackers'][tracker.title]
-            }
+          }
+        }
+        for (var k = 0; k < this.trackers.length; k++) {
+          tracker = this.trackers[k]
+          if (tracker.title in this.groupedTasks[dates[i]]['durationByTrackers']) {
+            result[tracker.title]['duration'] += this.groupedTasks[dates[i]]['durationByTrackers'][tracker.title]
           }
         }
       }
