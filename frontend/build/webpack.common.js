@@ -43,7 +43,7 @@ module.exports = {
       patterns: [
         {
           from: paths.static,
-          to: 'assets',
+          to: 'static',
           globOptions: {
             ignore: ['*.DS_Store'],
           },
