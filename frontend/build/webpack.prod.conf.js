@@ -12,7 +12,7 @@ module.exports = merge(common, {
   output: {
     path: paths.build,
     publicPath: '/',
-    filename: 'js/[name].[contenthash].bundle.js',
+    filename: 'static/js/[name].[contenthash].bundle.js',
   },
 
 
@@ -23,7 +23,7 @@ module.exports = merge(common, {
     // Extracts CSS into separate files
     // Note: style-loader is for development, MiniCssExtractPlugin is for production
     new MiniCssExtractPlugin({
-      filename: 'styles/[name].[contenthash].css',
+      filename: 'static/css/[name].[contenthash].css',
       chunkFilename: '[id].css',
     }),
   ],

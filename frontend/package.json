@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "webpack serve --progress --config build/webpack.dev.conf.js",
     "build": "webpack --config build/webpack.prod.conf.js",
-    "prod": "http-server ./dist -a localhost -p 8000 -o"
+    "prod": "http-server ../dist -a localhost -p 8000 -o"
   },
   "dependencies": {
     "@babel/runtime": "^7.12.5",
