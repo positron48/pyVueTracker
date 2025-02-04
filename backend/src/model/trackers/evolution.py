@@ -1,14 +1,11 @@
 from ..tracker import *
 from typing import Union, Sequence, List, Optional, Any
 import requests
-import urllib3
 import datetime as dt
 import dateutil.relativedelta as dtr
 import sys
 import json
 
-# Отключаем предупреждения о небезопасных запросах
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 class Evolution(Tracker):
 
@@ -49,7 +46,7 @@ class Evolution(Tracker):
         if only_count:
             params['limit'] = 1
 
-        response = requests.get(self.url + "/api/task", params, verify=False)
+        response = requests.get(self.url + "/api/task", params)
         response = response.json()
         if only_count:
             return int(response.get('totalCount', 0))
@@ -183,7 +180,7 @@ class Evolution(Tracker):
         if activity.task_id is not None and int(activity.task_id) > 0:
             data['task_id'] = activity.task_id
 
-        response = requests.post(self.url + "/api/task", data=data, verify=False)
+        response = requests.post(self.url + "/api/task", data=data)
         response = response.json()
         if "success" in response and response['success']:
             return response['id']
@@ -193,24 +190,17 @@ class Evolution(Tracker):
     ######################################### end Tracker interface ####################################################
 
     def get_token(self, user, password):
-        """Get token from Evolution API."""
-        response = requests.post(
-            self.url + "/api/auth", 
-            {"username": user, "password": password},
-            verify=False  # Отключаем проверку SSL сертификата
-        )
-        
-        if response.status_code != 200:
-            raise Exception("Evolution API: Authorization failed")
-            
-        return response.json()["token"]
+        response = requests.post(self.url + "/api/auth", {"username": user, "password": password})
+        response = response.json()
+        if "success" in response and response['success']:
+            return response['token']
 
     def get_employers(self, name=False):
         params = {"token": self.token}
         if name:
             params['title_start'] = name
 
-        response = requests.get(self.url + "/api/employee", params, verify=False)
+        response = requests.get(self.url + "/api/employee", params)
         response = response.json()
 
         if "data" in response and len(response['data']) > 0:
@@ -229,7 +219,7 @@ class Evolution(Tracker):
         if name:
             params['title_start'] = name
 
-        response = requests.get(self.url + "/api/project", params, verify=False)
+        response = requests.get(self.url + "/api/project", params)
         response = response.json()
 
         if "data" in response and len(response['data']) > 0:
@@ -255,7 +245,7 @@ class Evolution(Tracker):
             "project_id": project_id
         }
 
-        response = requests.post(self.url + "/api/task", params, verify=False)
+        response = requests.post(self.url + "/api/task", params)
 
         response = response.json()
 
